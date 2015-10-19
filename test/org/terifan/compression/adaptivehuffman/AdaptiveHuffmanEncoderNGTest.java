@@ -1,7 +1,5 @@
 package org.terifan.compression.adaptivehuffman;
 
-import org.terifan.compression.adaptivehuffman.AdaptiveHuffmanDecoder;
-import org.terifan.compression.adaptivehuffman.AdaptiveHuffmanEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
