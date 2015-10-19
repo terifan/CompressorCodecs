@@ -57,7 +57,7 @@ public class AdaptiveHuffmanEncoderNGTest
 		int[] lengths = new int[1000];
 		for (int i = 0; i < symbols.length; i++)
 		{
-			lengths[i] = rnd.nextInt(3);
+			lengths[i] = rnd.nextInt(4);
 			symbols[i] = rnd.nextInt(1 << (2 << lengths[i]));
 		}
 
@@ -67,7 +67,8 @@ public class AdaptiveHuffmanEncoderNGTest
 			AdaptiveHuffmanEncoder[] encoders = {
 				new AdaptiveHuffmanEncoder(bos, 2),
 				new AdaptiveHuffmanEncoder(bos, 4),
-				new AdaptiveHuffmanEncoder(bos, 8)
+				new AdaptiveHuffmanEncoder(bos, 8),
+				new AdaptiveHuffmanEncoder(bos, 16)
 			};
 			for (int i = 0; i < symbols.length; i++)
 			{
@@ -82,7 +83,8 @@ public class AdaptiveHuffmanEncoderNGTest
 		AdaptiveHuffmanDecoder[] decoders = {
 			new AdaptiveHuffmanDecoder(2),
 			new AdaptiveHuffmanDecoder(4),
-			new AdaptiveHuffmanDecoder(8)
+			new AdaptiveHuffmanDecoder(8),
+			new AdaptiveHuffmanDecoder(16)
 		};
 
 		for (int i = 0; i < symbols.length; i++)
