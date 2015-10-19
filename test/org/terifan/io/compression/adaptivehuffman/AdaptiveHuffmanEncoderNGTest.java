@@ -1,11 +1,13 @@
 package org.terifan.io.compression.adaptivehuffman;
 
+import org.terifan.compression.adaptivehuffman.AdaptiveHuffmanDecoder;
+import org.terifan.compression.adaptivehuffman.AdaptiveHuffmanEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
-import org.terifan.io.BitInputStream;
-import org.terifan.io.BitOutputStream;
+import org.terifan.compression.io.BitInputStream;
+import org.terifan.compression.io.BitOutputStream;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 

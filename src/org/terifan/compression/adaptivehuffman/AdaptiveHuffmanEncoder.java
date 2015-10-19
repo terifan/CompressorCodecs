@@ -1,8 +1,8 @@
-package org.terifan.io.compression.adaptivehuffman;
+package org.terifan.compression.adaptivehuffman;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.terifan.io.BitOutputStream;
+import org.terifan.compression.io.BitOutputStream;
 
 
 /**

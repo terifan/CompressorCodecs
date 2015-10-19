@@ -1,12 +1,11 @@
-package org.terifan.io.compression.adaptivehuffman;
+package org.terifan.compression.adaptivehuffman;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import org.terifan.io.BitInputStream;
-import org.terifan.io.BitOutputStream;
-import org.terifan.util.log.Log;
+import org.terifan.compression.io.BitInputStream;
+import org.terifan.compression.io.BitOutputStream;
 
 
 public class Test
@@ -21,7 +20,7 @@ public class Test
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace(Log.out);
+			e.printStackTrace(System.out);
 		}
 	}
 
@@ -37,7 +36,7 @@ public class Test
 
 		byte[] buf = encoded.toByteArray();
 
-		Log.out.println(buf.length+" / " + aText.length);
+		System.out.println(buf.length+" / " + aText.length);
 
 		ByteArrayOutputStream decoded = new ByteArrayOutputStream();
 
@@ -47,7 +46,7 @@ public class Test
 
 		if (!Arrays.equals(decoded.toByteArray(), aText))
 		{
-			Log.out.println("err: "+new String(decoded.toByteArray()));
+			System.out.println("err: "+new String(decoded.toByteArray()));
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package org.terifan.io.compression.adaptivehuffman;
+package org.terifan.compression.adaptivehuffman;
 
 import java.util.ArrayList;
 import java.util.HashMap;
