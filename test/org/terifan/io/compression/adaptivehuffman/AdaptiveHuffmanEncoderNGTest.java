@@ -21,7 +21,7 @@ public class AdaptiveHuffmanEncoderNGTest
 
 		int range = 30;
 
-		int[] symbols = new int[10000];
+		int[] symbols = new int[1000];
 		for (int i = 0; i < symbols.length; i++)
 		{
 			symbols[i] = rnd.nextInt((int)(1L << (4 + rnd.nextInt(range - 4)) - 1));
@@ -44,6 +44,50 @@ public class AdaptiveHuffmanEncoderNGTest
 		for (int s : symbols)
 		{		
 			assertEquals(decoder.decode(bis), s);
+		}
+	}
+
+	
+	@Test
+	public void test2() throws IOException
+	{
+		Random rnd = new Random();
+
+		int[] symbols = new int[1000];
+		int[] lengths = new int[1000];
+		for (int i = 0; i < symbols.length; i++)
+		{
+			lengths[i] = rnd.nextInt(3);
+			symbols[i] = rnd.nextInt(1 << (2 << lengths[i]));
+		}
+
+		ByteArrayOutputStream encoded = new ByteArrayOutputStream();
+		try (BitOutputStream bos = new BitOutputStream(encoded))
+		{
+			AdaptiveHuffmanEncoder[] encoders = {
+				new AdaptiveHuffmanEncoder(bos, 2),
+				new AdaptiveHuffmanEncoder(bos, 4),
+				new AdaptiveHuffmanEncoder(bos, 8)
+			};
+			for (int i = 0; i < symbols.length; i++)
+			{
+				encoders[lengths[i]].encode(symbols[i]);
+			}
+		}
+
+		byte[] buf = encoded.toByteArray();
+
+		BitInputStream bis = new BitInputStream(new ByteArrayInputStream(buf));
+
+		AdaptiveHuffmanDecoder[] decoders = {
+			new AdaptiveHuffmanDecoder(2),
+			new AdaptiveHuffmanDecoder(4),
+			new AdaptiveHuffmanDecoder(8)
+		};
+
+		for (int i = 0; i < symbols.length; i++)
+		{
+			assertEquals(decoders[lengths[i]].decode(bis), symbols[i]);
 		}
 	}
 }
