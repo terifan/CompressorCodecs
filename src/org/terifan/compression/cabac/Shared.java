@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac2;
+package org.terifan.compression.cabac;
 
 
 interface Shared

@@ -1,8 +1,8 @@
-package org.terifan.compression.cabac2;
+package org.terifan.compression.cabac;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
-import static org.terifan.compression.cabac2.Shared.*;
+import static org.terifan.compression.cabac.Shared.*;
 
 
 public class CabacDecoder

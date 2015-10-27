@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac2;
+package org.terifan.compression.cabac;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
