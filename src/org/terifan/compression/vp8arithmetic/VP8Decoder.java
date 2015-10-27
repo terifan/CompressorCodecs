@@ -2,8 +2,7 @@ package org.terifan.compression.vp8arithmetic;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.terifan.compression.vp8arithmetic.VP8Encoder.kNewRange;
-import static org.terifan.compression.vp8arithmetic.VP8Encoder.kNorm;
+import static org.terifan.compression.vp8arithmetic.Shared.*;
 
 
 public class VP8Decoder implements AutoCloseable
