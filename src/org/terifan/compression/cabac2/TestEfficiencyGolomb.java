@@ -7,8 +7,6 @@ import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
-import org.terifan.compression.dirac.DiracDecoder;
-import org.terifan.compression.dirac.DiracEncoder;
 
 
 public class TestEfficiencyGolomb

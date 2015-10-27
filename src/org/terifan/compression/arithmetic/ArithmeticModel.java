@@ -1,7 +1,7 @@
 package org.terifan.compression.arithmetic;
 
 
-class ArithmeticModel
+public class ArithmeticModel
 {
 	protected final static int CODE_VALUE_SIZE = 14;
 	protected final static long Q1 = (1L << CODE_VALUE_SIZE); // Q1 must be sufficiently large, but not so large as the unsigned long 4 * Q1 * (Q1 - 1) overflows.
