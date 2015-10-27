@@ -3,9 +3,10 @@ package org.terifan.compression.bitari;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import static org.terifan.compression.bitari.ArithmeticModel.*;
 
 
-public class ArithmeticDecoder implements ArithmeticModel
+public class ArithmeticDecoder
 {
 	private InputStream mInputStream;
 

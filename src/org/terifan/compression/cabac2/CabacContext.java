@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac_c;
+package org.terifan.compression.cabac2;
 
 
 public class CabacContext
@@ -7,10 +7,8 @@ public class CabacContext
 	int state;
 
 
-	public void initContext(int qp, int[] ini)
+	public CabacContext(int pstate)
 	{
-		int pstate = ((ini[0] * qp) >> 4) + ini[1];
-
 		if (pstate >= 64)
 		{
 			pstate = Math.min(126, pstate);

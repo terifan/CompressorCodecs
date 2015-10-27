@@ -2,9 +2,10 @@ package org.terifan.compression.bitari;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import static org.terifan.compression.bitari.ArithmeticModel.*;
 
 
-public class ArithmeticEncoder implements ArithmeticModel
+public class ArithmeticEncoder
 {
 	private OutputStream mOutputStream;
 
@@ -111,6 +112,9 @@ public class ArithmeticEncoder implements ArithmeticModel
 
 	public void encode(int aBit, int aProb) throws IOException
 	{
+		assert aBit == 0 || aBit == 1;
+		assert aProb >= 0 && aProb < 256;
+
 		int mid = mHigh - (((mHigh - mLow) * aProb) >>> 8);
 
 		if (aBit == 0)
@@ -300,6 +304,7 @@ public class ArithmeticEncoder implements ArithmeticModel
 			flushBuffer();
 		}
 	}
+
 
 	private void flushBuffer() throws IOException
 	{

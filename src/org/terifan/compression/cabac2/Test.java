@@ -26,8 +26,8 @@ public class Test
 
 				{
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					BinaryEncoder encoder = new BinaryEncoder(baos);
-					Context context = new Context(0);
+					CabacEncoder encoder = new CabacEncoder(baos);
+					CabacContext context = new CabacContext(0);
 					for (int i = 0; i < bits.length; i++)
 					{
 						System.out.print(bits[i]);
@@ -43,8 +43,8 @@ public class Test
 				long t;
 
 				{
-					BinaryDecoder decoder = new BinaryDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-					Context context = new Context(0);
+					CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
+					CabacContext context = new CabacContext(0);
 					t = System.nanoTime();
 					for (int i = 0; i < bits.length; i++)
 					{
