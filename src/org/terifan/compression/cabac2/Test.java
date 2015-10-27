@@ -1,7 +1,8 @@
-package org.terifan.compression.cabac;
+package org.terifan.compression.cabac2;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.PushbackInputStream;
 import java.util.Random;
 
 
@@ -13,7 +14,7 @@ public class Test
 		{
 			for (int len = 1; len < 500; len++)
 			{
-				int [] bits = new int[len];
+				int[] bits = new int[len];
 
 				Random rnd = new Random(len);
 				for (int i = 0; i < bits.length; i++)
@@ -21,44 +22,48 @@ public class Test
 					bits[i] = rnd.nextInt(100) >= 80 ? 1 : 0;
 				}
 
-				byte [] buffer;
+				byte[] buffer;
 
 				{
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					DelphiEncoder encoder = new DelphiEncoder(baos);
-					DelphiContext context = new DelphiContext();
+					BinaryEncoder encoder = new BinaryEncoder(baos);
+					Context context = new Context(0);
 					for (int i = 0; i < bits.length; i++)
 					{
 						System.out.print(bits[i]);
-						encoder.encode(bits[i], context);
+						encoder.encodeBit(bits[i], context);
 					}
+					encoder.encodeFinal(1);
 					encoder.stopEncoding();
 					buffer = baos.toByteArray();
 					System.out.println("");
 				}
 
-	//			Debug.hexDump(40, buffer);
 				int err = 0;
 				long t;
 
 				{
-					DelphiDecoder decoder = new DelphiDecoder(new ByteArrayInputStream(buffer));
-					DelphiContext context = new DelphiContext();
+					BinaryDecoder decoder = new BinaryDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
+					Context context = new Context(0);
 					t = System.nanoTime();
 					for (int i = 0; i < bits.length; i++)
 					{
-						int b = decoder.decode(context);
+						int b = decoder.decodeBit(context);
 						if (b != bits[i])
 						{
 							err++;
 						}
 						System.out.print(b != bits[i] ? "#" : b);
 					}
-					t = System.nanoTime()-t;
+					t = System.nanoTime() - t;
 					System.out.println("");
 				}
 
-				System.out.println("Errors: "+err+", Size: "+buffer.length+", Time: "+t/1000000);
+				System.out.println("Errors: " + err + ", Size: " + buffer.length + ", Time: " + t / 1000000.0);
+				if (err > 0)
+				{
+					break;
+				}
 			}
 		}
 		catch (Throwable e)

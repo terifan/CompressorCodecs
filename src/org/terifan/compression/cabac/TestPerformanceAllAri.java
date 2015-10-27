@@ -42,11 +42,13 @@ public class TestPerformanceAllAri
 	
 	public static void run(int prob) throws IOException
 	{
-		System.out.printf("-- %3d ------------------------------------------------------------------------------------------------\n", prob);
+		int seed = new Random().nextInt(Integer.MAX_VALUE);
+
+		System.out.printf("-- %3d [%9d] ------------------------------------------------------------------------------------------------\n", prob, seed);
 		
 		int [] bits = new int[64*1024*1024];
 
-		Random rnd = new Random(1);
+		Random rnd = new Random(seed);
 		for (int i = 0; i < bits.length; i++)
 		{
 			bits[i] = rnd.nextInt(255) > prob ? 1 : 0;
@@ -59,39 +61,31 @@ public class TestPerformanceAllAri
 
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DelphiEncoder writer = new DelphiEncoder(baos);
+			DelphiEncoder encoder = new DelphiEncoder(baos);
 			DelphiContext context = new DelphiContext();
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-//					System.out.print(bits[i]);
-				writer.encode(bits[i], context);
+				encoder.encode(bits[i], context);
 			}
-//				writer.encode(0, context);
-//				writer.encode(1, context);
-			writer.stopEncoding();
+			encoder.stopEncoding();
 			t1 = System.nanoTime()-t1;
 			buffer = baos.toByteArray();
 		}
 
-//			System.out.println("");
-//			Debug.hexDump(40, buffer);
-
 		{
-			DelphiDecoder reader = new DelphiDecoder(new ByteArrayInputStream(buffer));
+			DelphiDecoder decoder = new DelphiDecoder(new ByteArrayInputStream(buffer));
 			DelphiContext context = new DelphiContext();
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				int b = reader.decode(context);
+				int b = decoder.decode(context);
 				if (b != bits[i])
 				{
 					err++;
 				}
-//					System.out.print(b != bits[i] ? "#" : b);
 			}
 			t2 = System.nanoTime()-t2;
-//				System.out.println("");
 		}
 
 		System.out.printf(FORMAT, "CABAC", err, buffer.length, t1/1000000, t2/1000000);
@@ -105,17 +99,13 @@ public class TestPerformanceAllAri
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-//					System.out.print(bits[i]);
 				writer.encodeBit(bits[i], context);
 			}
-//				writer.encodeFinal();
 			writer.stopEncoding();
 			t1 = System.nanoTime()-t1;
 			buffer = baos.toByteArray();
 		}
 
-//			System.out.println("");
-//			Debug.hexDump(40, buffer);
 		err = 0;
 
 		{
@@ -129,10 +119,8 @@ public class TestPerformanceAllAri
 				{
 					err++;
 				}
-//					System.out.print(b != bits[i] ? "#" : b);
 			}
 			t2 = System.nanoTime()-t2;
-//				System.out.println("");
 		}
 
 		System.out.printf(FORMAT, "CABAC-C", err, buffer.length, t1/1000000, t2/1000000);
@@ -152,8 +140,6 @@ public class TestPerformanceAllAri
 			buffer = baos.toByteArray();
 		}
 
-//			System.out.println("");
-//			Debug.hexDump(40, buffer);
 		err = 0;
 
 		{
@@ -166,10 +152,8 @@ public class TestPerformanceAllAri
 				{
 					err++;
 				}
-//					System.out.print(b != bits[i] ? "#" : b);
 			}
 			t2 = System.nanoTime()-t2;
-//				System.out.println("");
 		}
 
 		System.out.printf(FORMAT, "VP8", err, buffer.length, t1/1000000, t2/1000000);
@@ -190,8 +174,6 @@ public class TestPerformanceAllAri
 			buffer = baos.toByteArray();
 		}
 
-//			System.out.println("");
-//			Debug.hexDump(40, buffer);
 		err = 0;
 
 		{
@@ -205,10 +187,8 @@ public class TestPerformanceAllAri
 				{
 					err++;
 				}
-//					System.out.print(b != bits[i] ? "#" : b);
 			}
 			t2 = System.nanoTime()-t2;
-//				System.out.println("");
 		}
 
 		System.out.printf(FORMAT, "Arith", err, buffer.length, t1/1000000, t2/1000000);
@@ -259,7 +239,6 @@ public class TestPerformanceAllAri
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-//					encoder.encodeUInt(bits[i], 0, 0);
 				encoder.encodeBit(bits[i]==1, 0);
 			}
 			encoder.finish();
@@ -268,8 +247,6 @@ public class TestPerformanceAllAri
 			buffer = baos.toByteArray();
 		}
 
-//			System.out.println("");
-//			Debug.hexDump(40, buffer);
 		err = 0;
 
 		{
@@ -285,7 +262,6 @@ public class TestPerformanceAllAri
 				if (b != bits[i]) System.out.printf("%8d  %12d  %12d\n", i, b, bits[i]);
 			}
 			t2 = System.nanoTime()-t2;
-//				System.out.println("");
 		}
 
 		System.out.printf(FORMAT, "Dirac",err, buffer.length, t1/1000000, t2/1000000);
