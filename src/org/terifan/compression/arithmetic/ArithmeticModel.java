@@ -1,7 +1,7 @@
 package org.terifan.compression.arithmetic;
 
 
-public class ArithmeticModel
+class ArithmeticModel
 {
 	protected final static int CODE_VALUE_SIZE = 14;
 	protected final static long Q1 = (1L << CODE_VALUE_SIZE); // Q1 must be sufficiently large, but not so large as the unsigned long 4 * Q1 * (Q1 - 1) overflows.
@@ -21,44 +21,44 @@ public class ArithmeticModel
 	}
 
 
-	public void updateModel(FrequencyTable aFrequencyTable, int aSymbol)
+	void increment(ArithmeticContext aContext, int aSymbol)
 	{
-		if (!aFrequencyTable.isAdaptive())
+		if (!aContext.isAdaptive())
 		{
 			return;
 		}
 
-		if (aFrequencyTable.mSymbolCum[0] >= MAX_CUMULATIVE_FREQUENCY)
+		if (aContext.mSymbolCum[0] >= MAX_CUMULATIVE_FREQUENCY)
 		{
 			int c = 0;
-			for (int i = aFrequencyTable.mSymbolCount; i > 0; i--)
+			for (int i = aContext.mSymbolCount; i > 0; i--)
 			{
-				aFrequencyTable.mSymbolCum[i] = c;
-				c += (aFrequencyTable.mSymbolFreq[i] = (aFrequencyTable.mSymbolFreq[i] + 1) >> 1);
+				aContext.mSymbolCum[i] = c;
+				c += (aContext.mSymbolFreq[i] = (aContext.mSymbolFreq[i] + 1) >> 1);
 			}
-			aFrequencyTable.mSymbolCum[0] = c;
+			aContext.mSymbolCum[0] = c;
 		}
 
 		int i;
-		for (i = aSymbol; aFrequencyTable.mSymbolFreq[i] == aFrequencyTable.mSymbolFreq[i - 1]; i--)
+		for (i = aSymbol; aContext.mSymbolFreq[i] == aContext.mSymbolFreq[i - 1]; i--)
 		{
 		}
 
 		if (i < aSymbol)
 		{
-			int ch_i = aFrequencyTable.mSymbolToChar[i];
-			int ch_sym = aFrequencyTable.mSymbolToChar[aSymbol];
-			aFrequencyTable.mSymbolToChar[i] = ch_sym;
-			aFrequencyTable.mSymbolToChar[aSymbol] = ch_i;
-			aFrequencyTable.mCharToSymbol[ch_i] = aSymbol;
-			aFrequencyTable.mCharToSymbol[ch_sym] = i;
+			int ch_i = aContext.mSymbolToChar[i];
+			int ch_sym = aContext.mSymbolToChar[aSymbol];
+			aContext.mSymbolToChar[i] = ch_sym;
+			aContext.mSymbolToChar[aSymbol] = ch_i;
+			aContext.mCharToSymbol[ch_i] = aSymbol;
+			aContext.mCharToSymbol[ch_sym] = i;
 		}
 
-		aFrequencyTable.mSymbolFreq[i]++;
+		aContext.mSymbolFreq[i]++;
 
 		while (--i >= 0)
 		{
-			aFrequencyTable.mSymbolCum[i]++;
+			aContext.mSymbolCum[i]++;
 		}
 	}
 }

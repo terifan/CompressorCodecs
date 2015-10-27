@@ -12,6 +12,8 @@ public class ArithmeticDecoder
 
 	public ArithmeticDecoder(ArithmeticModel aModel, BitInputStream aInputStream) throws IOException
 	{
+		aInputStream.setReturnZeroOnEOF(true);
+
 		mModel = aModel;
 		mInputStream = aInputStream;
 		for (int i = 0; i < ArithmeticModel.CODE_VALUE_SIZE + 2; i++)
@@ -22,12 +24,12 @@ public class ArithmeticDecoder
 	}
 
 
-	public int decode(FrequencyTable aFrequencyTable) throws IOException
+	public int decode(ArithmeticContext aContext) throws IOException
 	{
 		long range = mModel.mHigh - mModel.mLow;
-		int symbol = binarySearchSymbol(aFrequencyTable, ((mModel.mValue - mModel.mLow + 1) * aFrequencyTable.mSymbolCum[0] - 1) / range);
-		mModel.mHigh = mModel.mLow + (range * aFrequencyTable.mSymbolCum[symbol - 1]) / aFrequencyTable.mSymbolCum[0];
-		mModel.mLow += (range * aFrequencyTable.mSymbolCum[symbol]) / aFrequencyTable.mSymbolCum[0];
+		int symbol = binarySearchSymbol(aContext, ((mModel.mValue - mModel.mLow + 1) * aContext.mSymbolCum[0] - 1) / range);
+		mModel.mHigh = mModel.mLow + (range * aContext.mSymbolCum[symbol - 1]) / aContext.mSymbolCum[0];
+		mModel.mLow += (range * aContext.mSymbolCum[symbol]) / aContext.mSymbolCum[0];
 
 		for (;;)
 		{
@@ -53,20 +55,20 @@ public class ArithmeticDecoder
 			mModel.mValue += readBit();
 		}
 
-		int character = aFrequencyTable.mSymbolToChar[symbol];
-		mModel.updateModel(aFrequencyTable, symbol);
+		int character = aContext.mSymbolToChar[symbol];
+		mModel.increment(aContext, symbol);
 		return character;
 	}
 
 
-	private int binarySearchSymbol(FrequencyTable aFrequencyTable, long aSymbolCumFreq)
+	private int binarySearchSymbol(ArithmeticContext aContext, long aSymbolCumFreq)
 	{
 		int min = 1;
-		int max = aFrequencyTable.mSymbolCount;
+		int max = aContext.mSymbolCount;
 		while (min < max)
 		{
 			int mid = (min + max) >> 1;
-			if (aFrequencyTable.mSymbolCum[mid] > aSymbolCumFreq)
+			if (aContext.mSymbolCum[mid] > aSymbolCumFreq)
 			{
 				min = mid + 1;
 			}
@@ -81,8 +83,6 @@ public class ArithmeticDecoder
 
 	private int readBit() throws IOException
 	{
-//		return mInputStream.readBits(1);
-		int bit = mInputStream.readBit();
-		return bit == -1 ? 0 : bit;
+		return mInputStream.readBit();
 	}
 }

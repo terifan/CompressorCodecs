@@ -1,9 +1,10 @@
 package org.terifan.compression.arithmetic;
 
 
-public class FrequencyTable
+public class ArithmeticContext
 {
-	private boolean mAdaptive;
+	private final boolean mAdaptive;
+
 	int mSymbolCount;
 	int[] mCharToSymbol;
 	int[] mSymbolToChar;
@@ -11,19 +12,19 @@ public class FrequencyTable
 	int[] mSymbolCum; // cumulative freq for symbols
 
 
-	public FrequencyTable(int aSymbolCount, boolean aAdaptive)
+	public ArithmeticContext(int aSymbolCount, boolean aAdaptive)
 	{
 		this(aSymbolCount, aAdaptive, null);
 	}
 
 
-	public FrequencyTable(int[] aInitialFrequencies, boolean aAdaptive)
+	public ArithmeticContext(int[] aInitialFrequencies, boolean aAdaptive)
 	{
 		this(aInitialFrequencies.length, aAdaptive, aInitialFrequencies);
 	}
 
 
-	private FrequencyTable(int aSymbolCount, boolean aAdaptive, int[] aInitialFrequencies)
+	private ArithmeticContext(int aSymbolCount, boolean aAdaptive, int[] aInitialFrequencies)
 	{
 		mAdaptive = aAdaptive;
 		mSymbolCount = aSymbolCount;

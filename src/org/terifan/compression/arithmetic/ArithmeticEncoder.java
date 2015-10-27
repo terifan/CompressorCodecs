@@ -17,12 +17,12 @@ public class ArithmeticEncoder
 	}
 
 
-	public void encode(FrequencyTable aFrequencyTable, int aCharacter) throws IOException
+	public void encode(ArithmeticContext aContext, int aCharacter) throws IOException
 	{
-		int symbol = aFrequencyTable.mCharToSymbol[aCharacter];
+		int symbol = aContext.mCharToSymbol[aCharacter];
 		long range = mModel.mHigh - mModel.mLow;
-		mModel.mHigh = mModel.mLow + (range * aFrequencyTable.mSymbolCum[symbol - 1]) / aFrequencyTable.mSymbolCum[0];
-		mModel.mLow += (range * aFrequencyTable.mSymbolCum[symbol]) / aFrequencyTable.mSymbolCum[0];
+		mModel.mHigh = mModel.mLow + (range * aContext.mSymbolCum[symbol - 1]) / aContext.mSymbolCum[0];
+		mModel.mLow += (range * aContext.mSymbolCum[symbol]) / aContext.mSymbolCum[0];
 
 		for (;;)
 		{
@@ -49,7 +49,8 @@ public class ArithmeticEncoder
 			mModel.mLow <<= 1;
 			mModel.mHigh <<= 1;
 		}
-		mModel.updateModel(aFrequencyTable, symbol);
+
+		mModel.increment(aContext, symbol);
 	}
 
 
