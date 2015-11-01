@@ -3,6 +3,7 @@ package org.terifan.compression.vp8arithmetic;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
+import org.terifan.compression.util.Log;
 
 
 public class Test
@@ -50,34 +51,37 @@ public class Test
 			System.out.println(seed);
 
 			Random rnd = new Random(seed);
-			int [] bits = new int[rnd.nextInt(100000)];
-			int [] prob = bits.clone();
+			boolean [] bits = new boolean[100_000_000];
+			int [] prob = new int[bits.length];
 			for (int i = 0; i < bits.length; i++)
 			{
-				bits[i] = rnd.nextBoolean() ? 1 : 0;
-				prob[i] = rnd.nextInt(256);
+				bits[i] = rnd.nextInt(100) == 0;
+				prob[i] = 255 * 99 / 100;
 			}
 
 			byte [] buffer;
 
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				VP8Encoder writer = new VP8Encoder(baos);
-				for (int i = 0; i < bits.length; i++)
+				try (VP8Encoder writer = new VP8Encoder(baos))
 				{
-					writer.encodeBit(bits[i], prob[i]);
+					for (int i = 0; i < bits.length; i++)
+					{
+						writer.encodeBit(bits[i]?1:0, prob[i]);
+					}
 				}
-				writer.close();
 				buffer = baos.toByteArray();
 			}
+			
+			Log.out.printf("in=%,d / out=%,d, ratio=%.1f%%\n", bits.length/8, buffer.length, 100-buffer.length*100.0/(bits.length/8));
 
 			{
 				VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(buffer));
 				for (int i = 0; i < bits.length; i++)
 				{
-					if (reader.decodeBit(prob[i]) != bits[i])
+					if (reader.decodeBit(prob[i]) != (bits[i]?1:0))
 					{
-						System.out.println("### " + i);
+						System.out.println("Error at  " + i);
 						return;
 					}
 				}
