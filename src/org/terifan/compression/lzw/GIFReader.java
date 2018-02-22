@@ -81,7 +81,7 @@ public class GIFReader
 						image = ImageTypeSpecifier.createIndexed(palette[0], palette[1], palette[2], alpha, initialCodeSize, DataBuffer.TYPE_BYTE).createBufferedImage(width, height);
 						byte [] buffer = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
 
-						try (LZWInputStream lzw = new LZWInputStream(new PacketInputStream(in), 12, initialCodeSize))
+						try (LZWInputStream lzw = new LZWInputStream(new PacketInputStream(in), initialCodeSize, 12))
 						{
 							lzw.read(buffer);
 						}

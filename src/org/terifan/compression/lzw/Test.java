@@ -7,24 +7,24 @@ import java.io.FileInputStream;
 import java.util.Arrays;
 
 
-public class Test 
+public class Test
 {
 	public static void main(String... args)
 	{
 		try
 		{
-			File f = new File("d:/model.bundle");
-			byte[] input = new byte[(int) f.length()];
-			try (FileInputStream fin = new FileInputStream(f))
-			{
-				fin.read(input);
-			}
+//			File f = new File("d:/jvm-app-0.log");
+//			byte[] input = new byte[(int) f.length()];
+//			try (FileInputStream fin = new FileInputStream(f))
+//			{
+//				fin.read(input);
+//			}
 
-//			byte [] input = "The quick brown fox jumped over the lazy dog.".getBytes();
+			byte [] input = "The quick brown fox jumped over the lazy dog.".getBytes();
 
 			long t = System.nanoTime();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			try (LZWOutputStream out = new LZWOutputStream(baos, 8, 4096, false))
+			try (LZWOutputStream out = new LZWOutputStream(baos, 8, 12))
 			{
 				out.write(input);
 			}
@@ -34,7 +34,7 @@ public class Test
 			System.out.println("Size: " + baos.size() + " / " + input.length);
 
 			t = System.nanoTime();
-			try (LZWInputStream in = new LZWInputStream(new ByteArrayInputStream(baos.toByteArray()), 8, 4096))
+			try (LZWInputStream in = new LZWInputStream(new ByteArrayInputStream(baos.toByteArray()), 8, 12))
 			{
 				baos = new ByteArrayOutputStream();
 				for (int c; (c = in.read()) != -1;)

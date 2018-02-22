@@ -35,7 +35,7 @@ public class Test
 			{
 				ArithmeticContext context = new ArithmeticContext(aSymbolCount, true);
 				ArithmeticModel model = new ArithmeticModel();
-				
+
 //				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
 //				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
 //				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
@@ -71,7 +71,7 @@ public class Test
 			}
 			decompressedData = baos.toByteArray();
 		}
-		
-		System.out.printf("%b, in=%d, out=%d, ratio=%.1f\n", Arrays.equals(aPlainText, decompressedData), aPlainText.length, compressedData.length, 100 - compressedData.length*100.0 / aPlainText.length);
+
+		System.out.printf("success=%b, in=%d, out=%d, ratio=%.1f\n", Arrays.equals(aPlainText, decompressedData), aPlainText.length, compressedData.length, 100 - compressedData.length*100.0 / aPlainText.length);
 	}
 }

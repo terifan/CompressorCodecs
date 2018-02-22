@@ -28,68 +28,47 @@ public class LZWOutputStream extends OutputStream
 
 	/**
 	 * Constructs a LZWOutputStream with symbol size of 8 bits and a dictionary
-	 * size of 4096 entries.
+	 * size of 12 bits (4096 entries).
 	 */
 	public LZWOutputStream(OutputStream aOutputStream) throws IOException
 	{
-		this(aOutputStream, 8, 4096, true);
-	}
-
-
-	/**
-	 * Constructs a LZWOutputStream with symbol size of 8 bits and a dictionary
-	 * size of 4096 entries.
-	 */
-	public LZWOutputStream(OutputStream aOutputStream, boolean aHeader) throws IOException
-	{
-		this(aOutputStream, 8, 4096, aHeader);
+		this(aOutputStream, 8, 12);
 	}
 
 
 	/**
 	 * Constructs a LZWOutputStream with custom code size and dictionary size.
 	 *
-	 * The dictionary size controls compression efficiency; text-files can 
-	 * be compressed with larger dictionaries (eg. 8192) while binary data such as an 
-	 * executable should have a smaller dictionary (eg. 2048).
-	 *
 	 * @param aOutputStream
-	 *    Underlaying output stream.
+	 *    Underlying output stream.
 	 * @param aSymbolSize
-	 *    Number of symbols that should be encoded. This value may range from 2 
-	 *    to 4096.
-	 * @param aDictionarySize
-	 *    Number of entries in the dictionary. This value must be a power of 2 
-	 *    and range from 256 to 131072. Note: The dictionary size must be 
-	 *    greater than the symbol size.
+	 *    Size of the symbol (normally 256 for a single byte). This value may range from 2 to 4096.
+	 * @param aDictionarySizeBits
+	 *    Number of entries in the dictionary, power of 2.
 	 */
-	public LZWOutputStream(OutputStream aOutputStream, int aSymbolSize, int aDictionarySize, boolean aHeader) throws IOException
+	public LZWOutputStream(OutputStream aOutputStream, int aSymbolSize, int aDictionarySizeBits) throws IOException
 	{
 		if (aSymbolSize < 1 || aSymbolSize > 12)
 		{
 			throw new IllegalArgumentException("aSymbolSize must be in range of 1 to 12 bits. Provided value is: " + aSymbolSize);
 		}
+		if (aDictionarySizeBits < aSymbolSize + 1 || aDictionarySizeBits > 15)
+		{
+			throw new IllegalArgumentException("aDictionarySiezBits");
+		}
 
 		mOutputStream = aOutputStream;
-		mDictionarySizeBits = (int) Math.ceil(Math.log(aDictionarySize) / Math.log(2));
+		mDictionarySizeBits = aDictionarySizeBits;
 		mSymbolSize = 1 << aSymbolSize;
-		mInitialCodeSizeBits = (int) Math.ceil(Math.log(mSymbolSize + 2) / Math.log(2));
+		mInitialCodeSizeBits = (int)Math.ceil(Math.log(mSymbolSize + 2) / Math.log(2));
 
-		if ((aDictionarySize & -aDictionarySize) != aDictionarySize)
+		if (mDictionarySizeBits < aSymbolSize + 1)
 		{
-			throw new IllegalArgumentException("Dictionary size must be a power of 2: " + aDictionarySize);
-		}
-		if (mDictionarySizeBits < 8)
-		{
-			throw new IllegalArgumentException("Dictionary size is less than minimum allowed size: " + aDictionarySize);
+			throw new IllegalArgumentException("Dictionary size is less than minimum allowed size: " + mDictionarySizeBits);
 		}
 		if (mDictionarySizeBits > 17)
 		{
-			throw new IllegalArgumentException("Dictionary size exceeds maximum allowed size: " + aDictionarySize);
-		}
-		if ((mSymbolSize + 2) > aDictionarySize)
-		{
-			throw new IllegalArgumentException("Dictionary size must be increased to accommodate the number of symbols.");
+			throw new IllegalArgumentException("Dictionary size exceeds maximum allowed size: " + mDictionarySizeBits);
 		}
 
 		mRootNodes = new Node[mSymbolSize];
@@ -97,18 +76,7 @@ public class LZWOutputStream extends OutputStream
 		mEOFCode = mSymbolSize + 1;
 		mCodeLength = mInitialCodeSizeBits;
 
-		if (aHeader)
-		{
-			int a = mSymbolSize - 2;
-			int b = (0xF0 & ((mSymbolSize - 2) >> 4)) | (mDictionarySizeBits - 2);
-			int c = ((a ^ b) ^ ((a ^ b) << 4)) & 0xF0;
-			int v = 1;
-			mOutputStream.write((byte)(c | v)); // checksum + version
-			mOutputStream.write((byte)a); // number of symbols
-			mOutputStream.write((byte)b); // number of symbols + dictionary size
-		}
-
-		mCachedNodes = new Node[aDictionarySize];
+		mCachedNodes = new Node[1 << mDictionarySizeBits];
 		for (int i = mCachedNodes.length; --i >= 0;)
 		{
 			mCachedNodes[i] = new Node();
@@ -124,24 +92,27 @@ public class LZWOutputStream extends OutputStream
 
 
 	/**
-	 * Writes remaining compressed data to the output stream and closes the 
+	 * Writes remaining compressed data to the output stream and closes the
 	 * underlying stream.
 	 */
 	@Override
 	public void close() throws IOException
 	{
-		finish();
+		if (mOutputStream != null)
+		{
+			finish();
 
-		mOutputStream.close();
-		mOutputStream = null;
+			mOutputStream.close();
+			mOutputStream = null;
+		}
 	}
 
 
 	/**
-	 * Finishes writing compressed data to the output stream without closing 
+	 * Finishes writing compressed data to the output stream without closing
 	 * the underlying stream.<p>
 	 *
-	 * It' not neccessary to close the stream if this metod is called.
+	 * It's not necessary to close the stream if this method is called.
 	 */
 	public void finish() throws IOException
 	{
@@ -158,9 +129,9 @@ public class LZWOutputStream extends OutputStream
 
 
 	/**
-	 * Writes a byte to the compressed output stream. The general contract 
-	 * for write is that one byte is written to the output stream. The byte 
-	 * to be written is the eight low-order bits of the argument b. The 24 
+	 * Writes a byte to the compressed output stream. The general contract
+	 * for write is that one byte is written to the output stream. The byte
+	 * to be written is the eight low-order bits of the argument b. The 24
 	 * high-order bits of b are ignored.<p>
 	 *
 	 * Note: Use the writeSymbol method to write codes greater than 255.
@@ -176,8 +147,8 @@ public class LZWOutputStream extends OutputStream
 
 
 	/**
-	 * Writes b.length bytes from the specified byte array to the compressed 
-	 * output stream. The general contract for write(b) is that it should have 
+	 * Writes b.length bytes from the specified byte array to the compressed
+	 * output stream. The general contract for write(b) is that it should have
 	 * exactly the same effect as the call write(b, 0, b.length)<p>
 	 *
 	 * Note: Use the writeSymbol method to write codes greater than 255.
@@ -196,7 +167,7 @@ public class LZWOutputStream extends OutputStream
 
 
 	/**
-	 * Writes len bytes from the specified byte array starting at offset off 
+	 * Writes len bytes from the specified byte array starting at offset off
 	 * to this output stream.<p>
 	 *
 	 * Note: Use the writeSymbol method to write codes greater than 255.
@@ -276,13 +247,8 @@ public class LZWOutputStream extends OutputStream
 
 	public void learnWord(String aWord) throws IOException
 	{
-		// ap
-		// app
-		// appl
-		// apple
-
 		Node node = mRootNodes[aWord.charAt(0)];
-		
+
 		for (int i = 1; i < aWord.length(); i++)
 		{
 			int c = aWord.charAt(i);
@@ -321,8 +287,8 @@ public class LZWOutputStream extends OutputStream
 
 
 	/**
-	 * Writes a variable length code the output stream. The code is written to 
-	 * an internal buffer and only written to output when the buffer is full. 
+	 * Writes a variable length code the output stream. The code is written to
+	 * an internal buffer and only written to output when the buffer is full.
 	 */
 	private void writeBits(int aCode, int aLength) throws IOException
 	{
@@ -338,9 +304,6 @@ public class LZWOutputStream extends OutputStream
 	}
 
 
-	/**
-	 * Class used in the LZW compression.
-	 */
 	private class Node
 	{
 		int code;

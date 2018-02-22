@@ -26,19 +26,16 @@ public class LZWInputStream extends InputStream
 	private int[] mPrefix;
 	private byte[] mSuffix;
 	// output
-	private byte[] mDecodedBuffer;
-	private int mDecodedOffset;
-	private int mDecodedLength;
+	private byte[] mBuffer;
+	private int mBufferOffset;
+	private int mBufferLength;
 
 
-	public LZWInputStream(InputStream aInputStream, int aDictionarySizeBits, int aInitialCodeSizeBits) throws IOException
+	public LZWInputStream(InputStream aInputStream, int aInitialCodeSizeBits, int aDictionarySizeBits) throws IOException
 	{
 		mInputStream = aInputStream;
-
 		mInitialCodeSize = aInitialCodeSizeBits;
-
 		mDictionarySize = 1 << aDictionarySizeBits;
-
 		mClearCode = 1 << aInitialCodeSizeBits;
 		mEOFCode = mClearCode + 1;
 
@@ -47,13 +44,8 @@ public class LZWInputStream extends InputStream
 		mInitial = new byte[mDictionarySize];
 		mLength = new int[mDictionarySize];
 
-		mDecodedBuffer = new byte[4096];
+		mBuffer = new byte[4096];
 		mOldCode = -1;
-
-		//System.out.println("mClearCode="+mClearCode);
-		//System.out.println("mEOFCode="+mEOFCode);
-		//System.out.println("mInitialCodeSize="+mInitialCodeSize);
-		//System.out.println("mDictionarySize="+mDictionarySize);
 
 		clear();
 	}
@@ -78,7 +70,7 @@ public class LZWInputStream extends InputStream
 	@Override
 	public int read() throws IOException
 	{
-		if (mDecodedOffset == mDecodedLength)
+		if (mBufferOffset == mBufferLength)
 		{
 			if (mInputStream == null)
 			{
@@ -86,12 +78,12 @@ public class LZWInputStream extends InputStream
 			}
 			decodeBuffer();
 		}
-		if (mDecodedLength == 0)
+		if (mBufferLength == 0)
 		{
 			return -1;
 		}
 
-		return 255 & mDecodedBuffer[mDecodedOffset++];
+		return 255 & mBuffer[mBufferOffset++];
 	}
 
 
@@ -101,7 +93,7 @@ public class LZWInputStream extends InputStream
 		int read = 0;
 		while (aLength > 0)
 		{
-			if (mDecodedOffset == mDecodedLength)
+			if (mBufferOffset == mBufferLength)
 			{
 				if (mInputStream == null)
 				{
@@ -109,18 +101,18 @@ public class LZWInputStream extends InputStream
 				}
 				decodeBuffer();
 			}
-			if (mDecodedLength == 0)
+			if (mBufferLength == 0)
 			{
 				return read == 0 ? -1 : read;
 			}
 
-			int len = Math.min(mDecodedLength - mDecodedOffset, aLength);
+			int len = Math.min(mBufferLength - mBufferOffset, aLength);
 
-			System.arraycopy(mDecodedBuffer, mDecodedOffset, aBuffer, aOffset, len);
+			System.arraycopy(mBuffer, mBufferOffset, aBuffer, aOffset, len);
 
 			aLength -= len;
 			aOffset += len;
-			mDecodedOffset += len;
+			mBufferOffset += len;
 			read += len;
 		}
 
@@ -130,8 +122,8 @@ public class LZWInputStream extends InputStream
 
 	private void decodeBuffer() throws IOException
 	{
-		mDecodedOffset = 0;
-		mDecodedLength = 0;
+		mBufferOffset = 0;
+		mBufferLength = 0;
 
 		if (mOldCode == -1)
 		{
@@ -139,10 +131,10 @@ public class LZWInputStream extends InputStream
 			{
 				mOldCode = readBits(mCodeSize);
 			} while (mOldCode == mClearCode);
-			mDecodedBuffer[mDecodedLength++] = (byte) mOldCode;
+			mBuffer[mBufferLength++] = (byte) mOldCode;
 		}
 
-		while (mDecodedLength < 1024)
+		while (mBufferLength < 1024)
 		{
 			int code = readBits(mCodeSize);
 			int newSuffix;
@@ -159,7 +151,7 @@ public class LZWInputStream extends InputStream
 					close();
 					return;
 				}
-				mDecodedBuffer[mDecodedLength++] = (byte) code;
+				mBuffer[mBufferLength++] = (byte) code;
 				mOldCode = code;
 			}
 			else if (code == mEOFCode)
@@ -196,19 +188,19 @@ public class LZWInputStream extends InputStream
 
 				int len = mLength[code];
 
-				mDecodedLength += len;
+				mBufferLength += len;
 
-				if (mDecodedBuffer.length < mDecodedLength)
+				if (mBuffer.length < mBufferLength)
 				{
-					byte[] tmp = new byte[mDecodedLength * 3 / 2];
-					System.arraycopy(mDecodedBuffer, 0, tmp, 0, mDecodedBuffer.length);
-					mDecodedBuffer = tmp;
+					byte[] tmp = new byte[mBufferLength * 3 / 2];
+					System.arraycopy(mBuffer, 0, tmp, 0, mBuffer.length);
+					mBuffer = tmp;
 				}
 
 				int c = code;
 				for (int i = 1; i <= len; i++)
 				{
-					mDecodedBuffer[mDecodedLength - i] = mSuffix[c];
+					mBuffer[mBufferLength - i] = mSuffix[c];
 					c = mPrefix[c];
 				}
 
