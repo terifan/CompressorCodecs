@@ -42,7 +42,7 @@ public class Test
 			e.printStackTrace(System.out);
 		}
 	}
-	
+
 	public static void main(String ... args)
 	{
 		try
@@ -72,7 +72,7 @@ public class Test
 				}
 				buffer = baos.toByteArray();
 			}
-			
+
 			Log.out.printf("in=%,d / out=%,d, ratio=%.1f%%\n", bits.length/8, buffer.length, 100-buffer.length*100.0/(bits.length/8));
 
 			{

@@ -76,13 +76,13 @@ public class VP8Decoder implements AutoCloseable
 
 	private void shift()
 	{
-		int shift = kNorm[mRange];
-		mRange = kNewRange[mRange];
+		int shift = KNORM[mRange];
+		mRange = KNEWRANGE[mRange];
 		mValue <<= shift;
 		mMissing += shift;
 	}
-	
-	
+
+
 	@Override
 	public void close() throws IOException
 	{

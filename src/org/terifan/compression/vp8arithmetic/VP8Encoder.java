@@ -6,11 +6,6 @@ import java.util.Arrays;
 import static org.terifan.compression.vp8arithmetic.Shared.*;
 
 
-/**
- * Bit writing and boolean coder
- *
- * @author Skal (pascal.massimino@gmail.com)
- */
 public class VP8Encoder implements AutoCloseable
 {
 	private int mRange;      // range-1
@@ -28,16 +23,16 @@ public class VP8Encoder implements AutoCloseable
 		mRange = 255 - 1;
 		mNbBits = -8;
 		mOutputStream = aOutputStream;
-		
+
 		mMaxPos = 1024;
 		mBuffer = new byte[mMaxPos];
 	}
 
 
-	public int encodeBit(int bit, int prob) throws IOException
+	public int encodeBit(int aBit, int aProb) throws IOException
 	{
-		int split = (mRange * prob) >> 8;
-		if (bit != 0)
+		int split = (mRange * aProb) >> 8;
+		if (aBit != 0)
 		{
 			mValue += split + 1;
 			mRange -= split + 1;
@@ -48,8 +43,8 @@ public class VP8Encoder implements AutoCloseable
 		}
 		if (mRange < 127)
 		{   // emit 'shift' bits out and renormalize
-			int shift = kNorm[mRange];
-			mRange = kNewRange[mRange];
+			int shift = KNORM[mRange];
+			mRange = KNEWRANGE[mRange];
 			mValue <<= shift;
 			mNbBits += shift;
 			if (mNbBits > 0)
@@ -57,14 +52,14 @@ public class VP8Encoder implements AutoCloseable
 				flush();
 			}
 		}
-		return bit;
+		return aBit;
 	}
 
 
-	public int encodeBitEqProb(int bit) throws IOException
+	public int encodeBitEqProb(int aBit) throws IOException
 	{
 		int split = mRange >> 1;
-		if (bit != 0)
+		if (aBit != 0)
 		{
 			mValue += split + 1;
 			mRange -= split + 1;
@@ -75,7 +70,7 @@ public class VP8Encoder implements AutoCloseable
 		}
 		if (mRange < 127)
 		{
-			mRange = kNewRange[mRange];
+			mRange = KNEWRANGE[mRange];
 			mValue <<= 1;
 			mNbBits += 1;
 			if (mNbBits > 0)
@@ -83,15 +78,15 @@ public class VP8Encoder implements AutoCloseable
 				flush();
 			}
 		}
-		return bit;
+		return aBit;
 	}
 
 
-	public void encodeValue(int value, int aNumBits) throws IOException
+	public void encodeValue(int aValue, int aNumBits) throws IOException
 	{
 		for (long mask = 1L << (aNumBits - 1); mask != 0; mask >>= 1)
 		{
-			encodeBitEqProb((int)(value & mask));
+			encodeBitEqProb((int)(aValue & mask));
 		}
 	}
 
@@ -107,7 +102,7 @@ public class VP8Encoder implements AutoCloseable
 		{
 			mPos--;
 		}
-		
+
 		mOutputStream.write(Arrays.copyOfRange(mBuffer, 0, mPos));
 	}
 
@@ -115,7 +110,7 @@ public class VP8Encoder implements AutoCloseable
 	private void resize() throws IOException
 	{
 		mOutputStream.write(mBuffer, 0, mPos - 1);
-		mBuffer[0] = mBuffer[mPos-1];
+		mBuffer[0] = mBuffer[mPos - 1];
 		mPos = 1;
 	}
 
@@ -136,7 +131,8 @@ public class VP8Encoder implements AutoCloseable
 				resize(); //mRun + 1
 			}
 			if ((bits & 0x100) != 0)
-			{  // overflow . propagate carry over pending 0xff's
+			{
+				// overflow . propagate carry over pending 0xff's
 				if (mPos > 0)
 				{
 					mBuffer[mPos - 1]++;
@@ -147,10 +143,10 @@ public class VP8Encoder implements AutoCloseable
 				int value = (bits & 0x100) != 0 ? 0x00 : 0xff;
 				for (; mRun > 0; --mRun)
 				{
-					mBuffer[mPos++] = (byte) value;
+					mBuffer[mPos++] = (byte)value;
 				}
 			}
-			mBuffer[mPos++] = (byte) bits;
+			mBuffer[mPos++] = (byte)bits;
 		}
 		else
 		{
