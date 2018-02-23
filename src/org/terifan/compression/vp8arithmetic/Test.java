@@ -3,7 +3,6 @@ package org.terifan.compression.vp8arithmetic;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
-import org.terifan.compression.util.Log;
 
 
 public class Test
@@ -51,38 +50,78 @@ public class Test
 			System.out.println(seed);
 
 			Random rnd = new Random(seed);
-			boolean [] bits = new boolean[100_000_000];
-			int [] prob = new int[bits.length];
-			for (int i = 0; i < bits.length; i++)
-			{
-				bits[i] = rnd.nextInt(100) == 0;
-				prob[i] = 255 * 99 / 100;
-			}
 
-			byte [] buffer;
-
+			for (int testMethod = 0; testMethod <= 7; testMethod++)
 			{
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				try (VP8Encoder writer = new VP8Encoder(baos))
+				int bitsToTest = 1000;
+				int [] probas = new int[bitsToTest];
+
+				for (int i = 0; i < bitsToTest; i++)
 				{
-					for (int i = 0; i < bits.length; i++)
-					{
-						writer.encodeBit(bits[i]?1:0, prob[i]);
-					}
+					boolean parity = (i & 1) != 0;
+
+					probas[i] =
+						(testMethod == 0) ? 0 :
+						(testMethod == 1) ? 255 :
+						(testMethod == 2) ? 128 :
+						(testMethod == 3) ? rnd.nextInt(256):
+						(testMethod == 4) ? (parity ? 0 : 255) :
+						// alternate between low and high proba:
+						(testMethod == 5) ? (parity ? rnd.nextInt(128) : 255 - rnd.nextInt(128)) :
+						(testMethod == 6) ?
+						(parity ? rnd.nextInt(64) : 255 - rnd.nextInt(64)) :
+						(parity ? rnd.nextInt(32) : 255 - rnd.nextInt(32));
 				}
-				buffer = baos.toByteArray();
-			}
 
-			Log.out.printf("in=%,d / out=%,d, ratio=%.1f%%\n", bits.length/8, buffer.length, 100-buffer.length*100.0/(bits.length/8));
-
-			{
-				VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(buffer));
-				for (int i = 0; i < bits.length; i++)
+				for (int bitMethod = 0; bitMethod <= 3; bitMethod++)
 				{
-					if (reader.decodeBit(prob[i]) != (bits[i]?1:0))
+					byte[] buffer;
+
 					{
-						System.out.println("Error at  " + i);
-						return;
+						rnd = new Random(seed);
+
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						try (VP8Encoder writer = new VP8Encoder(baos))
+						{
+							int bit = (bitMethod == 0) ? 0 : (bitMethod == 1) ? 1 : 0;
+							for (int i = 0; i < bitsToTest; i++)
+							{
+								if (bitMethod == 2)
+								{
+									bit = (i & 1);
+								}
+								else if (bitMethod == 3)
+								{
+									bit = rnd.nextInt(2);
+								}
+								writer.encodeBit(bit, probas[i]);
+							}
+						}
+						buffer = baos.toByteArray();
+					}
+
+					{
+						rnd = new Random(seed);
+
+						VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(buffer));
+						for (int i = 0; i < bitsToTest; i++)
+						{
+							int bit = (bitMethod == 0) ? 0 : (bitMethod == 1) ? 1 : 0;
+							if (bitMethod == 2)
+							{
+								bit = (i & 1);
+							}
+							else if (bitMethod == 3)
+							{
+								bit = rnd.nextInt(2);
+							}
+
+							if (reader.decodeBit(probas[i]) != bit)
+							{
+								System.out.println("Error at  " + i);
+								return;
+							}
+						}
 					}
 				}
 			}

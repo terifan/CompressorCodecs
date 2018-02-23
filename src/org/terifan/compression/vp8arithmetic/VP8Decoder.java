@@ -24,11 +24,35 @@ public class VP8Decoder implements AutoCloseable
 	public int decodeBit(int prob) throws IOException
 	{
 		int split = (mRange * prob) >> 8;
-		int bit = update(split);
+
+		int valueSplit = (split + 1) << 8;
+
+		if (mMissing > 0)
+		{
+			mValue |= (0xFF & mInputStream.read()) << mMissing;
+			mMissing -= 8;
+		}
+
+		int bit = (mValue >= valueSplit) ? 1 : 0;
+
+		if (bit != 0)
+		{
+			mRange -= split + 1;
+			mValue -= valueSplit;
+		}
+		else
+		{
+			mRange = split;
+		}
+
 		if (mRange < 0x7f)
 		{
-			shift();
+			int shift = KNORM[mRange];
+			mRange = KNEWRANGE[mRange];
+			mValue <<= shift;
+			mMissing += shift;
 		}
+
 		return bit;
 	}
 
@@ -47,39 +71,6 @@ public class VP8Decoder implements AutoCloseable
 			v |= decodeBitEqProb() << aNumBits;
 		}
 		return v;
-	}
-
-
-	private int update(int split) throws IOException
-	{
-		int bit;
-		int value_split = (split + 1) << 8;
-
-		if (mMissing > 0)
-		{
-			mValue |= (0xFF & mInputStream.read()) << mMissing;
-			mMissing -= 8;
-		}
-		bit = (mValue >= value_split) ? 1 : 0;
-		if (bit != 0)
-		{
-			mRange -= split + 1;
-			mValue -= value_split;
-		}
-		else
-		{
-			mRange = split;
-		}
-		return bit;
-	}
-
-
-	private void shift()
-	{
-		int shift = KNORM[mRange];
-		mRange = KNEWRANGE[mRange];
-		mValue <<= shift;
-		mMissing += shift;
 	}
 
 
