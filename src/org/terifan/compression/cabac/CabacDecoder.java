@@ -2,7 +2,7 @@ package org.terifan.compression.cabac;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
-import static org.terifan.compression.cabac.Shared.*;
+import static org.terifan.compression.cabac.CabacConstants.*;
 
 
 public class CabacDecoder

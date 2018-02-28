@@ -1,23 +1,23 @@
-package org.terifan.compression.arithmetic;
+package org.terifan.compression.basic_arithmetic;
 
 import java.io.IOException;
 import org.terifan.compression.io.BitOutputStream;
 
 
-public class ArithmeticEncoder
+public class BasicArithmeticEncoder
 {
 	private BitOutputStream mOutputStream;
-	private ArithmeticModel mModel;
+	private BasicArithmeticModel mModel;
 
 	
-	public ArithmeticEncoder(ArithmeticModel aModel, BitOutputStream aOutputStream)
+	public BasicArithmeticEncoder(BasicArithmeticModel aModel, BitOutputStream aOutputStream)
 	{
 		mOutputStream = aOutputStream;
 		mModel = aModel;
 	}
 
 
-	public void encode(ArithmeticContext aContext, int aCharacter) throws IOException
+	public void encode(BasicArithmeticContext aContext, int aCharacter) throws IOException
 	{
 		int symbol = aContext.mCharToSymbol[aCharacter];
 		long range = mModel.mHigh - mModel.mLow;
@@ -26,21 +26,21 @@ public class ArithmeticEncoder
 
 		for (;;)
 		{
-			if (mModel.mHigh <= ArithmeticModel.Q2)
+			if (mModel.mHigh <= BasicArithmeticModel.Q2)
 			{
 				writeBit(0);
 			}
-			else if (mModel.mLow >= ArithmeticModel.Q2)
+			else if (mModel.mLow >= BasicArithmeticModel.Q2)
 			{
 				writeBit(1);
-				mModel.mLow -= ArithmeticModel.Q2;
-				mModel.mHigh -= ArithmeticModel.Q2;
+				mModel.mLow -= BasicArithmeticModel.Q2;
+				mModel.mHigh -= BasicArithmeticModel.Q2;
 			}
-			else if (mModel.mLow >= ArithmeticModel.Q1 && mModel.mHigh <= ArithmeticModel.Q3)
+			else if (mModel.mLow >= BasicArithmeticModel.Q1 && mModel.mHigh <= BasicArithmeticModel.Q3)
 			{
 				mModel.mShifts++;
-				mModel.mLow -= ArithmeticModel.Q1;
-				mModel.mHigh -= ArithmeticModel.Q1;
+				mModel.mLow -= BasicArithmeticModel.Q1;
+				mModel.mHigh -= BasicArithmeticModel.Q1;
 			}
 			else
 			{
@@ -57,7 +57,7 @@ public class ArithmeticEncoder
 	public void encodeEnd() throws IOException
 	{
 		mModel.mShifts++;
-		writeBit(mModel.mLow < ArithmeticModel.Q1 ? 0 : 1);
+		writeBit(mModel.mLow < BasicArithmeticModel.Q1 ? 0 : 1);
 	}
 
 

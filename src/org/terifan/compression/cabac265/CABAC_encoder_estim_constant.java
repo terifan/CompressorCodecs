@@ -1,6 +1,6 @@
 package org.terifan.compression.cabac265;
 
-import static org.terifan.compression.cabac265.Cabac.*;
+import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
 public class CABAC_encoder_estim_constant extends CABAC_encoder_estim
@@ -15,7 +15,7 @@ public class CABAC_encoder_estim_constant extends CABAC_encoder_estim
 	@Override
 	void write_CABAC_bit(int modelIdx, int bit)
 	{
-		context_model model = mCtxModels[modelIdx];
+		CabacModel model = mCtxModels[modelIdx];
 		int idx = model.state << 1;
 
 		if (bit != model.MPSbit)

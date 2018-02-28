@@ -1,22 +1,22 @@
-package org.terifan.compression.arithmetic;
+package org.terifan.compression.basic_arithmetic;
 
 import java.io.IOException;
 import org.terifan.compression.io.BitInputStream;
 
 
-public class ArithmeticDecoder
+public class BasicArithmeticDecoder
 {
 	private BitInputStream mInputStream;
-	private ArithmeticModel mModel;
+	private BasicArithmeticModel mModel;
 
 
-	public ArithmeticDecoder(ArithmeticModel aModel, BitInputStream aInputStream) throws IOException
+	public BasicArithmeticDecoder(BasicArithmeticModel aModel, BitInputStream aInputStream) throws IOException
 	{
 		aInputStream.setReturnZeroOnEOF(true);
 
 		mModel = aModel;
 		mInputStream = aInputStream;
-		for (int i = 0; i < ArithmeticModel.CODE_VALUE_SIZE + 2; i++)
+		for (int i = 0; i < BasicArithmeticModel.CODE_VALUE_SIZE + 2; i++)
 		{
 			mModel.mValue <<= 1;
 			mModel.mValue += readBit();
@@ -24,7 +24,7 @@ public class ArithmeticDecoder
 	}
 
 
-	public int decode(ArithmeticContext aContext) throws IOException
+	public int decode(BasicArithmeticContext aContext) throws IOException
 	{
 		long range = mModel.mHigh - mModel.mLow;
 		int symbol = binarySearchSymbol(aContext, ((mModel.mValue - mModel.mLow + 1) * aContext.mSymbolCum[0] - 1) / range);
@@ -33,19 +33,19 @@ public class ArithmeticDecoder
 
 		for (;;)
 		{
-			if (mModel.mLow >= ArithmeticModel.Q2)
+			if (mModel.mLow >= BasicArithmeticModel.Q2)
 			{
-				mModel.mValue -= ArithmeticModel.Q2;
-				mModel.mLow -= ArithmeticModel.Q2;
-				mModel.mHigh -= ArithmeticModel.Q2;
+				mModel.mValue -= BasicArithmeticModel.Q2;
+				mModel.mLow -= BasicArithmeticModel.Q2;
+				mModel.mHigh -= BasicArithmeticModel.Q2;
 			}
-			else if (mModel.mLow >= ArithmeticModel.Q1 && mModel.mHigh <= ArithmeticModel.Q3)
+			else if (mModel.mLow >= BasicArithmeticModel.Q1 && mModel.mHigh <= BasicArithmeticModel.Q3)
 			{
-				mModel.mValue -= ArithmeticModel.Q1;
-				mModel.mLow -= ArithmeticModel.Q1;
-				mModel.mHigh -= ArithmeticModel.Q1;
+				mModel.mValue -= BasicArithmeticModel.Q1;
+				mModel.mLow -= BasicArithmeticModel.Q1;
+				mModel.mHigh -= BasicArithmeticModel.Q1;
 			}
-			else if (mModel.mHigh > ArithmeticModel.Q2)
+			else if (mModel.mHigh > BasicArithmeticModel.Q2)
 			{
 				break;
 			}
@@ -61,7 +61,7 @@ public class ArithmeticDecoder
 	}
 
 
-	private int binarySearchSymbol(ArithmeticContext aContext, long aSymbolCumFreq)
+	private int binarySearchSymbol(BasicArithmeticContext aContext, long aSymbolCumFreq)
 	{
 		int min = 1;
 		int max = aContext.mSymbolCount;

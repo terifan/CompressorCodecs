@@ -1,7 +1,7 @@
-package org.terifan.compression.arithmetic;
+package org.terifan.compression.basic_arithmetic;
 
 
-public class ArithmeticModel
+public class BasicArithmeticModel
 {
 	protected final static int CODE_VALUE_SIZE = 14;
 	protected final static long Q1 = (1L << CODE_VALUE_SIZE); // Q1 must be sufficiently large, but not so large as the unsigned long 4 * Q1 * (Q1 - 1) overflows.
@@ -16,12 +16,12 @@ public class ArithmeticModel
 	int mShifts;  // counts for magnifying low and high around Q2
 
 
-	public ArithmeticModel()
+	public BasicArithmeticModel()
 	{
 	}
 
 
-	void increment(ArithmeticContext aContext, int aSymbol)
+	void increment(BasicArithmeticContext aContext, int aSymbol)
 	{
 		if (!aContext.isAdaptive())
 		{

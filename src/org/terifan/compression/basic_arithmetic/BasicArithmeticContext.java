@@ -1,7 +1,7 @@
-package org.terifan.compression.arithmetic;
+package org.terifan.compression.basic_arithmetic;
 
 
-public class ArithmeticContext
+public class BasicArithmeticContext
 {
 	private final boolean mAdaptive;
 
@@ -12,19 +12,19 @@ public class ArithmeticContext
 	int[] mSymbolCum; // cumulative freq for symbols
 
 
-	public ArithmeticContext(int aSymbolCount, boolean aAdaptive)
+	public BasicArithmeticContext(int aSymbolCount, boolean aAdaptive)
 	{
 		this(aSymbolCount, aAdaptive, null);
 	}
 
 
-	public ArithmeticContext(int[] aInitialFrequencies, boolean aAdaptive)
+	public BasicArithmeticContext(int[] aInitialFrequencies, boolean aAdaptive)
 	{
 		this(aInitialFrequencies.length, aAdaptive, aInitialFrequencies);
 	}
 
 
-	private ArithmeticContext(int aSymbolCount, boolean aAdaptive, int[] aInitialFrequencies)
+	private BasicArithmeticContext(int aSymbolCount, boolean aAdaptive, int[] aInitialFrequencies)
 	{
 		mAdaptive = aAdaptive;
 		mSymbolCount = aSymbolCount;

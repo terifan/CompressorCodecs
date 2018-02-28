@@ -1,12 +1,12 @@
 package org.terifan.compression.cabac265;
 
-import static org.terifan.compression.cabac265.Cabac.*;
+import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
-public class CABAC_encoder_bitstream
+abstract class CabacEncoderBitstream
 {
 	int encBinCnt = 1;
-	context_model[] mCtxModels;
+	CabacModel[] mCtxModels;
 
 	byte[] data_mem;
 	int data_capacity;
@@ -25,7 +25,7 @@ public class CABAC_encoder_bitstream
 	int num_buffered_bytes;
 
 
-	CABAC_encoder_bitstream()
+	CabacEncoderBitstream()
 	{
 		data_mem = null;
 		data_capacity = 0;
@@ -49,19 +49,19 @@ public class CABAC_encoder_bitstream
 	}
 
 
-	int size()
+	public int size()
 	{
 		return data_size;
 	}
 
 
-	byte[] data()
+	public byte[] data()
 	{
 		return data_mem;
 	}
 
 
-	void write_CABAC_term_bit(int bit)
+	public void write_CABAC_term_bit(int bit)
 	{
 		range -= 2;
 
@@ -115,7 +115,7 @@ public class CABAC_encoder_bitstream
 
 	void write_CABAC_bit(int modelIdx, int bin)
 	{
-		context_model model = mCtxModels[modelIdx];
+		CabacModel model = mCtxModels[modelIdx];
 
 		encBinCnt++;
 
@@ -301,7 +301,7 @@ public class CABAC_encoder_bitstream
 	}
 
 
-	void flush_CABAC()
+	public void flush_CABAC()
 	{
 		if ((low >> (32 - bits_left)) != 0)
 		{

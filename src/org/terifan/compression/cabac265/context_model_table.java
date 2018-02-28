@@ -1,6 +1,6 @@
 package org.terifan.compression.cabac265;
 
-import static org.terifan.compression.cabac265.Cabac.*;
+import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
 public class context_model_table 

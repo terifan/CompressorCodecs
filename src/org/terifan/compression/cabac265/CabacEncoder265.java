@@ -1,23 +1,23 @@
 package org.terifan.compression.cabac265;
 
-import static org.terifan.compression.cabac265.Cabac.*;
+import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
-public class CabacEncoder extends CABAC_encoder_bitstream
+public class CabacEncoder265 extends CabacEncoderBitstream
 {
-	void set_context_models(context_model[] models)
+	public void setContextModels(CabacModel[] models)
 	{
 		mCtxModels = models;
 	}
 
 
-	void write_bit(int bit)
+	public void write_bit(int bit)
 	{
 		write_bits(bit, 1);
 	}
 
 
-	void write_CABAC_TU_bypass(int value, int cMax)
+	public void write_CABAC_TU_bypass(int value, int cMax)
 	{
 		for (int i = 0; i < value; i++)
 		{
@@ -31,7 +31,7 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	void write_CABAC_FL_bypass(int value, int n)
+	public void write_CABAC_FL_bypass(int value, int n)
 	{
 		while (n > 0)
 		{
@@ -41,9 +41,9 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	float RDBits_for_CABAC_bin(int modelIdx, int bit)
+	public float RDBits_for_CABAC_bin(int modelIdx, int bit)
 	{
-		context_model model = mCtxModels[modelIdx];
+		CabacModel model = mCtxModels[modelIdx];
 		int idx = model.state << 1;
 
 		if (bit != model.MPSbit)
@@ -55,7 +55,7 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	void write_CABAC_EGk(int val, int k)
+	public void write_CABAC_EGk(int val, int k)
 	{
 		while (val >= (1 << k))
 		{
@@ -74,7 +74,7 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	void write_uvlc(int value)
+	public void write_uvlc(int value)
 	{
 		assert value >= 0;
 
@@ -93,7 +93,7 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	void write_svlc(int value)
+	public void write_svlc(int value)
 	{
 		if (value == 0)
 		{
@@ -110,7 +110,7 @@ public class CabacEncoder extends CABAC_encoder_bitstream
 	}
 
 
-	void add_trailing_bits()
+	public void add_trailing_bits()
 	{
 		write_bit(1);
 		int nZeros = number_free_bits_in_byte();

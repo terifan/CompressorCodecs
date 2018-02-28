@@ -1,4 +1,4 @@
-package org.terifan.compression.arithmetic;
+package org.terifan.compression.basic_arithmetic;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,8 +33,8 @@ public class Test
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (final BitOutputStream bitOutputStream = new BitOutputStream(baos))
 			{
-				ArithmeticContext context = new ArithmeticContext(aSymbolCount, true);
-				ArithmeticModel model = new ArithmeticModel();
+				BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
+				BasicArithmeticModel model = new BasicArithmeticModel();
 
 //				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
 //				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
@@ -49,7 +49,7 @@ public class Test
 //				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
 //				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
 
-				ArithmeticEncoder encoder = new ArithmeticEncoder(model, bitOutputStream);
+				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(model, bitOutputStream);
 				for (int i = 0; i < aPlainText.length; i++)
 				{
 					int c = (aPlainText[i] & 255) - aAdjust;
@@ -61,9 +61,9 @@ public class Test
 		}
 
 		{
-			ArithmeticContext context = new ArithmeticContext(aSymbolCount, true);
-			ArithmeticModel model = new ArithmeticModel();
-			ArithmeticDecoder decoder = new ArithmeticDecoder(model, new BitInputStream(new ByteArrayInputStream(compressedData)));
+			BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
+			BasicArithmeticModel model = new BasicArithmeticModel();
+			BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(model, new BitInputStream(new ByteArrayInputStream(compressedData)));
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			for (int i = 0; i < aPlainText.length; i++)
 			{

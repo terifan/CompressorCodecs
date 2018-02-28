@@ -1,7 +1,7 @@
 package org.terifan.compression.cabac;
 
 
-interface Shared
+interface CabacConstants
 {
 	int [][] rLPS_table_64x4=
 	{
