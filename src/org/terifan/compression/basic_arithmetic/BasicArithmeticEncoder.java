@@ -9,7 +9,7 @@ public class BasicArithmeticEncoder
 	private BitOutputStream mOutputStream;
 	private BasicArithmeticModel mModel;
 
-	
+
 	public BasicArithmeticEncoder(BasicArithmeticModel aModel, BitOutputStream aOutputStream)
 	{
 		mOutputStream = aOutputStream;
@@ -50,11 +50,14 @@ public class BasicArithmeticEncoder
 			mModel.mHigh <<= 1;
 		}
 
-		mModel.increment(aContext, symbol);
+		if (aContext.isAdaptive())
+		{
+			mModel.increment(aContext, symbol);
+		}
 	}
 
 
-	public void encodeEnd() throws IOException
+	public void stopEncoding() throws IOException
 	{
 		mModel.mShifts++;
 		writeBit(mModel.mLow < BasicArithmeticModel.Q1 ? 0 : 1);

@@ -23,11 +23,6 @@ public class BasicArithmeticModel
 
 	void increment(BasicArithmeticContext aContext, int aSymbol)
 	{
-		if (!aContext.isAdaptive())
-		{
-			return;
-		}
-
 		if (aContext.mSymbolCum[0] >= MAX_CUMULATIVE_FREQUENCY)
 		{
 			int c = 0;

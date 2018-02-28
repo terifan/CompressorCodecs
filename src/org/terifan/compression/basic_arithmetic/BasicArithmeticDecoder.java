@@ -56,7 +56,12 @@ public class BasicArithmeticDecoder
 		}
 
 		int character = aContext.mSymbolToChar[symbol];
-		mModel.increment(aContext, symbol);
+
+		if (aContext.isAdaptive())
+		{
+			mModel.increment(aContext, symbol);
+		}
+
 		return character;
 	}
 

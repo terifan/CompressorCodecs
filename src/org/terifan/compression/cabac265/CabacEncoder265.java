@@ -69,7 +69,7 @@ public class CabacEncoder265 extends CabacEncoderBitstream
 		while (k > 0)
 		{
 			k--;
-			write_CABAC_bypass((val >> k) & 1);
+			write_CABAC_bypass((val >>> k) & 1);
 		}
 	}
 

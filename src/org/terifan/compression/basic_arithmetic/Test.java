@@ -55,7 +55,7 @@ public class Test
 					int c = (aPlainText[i] & 255) - aAdjust;
 					encoder.encode(context, c);
 				}
-				encoder.encodeEnd();
+				encoder.stopEncoding();
 			}
 			compressedData = baos.toByteArray();
 		}

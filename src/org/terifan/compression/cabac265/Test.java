@@ -26,7 +26,7 @@ public class Test
 				encoder.write_CABAC_EGk(682, 2);
 				encoder.write_CABAC_term_bit(1);
 //				encoder.add_trailing_bits();
-				encoder.flush_CABAC();
+				encoder.stopEncoding();
 
 				data = Arrays.copyOfRange(encoder.data(), 0, encoder.size());
 			}

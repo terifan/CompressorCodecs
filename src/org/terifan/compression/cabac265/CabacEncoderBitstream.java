@@ -196,7 +196,7 @@ abstract class CabacEncoderBitstream
 	{
 		while (vlc_buffer_len >= 8)
 		{
-			append_byte((vlc_buffer >> (vlc_buffer_len - 8)) & 0xFF);
+			append_byte((vlc_buffer >>> (vlc_buffer_len - 8)) & 0xFF);
 			vlc_buffer_len -= 8;
 		}
 
@@ -301,9 +301,9 @@ abstract class CabacEncoderBitstream
 	}
 
 
-	public void flush_CABAC()
+	public void stopEncoding()
 	{
-		if ((low >> (32 - bits_left)) != 0)
+		if ((low >>> (32 - bits_left)) != 0)
 		{
 			append_byte(buffered_byte + 1);
 			while (num_buffered_bytes > 1)
@@ -328,7 +328,7 @@ abstract class CabacEncoderBitstream
 			}
 		}
 
-		write_bits(low >> 8, 24 - bits_left);
+		write_bits(low >>> 8, 24 - bits_left);
 	}
 
 
@@ -340,7 +340,7 @@ abstract class CabacEncoderBitstream
 
 		while (vlc_buffer_len >= 8)
 		{
-			append_byte((vlc_buffer >> (vlc_buffer_len - 8)) & 0xFF);
+			append_byte((vlc_buffer >>> (vlc_buffer_len - 8)) & 0xFF);
 			vlc_buffer_len -= 8;
 		}
 	}

@@ -30,7 +30,7 @@ public class TestEfficiencyGolomb
 
 			int entropy = 0;
 
-			int [] values = new int[1000];
+			int [] values = new int[10000];
 			Random rnd = new Random();
 			for (int i = 0; i < values.length; i++)
 			{
@@ -100,20 +100,22 @@ public class TestEfficiencyGolomb
 				t = System.nanoTime()-t;
 			}
 
-			System.out.println("Arith - Size: "+buffer.length+", Time: "+t/1000000);
+			System.out.println("BitAri - Size: "+buffer.length+", Time: "+t/1000000);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				BitOutputStream bis = new BitOutputStream(baos);
-				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(new BasicArithmeticModel(), bis);
-				BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
-				for (int i = 0; i < values.length; i++)
+				try (BitOutputStream bis = new BitOutputStream(baos))
 				{
-					encoder.encode(context, values[i]);
+					BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(new BasicArithmeticModel(), bis);
+					BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
+					for (int i = 0; i < values.length; i++)
+					{
+						encoder.encode(context, values[i]);
+					}
+					encoder.stopEncoding();
 				}
-				encoder.encodeEnd();
 				buffer = baos.toByteArray();
 			}
 
@@ -142,10 +144,11 @@ public class TestEfficiencyGolomb
 
 				for (int i = 0; i < values.length; i++)
 				{
-					encoder.write_CABAC_EGk(values[i], 8);
+					encoder.write_CABAC_EGk(values[i], 0);
 				}
+
 				encoder.write_CABAC_term_bit(1);
-				encoder.flush_CABAC();
+				encoder.stopEncoding();
 
 				buffer = Arrays.copyOfRange(encoder.data(), 0, encoder.size());
 			}
@@ -160,7 +163,7 @@ public class TestEfficiencyGolomb
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					int b = decoder.decode_CABAC_EGk_bypass(8);
+					int b = decoder.decode_CABAC_EGk_bypass(0);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
