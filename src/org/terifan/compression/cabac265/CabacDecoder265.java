@@ -3,8 +3,11 @@ package org.terifan.compression.cabac265;
 import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
+// https://github.com/strukturag/libde265/blob/master/libde265/cabac.cc
 public class CabacDecoder265
 {
+	private final static int MAX_PREFIX = 32;
+
 	byte[] bitstream;
 	int bitstream_curr;
 	int bitstream_end;
@@ -286,34 +289,26 @@ public class CabacDecoder265
 		return (prefix << cRiceParam) | suffix;
 	}
 
-	final static int MAX_PREFIX = 32;
-
 
 	public int decode_CABAC_EGk_bypass(int k)
 	{
 		int base = 0;
 		int n = k;
 
-		for (;;)
+		while (decode_CABAC_bypass() != 0)
 		{
-			int bit = decode_CABAC_bypass();
-			if (bit == 0)
-			{
-				break;
-			}
-			else
-			{
-				base += 1 << n;
-				n++;
-			}
+			base += 1 << n;
+			n++;
 
 			if (n == k + MAX_PREFIX)
 			{
+				System.out.println("err");
 				return 0; // TODO: error
 			}
 		}
 
 		int suffix = decode_CABAC_FL_bypass(n);
+
 		return base + suffix;
 	}
 }

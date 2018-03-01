@@ -60,6 +60,15 @@ abstract class CabacEncoderBitstream
 		return data_mem;
 	}
 
+public void write_startcode()
+{
+  check_size_and_resize(3);
+
+  data_mem[ data_size+0 ] = 0;
+  data_mem[ data_size+1 ] = 0;
+  data_mem[ data_size+2 ] = 1;
+  data_size+=3;
+}
 
 	public void write_CABAC_term_bit(int bit)
 	{

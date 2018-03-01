@@ -141,6 +141,7 @@ public class TestEfficiencyGolomb
 				};
 
 				CabacEncoder265 encoder = new CabacEncoder265();
+				encoder.write_startcode();
 
 				for (int i = 0; i < values.length; i++)
 				{
