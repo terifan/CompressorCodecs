@@ -10,14 +10,20 @@ public class BasicArithmeticEncoder
 	private BasicArithmeticModel mModel;
 
 
-	public BasicArithmeticEncoder(BasicArithmeticModel aModel, BitOutputStream aOutputStream)
+	public BasicArithmeticEncoder(BitOutputStream aOutputStream)
+	{
+		this(aOutputStream, new BasicArithmeticModel());
+	}
+
+
+	public BasicArithmeticEncoder(BitOutputStream aOutputStream, BasicArithmeticModel aModel)
 	{
 		mOutputStream = aOutputStream;
 		mModel = aModel;
 	}
 
 
-	public void encode(BasicArithmeticContext aContext, int aCharacter) throws IOException
+	public void encode(int aCharacter, BasicArithmeticContext aContext) throws IOException
 	{
 		int symbol = aContext.mCharToSymbol[aCharacter];
 		long range = mModel.mHigh - mModel.mLow;

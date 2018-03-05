@@ -77,39 +77,39 @@ public class DiracDecoder
 	}
 
 
-	private long decode(int bin, int max_bin) throws IOException
+	private long decode(int aBin, int aMaxBin) throws IOException
 	{
-		int info_ctx = (max_bin + 1);
+		int info_ctx = (aMaxBin + 1);
 		long value = 1;
-		while (!decodeBit(bin))
+		while (!decodeBit(aBin))
 		{
 			value <<= 1;
 			if (decodeBit(info_ctx))
 			{
 				value += 1;
 			}
-			if (bin < max_bin)
+			if (aBin < aMaxBin)
 			{
-				bin += 1;
+				aBin += 1;
 			}
 		}
 		value -= 1;
 		return value;
 	}
-	
-	
-	public int decodeUInt(int bin, int max_bin) throws IOException
+
+
+	public int decodeUInt(int aBin, int aMaxBin) throws IOException
 	{
-		return (int)decode(bin, max_bin);
+		return (int)decode(aBin, aMaxBin);
 	}
 
 
-	public int decodeSInt(int bin, int max_bin) throws IOException
+	public int decodeSInt(int aBin, int aMaxBin) throws IOException
 	{
-		long magnitude = decode(bin, max_bin);
+		long magnitude = decode(aBin, aMaxBin);
 		if (magnitude != 0)
 		{
-			if (decodeBit(max_bin + 2))
+			if (decodeBit(aMaxBin + 2))
 			{
 				return (int)-magnitude;
 			}

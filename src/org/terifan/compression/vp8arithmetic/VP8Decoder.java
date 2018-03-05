@@ -21,9 +21,9 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public int decodeBit(int prob) throws IOException
+	public int decodeBit(int aProb) throws IOException
 	{
-		int split = (mRange * prob) >> 8;
+		int split = (mRange * aProb) >> 8;
 
 		int valueSplit = (split + 1) << 8;
 

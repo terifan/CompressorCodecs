@@ -155,7 +155,7 @@ public class TestPerformance
 			{
 				encoder.encodeBit(bits[i]==1, 0);
 			}
-			encoder.finish();
+			encoder.stopEncoding();
 			bos.close();
 			t1 = System.nanoTime()-t1;
 			buffer = baos.toByteArray();

@@ -31,29 +31,14 @@ public class Test
 
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			try (final BitOutputStream bitOutputStream = new BitOutputStream(baos))
+			try (BitOutputStream bitOutputStream = new BitOutputStream(baos))
 			{
 				BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
-				BasicArithmeticModel model = new BasicArithmeticModel();
-
-//				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['b'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['i'-aAdjust]);
-//				model.updateModel(context, context.mCharToSymbol['g'-aAdjust]);
-
-				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(model, bitOutputStream);
+				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bitOutputStream);
 				for (int i = 0; i < aPlainText.length; i++)
 				{
 					int c = (aPlainText[i] & 255) - aAdjust;
-					encoder.encode(context, c);
+					encoder.encode(c, context);
 				}
 				encoder.stopEncoding();
 			}
@@ -62,8 +47,7 @@ public class Test
 
 		{
 			BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
-			BasicArithmeticModel model = new BasicArithmeticModel();
-			BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(model, new BitInputStream(new ByteArrayInputStream(compressedData)));
+			BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(compressedData)));
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			for (int i = 0; i < aPlainText.length; i++)
 			{

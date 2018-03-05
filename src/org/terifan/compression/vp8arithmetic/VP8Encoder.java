@@ -41,6 +41,7 @@ public class VP8Encoder implements AutoCloseable
 		{
 			mRange = split;
 		}
+
 		if (mRange < 127)
 		{   // emit 'shift' bits out and renormalize
 			int shift = KNORM[mRange];
@@ -52,6 +53,7 @@ public class VP8Encoder implements AutoCloseable
 				flush();
 			}
 		}
+
 		return aBit;
 	}
 
@@ -107,32 +109,24 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	private void resize() throws IOException
-	{
-		mOutputStream.write(mBuffer, 0, mPos - 1);
-		mBuffer[0] = mBuffer[mPos - 1];
-		mPos = 1;
-	}
-
-
 	private void flush() throws IOException
 	{
 		int s = 8 + mNbBits;
 		int bits = mValue >> s;
 
-		assert mNbBits >= 0;
-
 		mValue -= bits << s;
 		mNbBits -= 8;
+
 		if ((bits & 0xff) != 0xff)
 		{
 			if (mPos + mRun >= mMaxPos)
 			{
-				resize(); //mRun + 1
+				mOutputStream.write(mBuffer, 0, mPos - 1);
+				mBuffer[0] = mBuffer[mPos - 1];
+				mPos = 1;
 			}
 			if ((bits & 0x100) != 0)
 			{
-				// overflow . propagate carry over pending 0xff's
 				if (mPos > 0)
 				{
 					mBuffer[mPos - 1]++;
@@ -150,7 +144,7 @@ public class VP8Encoder implements AutoCloseable
 		}
 		else
 		{
-			mRun++;   // delay writing of bytes 0xff, pending eventual carry.
+			mRun++;
 		}
 	}
 }

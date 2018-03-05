@@ -54,7 +54,6 @@ public class DiracEncoder
 			}
 			else
 			{
-				// Bits agree - output them
 				mOutput.writeBit((mLowCode & 0x8000) != 0 ? 1 : 0);
 
 				for (; mUnderflow > 0; mUnderflow--)
@@ -70,48 +69,49 @@ public class DiracEncoder
 	}
 
 
-	public void encodeUInt(long the_int, int bin, int max_bin) throws IOException
+	public void encodeUInt(long aValue, int aBin, int aMaxBin) throws IOException
 	{
-		long value = the_int + 1;
-		int info_ctx = max_bin + 1;
-		long top_bit = 1;
+		long value = aValue + 1;
+		int info_ctx = aMaxBin + 1;
+		long topBit = 1;
+
+		long maxValue = 1;
+		while (value > maxValue)
 		{
-			long max_value = 1;
-			while (value > max_value)
-			{
-				top_bit <<= 1;
-				max_value <<= 1;
-				max_value += 1;
-			}
+			topBit <<= 1;
+			maxValue <<= 1;
+			maxValue += 1;
 		}
-		boolean stop = top_bit == 1;
-		encodeBit(stop, bin);
+
+		boolean stop = topBit == 1;
+		encodeBit(stop, aBin);
+
 		while (!stop)
 		{
-			top_bit >>= 1;
-			encodeBit((value & top_bit) != 0, info_ctx);
-			if (bin < max_bin)
+			topBit >>= 1;
+			encodeBit((value & topBit) != 0, info_ctx);
+			if (aBin < aMaxBin)
 			{
-				bin++;
+				aBin++;
 			}
-			stop = top_bit == 1;
-			encodeBit(stop, bin);
+			stop = topBit == 1;
+			encodeBit(stop, aBin);
 		}
 	}
 
 
-	public void encodeSInt(int value, int bin1, int max_bin) throws IOException
+	public void encodeSInt(int aValue, int aBin1, int aMaxBin) throws IOException
 	{
-		encodeUInt(Math.abs((long)value), bin1, max_bin);
+		encodeUInt(Math.abs((long)aValue), aBin1, aMaxBin);
 
-		if (value != 0)
+		if (aValue != 0)
 		{
-			encodeBit((value < 0), max_bin + 2);
+			encodeBit((aValue < 0), aMaxBin + 2);
 		}
 	}
 
 
-	public void finish() throws IOException
+	public void stopEncoding() throws IOException
 	{
 		while (((mLowCode + mRange - 1) ^ mLowCode) < 0x8000)
 		{

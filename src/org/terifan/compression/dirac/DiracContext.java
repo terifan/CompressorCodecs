@@ -3,7 +3,7 @@ package org.terifan.compression.dirac;
 
 class DiracContext
 {
-	private final static int[] lut = new int[]
+	private final static int[] LUT = new int[]
 	{
 		0, 2, 5, 8, 11, 15, 20, 24,
 		29, 35, 41, 47, 53, 60, 67, 74,
@@ -65,11 +65,11 @@ class DiracContext
 	{
 		if (aSymbol)
 		{
-			mProb -= lut[mProb >> 8];
+			mProb -= LUT[mProb >> 8];
 		}
 		else
 		{
-			mProb += lut[255 - (mProb >> 8)];
+			mProb += LUT[255 - (mProb >> 8)];
 		}
 	}
 }

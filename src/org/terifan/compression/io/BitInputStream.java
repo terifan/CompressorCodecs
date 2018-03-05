@@ -7,7 +7,7 @@ import java.io.InputStream;
 /**
  * BitInputStream allow reading bits from the underlying stream.
  */
-public class BitInputStream //extends InputStream
+public class BitInputStream implements AutoCloseable
 {
 	private InputStream mInputStream;
 	private int mBitBuffer;
@@ -76,6 +76,17 @@ public class BitInputStream //extends InputStream
 		}
 
 		return output;
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		if (mInputStream != null)
+		{
+			mInputStream.close();
+			mInputStream = null;
+		}
 	}
 
 

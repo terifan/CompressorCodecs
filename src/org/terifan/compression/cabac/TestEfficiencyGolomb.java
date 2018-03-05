@@ -8,7 +8,6 @@ import java.util.Random;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticContext;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticDecoder;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticEncoder;
-import org.terifan.compression.basic_arithmetic.BasicArithmeticModel;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
@@ -108,11 +107,11 @@ public class TestEfficiencyGolomb
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try (BitOutputStream bis = new BitOutputStream(baos))
 				{
-					BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(new BasicArithmeticModel(), bis);
+					BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bis);
 					BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
 					for (int i = 0; i < values.length; i++)
 					{
-						encoder.encode(context, values[i]);
+						encoder.encode(values[i], context);
 					}
 					encoder.stopEncoding();
 				}
@@ -120,7 +119,7 @@ public class TestEfficiencyGolomb
 			}
 
 			{
-				BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BasicArithmeticModel(), new BitInputStream(new ByteArrayInputStream(buffer)));
+				BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(buffer)));
 				BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)

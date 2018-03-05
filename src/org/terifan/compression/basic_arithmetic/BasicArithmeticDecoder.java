@@ -10,7 +10,13 @@ public class BasicArithmeticDecoder
 	private BasicArithmeticModel mModel;
 
 
-	public BasicArithmeticDecoder(BasicArithmeticModel aModel, BitInputStream aInputStream) throws IOException
+	public BasicArithmeticDecoder(BitInputStream aInputStream) throws IOException
+	{
+		this(aInputStream, new BasicArithmeticModel());
+	}
+
+
+	public BasicArithmeticDecoder(BitInputStream aInputStream, BasicArithmeticModel aModel) throws IOException
 	{
 		aInputStream.setReturnZeroOnEOF(true);
 
