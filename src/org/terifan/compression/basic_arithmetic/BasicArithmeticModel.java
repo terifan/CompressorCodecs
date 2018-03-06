@@ -1,6 +1,11 @@
 package org.terifan.compression.basic_arithmetic;
 
 
+/*
+ * If you are not familiar with arithmetic compression, you should read 
+ * I. E. Witten, R. M. Neal, and J. G. Cleary, Communications of the ACM, 
+ * Vol. 30, pp. 520-540 (1987), from which much have been borrowed.
+ */
 public class BasicArithmeticModel
 {
 	protected final static int CODE_VALUE_SIZE = 14;

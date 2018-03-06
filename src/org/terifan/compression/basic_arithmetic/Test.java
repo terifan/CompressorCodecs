@@ -14,8 +14,12 @@ public class Test
 	{
 		try
 		{
-			test("aabaabaacaaabbaababaaaacaabababaaaaaacabbbbabaa".getBytes(), 3, 'a'); // 2bits/s=11.75 bytes, huffman=8.25 bytes, ari=8 bytes
-			test("big biggles biggeled olbig bigling boggled bigs".getBytes(), 256, 0);
+			test("aabaabaacaaabbaababaaaacaabababaaaaaacabbbbabaaaaba".getBytes(), 3, 'a', false);
+			
+			String s = "big biggles biggeled olbig bigling boggled bigs";
+
+			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, false);
+			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, true);
 		}
 		catch (Throwable e)
 		{
@@ -24,35 +28,63 @@ public class Test
 	}
 
 
-	private static void test(byte[] aPlainText, int aSymbolCount, int aAdjust) throws IOException
+	private static void test(byte[] aPlainText, int aSymbolCount, int aAdjust, boolean aPredict) throws IOException
 	{
 		byte [] compressedData;
 		byte [] decompressedData;
 
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			try (BitOutputStream bitOutputStream = new BitOutputStream(baos))
+
+			try (BitOutputStream bos = new BitOutputStream(baos))
 			{
-				BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
-				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bitOutputStream);
-				for (int i = 0; i < aPlainText.length; i++)
+				BasicArithmeticContext[] context = new BasicArithmeticContext[aSymbolCount];
+				for (int i = 0; i < (aPredict ? aSymbolCount : 1); i++)
+				{
+					context[i] = new BasicArithmeticContext(aSymbolCount, true);
+				}
+
+				BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bos);
+				for (int i = 0, p = 0; i < aPlainText.length; i++)
 				{
 					int c = (aPlainText[i] & 255) - aAdjust;
-					encoder.encode(c, context);
+
+					encoder.encode(c, context[p]);
+
+					if (aPredict)
+					{
+						p = c;
+					}
 				}
 				encoder.stopEncoding();
 			}
+
 			compressedData = baos.toByteArray();
 		}
 
 		{
-			BasicArithmeticContext context = new BasicArithmeticContext(aSymbolCount, true);
-			BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(compressedData)));
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			for (int i = 0; i < aPlainText.length; i++)
+			BasicArithmeticContext[] context = new BasicArithmeticContext[aSymbolCount];
+			for (int i = 0; i < (aPredict ? aSymbolCount : 1); i++)
 			{
-				baos.write(decoder.decode(context) + aAdjust);
+				context[i] = new BasicArithmeticContext(aSymbolCount, true);
 			}
+			
+			BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(compressedData)));
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			for (int i = 0, p = 0; i < aPlainText.length; i++)
+			{
+				int c = decoder.decode(context[p]);
+
+				baos.write(c + aAdjust);
+
+				if (aPredict)
+				{
+					p = c;
+				}
+			}
+
 			decompressedData = baos.toByteArray();
 		}
 
