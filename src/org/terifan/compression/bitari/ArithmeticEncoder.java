@@ -205,24 +205,25 @@ public class ArithmeticEncoder
 	}
 
 
-	public void encodeUnaryExpGolomb(int aValue, ArithmeticContext aContext) throws IOException
+	public void encodeExpGolomb(int aValue, ArithmeticContext[] aContext) throws IOException
 	{
 		if (aValue == 0)
 		{
-			encode(0, aContext);
+			encode(0, aContext[0]);
 		}
 		else
 		{
-			encode(1, aContext);
+			int i = 0;
+			encode(1, aContext[1]);
 			int L = aValue;
 			int K = 1;
 			while ((--L > 0) && (++K <= GOLOMB_EXP_START))
 			{
-				encode(1, aContext);
+				encode(1, aContext[1]);
 			}
 			if (aValue < GOLOMB_EXP_START)
 			{
-				encode(0, aContext);
+				encode(0, aContext[1]);
 			}
 			else
 			{

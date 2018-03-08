@@ -1,5 +1,7 @@
 package org.terifan.compression.cabac265;
 
+import java.io.IOException;
+import java.io.InputStream;
 import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
@@ -8,42 +10,28 @@ public class CabacDecoder265
 {
 	private final static int MAX_PREFIX = 32;
 
-	byte[] bitstream;
-	int bitstream_curr;
-	int bitstream_end;
-
-	int decoder_range;
-	int decoder_value;
-	int bits_needed;
-
-	int logcnt = 1;
+	private InputStream mInputStream;
+	private int decoder_range;
+	private int decoder_value;
+	private int bits_needed;
 
 
-	public CabacDecoder265(byte[] bitstream, int length)
+	public CabacDecoder265(InputStream aInputStream) throws IOException
 	{
-		this.bitstream = bitstream;
-		bitstream_curr = 0;
-		bitstream_end = length;
+		mInputStream = aInputStream;
 
 		decoder_range = 510;
 		bits_needed = 8;
 
-		decoder_value = 0;
+		decoder_value = mInputStream.read() << 8;
+		bits_needed -= 8;
 
-		if (length > 0)
-		{
-			decoder_value = (0xff & bitstream[bitstream_curr++]) << 8;
-			bits_needed -= 8;
-		}
-		if (length > 1)
-		{
-			decoder_value |= (0xff & bitstream[bitstream_curr++]);
-			bits_needed -= 8;
-		}
+		decoder_value |= mInputStream.read();
+		bits_needed -= 8;
 	}
 
 
-	public int decode_CABAC_bit(CabacModel model)
+	public int decode_CABAC_bit(CabacModel model) throws IOException
 	{
 		int decoded_bit;
 		int LPS = LPS_table[model.state][(decoder_range >> 6) - 4];
@@ -67,9 +55,10 @@ public class CabacDecoder265
 				if (bits_needed == 0)
 				{
 					bits_needed = -8;
-					if (bitstream_curr < bitstream_end)
+					int b = mInputStream.read();
+					if (b >= 0)
 					{
-						decoder_value |= 0xff & bitstream[bitstream_curr++];
+						decoder_value |= b;
 					}
 				}
 			}
@@ -99,22 +88,21 @@ public class CabacDecoder265
 
 			if (bits_needed >= 0)
 			{
-				if (bitstream_curr < bitstream_end)
+				int b = mInputStream.read();
+				if (b >= 0)
 				{
-					decoder_value |= (0xff & bitstream[bitstream_curr++]) << bits_needed;
+					decoder_value |= b << bits_needed;
 				}
 
 				bits_needed -= 8;
 			}
 		}
 
-		logcnt++;
-
 		return decoded_bit;
 	}
 
 
-	public int decode_CABAC_term_bit()
+	public int decode_CABAC_term_bit() throws IOException
 	{
 		decoder_range -= 2;
 		int scaledRange = decoder_range << 7;
@@ -123,43 +111,42 @@ public class CabacDecoder265
 		{
 			return 1;
 		}
-		else
+
+		// there is a while loop in the standard, but it will always be executed only once
+		if (scaledRange < (256 << 7))
 		{
-			// there is a while loop in the standard, but it will always be executed only once
+			decoder_range = scaledRange >> 6;
+			decoder_value *= 2;
 
-			if (scaledRange < (256 << 7))
+			bits_needed++;
+			if (bits_needed == 0)
 			{
-				decoder_range = scaledRange >> 6;
-				decoder_value *= 2;
+				bits_needed = -8;
 
-				bits_needed++;
-				if (bits_needed == 0)
+				int b = mInputStream.read();
+				if (b >= 0)
 				{
-					bits_needed = -8;
-
-					if (bitstream_curr < bitstream_end)
-					{
-						decoder_value += 0xff & bitstream[bitstream_curr++];
-					}
+					decoder_value += b;
 				}
 			}
-
-			return 0;
 		}
+
+		return 0;
 	}
 
 
-	public int decode_CABAC_bypass()
+	public int decode_CABAC_bypass() throws IOException
 	{
 		decoder_value <<= 1;
 		bits_needed++;
 
 		if (bits_needed >= 0)
 		{
-			if (bitstream_end > bitstream_curr)
+			int b = mInputStream.read();
+			if (b >= 0)
 			{
 				bits_needed = -8;
-				decoder_value |= 0xff & bitstream[bitstream_curr++];
+				decoder_value |= b;
 			}
 		}
 
@@ -175,13 +162,11 @@ public class CabacDecoder265
 			bit = 0;
 		}
 
-		logcnt++;
-
 		return bit;
 	}
 
 
-	public int decode_CABAC_TU_bypass(int cMax)
+	public int decode_CABAC_TU_bypass(int cMax) throws IOException
 	{
 		for (int i = 0; i < cMax; i++)
 		{
@@ -196,7 +181,7 @@ public class CabacDecoder265
 	}
 
 
-	public int decode_CABAC_TU(int cMax, CabacModel model)
+	public int decode_CABAC_TU(int cMax, CabacModel model) throws IOException
 	{
 		for (int i = 0; i < cMax; i++)
 		{
@@ -211,16 +196,17 @@ public class CabacDecoder265
 	}
 
 
-	public int decode_CABAC_FL_bypass_parallel(int nBits)
+	public int decode_CABAC_FL_bypass_parallel(int nBits) throws IOException
 	{
 		decoder_value <<= nBits;
 		bits_needed += nBits;
 
 		if (bits_needed >= 0)
 		{
-			if (bitstream_end > bitstream_curr)
+			int b = mInputStream.read();
+			if (b >= 0)
 			{
-				int input = 0xff & bitstream[bitstream_curr++];
+				int input = b;
 				input <<= bits_needed;
 
 				bits_needed -= 8;
@@ -238,13 +224,11 @@ public class CabacDecoder265
 		// may happen with broken bitstreams
 		decoder_value -= value * scaled_range;
 
-		logcnt += nBits;
-
 		return value;
 	}
 
 
-	public int decode_CABAC_FL_bypass(int nBits)
+	public int decode_CABAC_FL_bypass(int nBits) throws IOException
 	{
 		int value = 0;
 
@@ -275,7 +259,7 @@ public class CabacDecoder265
 	}
 
 
-	public int decode_CABAC_TR_bypass(int cRiceParam, int cTRMax)
+	public int decode_CABAC_TR_bypass(int cRiceParam, int cTRMax) throws IOException
 	{
 		int prefix = decode_CABAC_TU_bypass(cTRMax >> cRiceParam);
 		if (prefix == 4)
@@ -290,7 +274,7 @@ public class CabacDecoder265
 	}
 
 
-	public int decode_CABAC_EGk_bypass(int k)
+	public int decode_CABAC_EGk_bypass(int k) throws IOException
 	{
 		int base = 0;
 		int n = k;

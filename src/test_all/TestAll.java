@@ -8,9 +8,14 @@ import java.util.Random;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticContext;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticDecoder;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticEncoder;
+import org.terifan.compression.bitari.ArithmeticContext;
+import org.terifan.compression.bitari.ArithmeticDecoder;
+import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.cabac.CabacContext;
 import org.terifan.compression.cabac.CabacDecoder;
 import org.terifan.compression.cabac.CabacEncoder;
+import org.terifan.compression.cabac265.CabacDecoder265;
+import org.terifan.compression.cabac265.CabacEncoder265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -23,28 +28,24 @@ public class TestAll
 	{
 		try
 		{
-			Random rnd = new Random(1);
+			Random rnd = new Random();
 
-			int symbolCountN = 4;
-			int symbolCount = 1 << symbolCountN;
-			int[] input = new int[65536];
+			int[] input = new int[100000];
+			
+			int[] bs = {2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,8};
+
+			int symbolCount = 1 << bs[bs.length - 1];
 
 			for (int i = 0; i < input.length; i++)
 			{
-				input[i] = rnd.nextInt(4 << rnd.nextInt(symbolCountN - 1));
+				input[i] = rnd.nextInt(1 << bs[rnd.nextInt(bs.length)]);
 			}
 
-			for (int i = 1; i < input.length; i++)
-			{
-				if (input[i - 1] == 1 << (symbolCountN - 1))
-				{
-					input[i] = 0;
-				}
-			}
-
-			System.out.printf("dirac %s%n", dirac(input, symbolCount));
-			System.out.printf("arith %s%n", arith(input, symbolCount));
-			System.out.printf("cabac %s%n", cabac(input, symbolCount));
+			System.out.printf("dirac    %s%n", dirac(input, symbolCount));
+			System.out.printf("arith    %s%n", arith(input, symbolCount));
+			System.out.printf("cabac264 %s%n", cabac(input, symbolCount));
+			System.out.printf("cabac265 %s%n", cabac265(input, symbolCount));
+			System.out.printf("bitarith %s%n", bitarith(input, symbolCount));
 		}
 		catch (Throwable e)
 		{
@@ -124,6 +125,39 @@ public class TestAll
 	}
 
 
+	private static int cabac265(int[] aInput, int aSymbolCount) throws IOException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		{
+			CabacEncoder265 encoder = new CabacEncoder265(baos);
+
+			for (int i = 0; i < aInput.length; i++)
+			{
+				encoder.write_CABAC_EGk(aInput[i], 0);
+			}
+
+			encoder.encodeFinal(1);
+			encoder.stopEncoding();
+		}
+
+		int[] output = new int[aInput.length];
+
+		{
+			CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(baos.toByteArray()));
+
+			for (int i = 0; i < aInput.length; i++)
+			{
+				output[i] = (int)decoder.decode_CABAC_EGk_bypass(0);
+			}
+		}
+
+		assertEquals(aInput, output);
+
+		return baos.size();
+	}
+
+
 	private static int arith(int[] aInput, int aSymbolCount) throws IOException
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -150,6 +184,50 @@ public class TestAll
 			for (int i = 0; i < aInput.length; i++)
 			{
 				output[i] = decoder.decode(context);
+			}
+		}
+
+		assertEquals(aInput, output);
+
+		return baos.size();
+	}
+
+
+	private static int bitarith(int[] aInput, int aSymbolCount) throws IOException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		{
+			ArithmeticContext[] context = new ArithmeticContext[20];
+			for (int i = 0; i < context.length; i++)
+			{
+				context[i] = new ArithmeticContext();
+			}
+			
+			ArithmeticEncoder encoder = new ArithmeticEncoder(baos);
+
+			for (int i = 0; i < aInput.length; i++)
+			{
+				encoder.encodeExpGolomb(aInput[i], context);
+			}
+
+			encoder.stopEncoding();
+		}
+
+		int[] output = new int[aInput.length];
+
+		{
+			ArithmeticContext[] context = new ArithmeticContext[20];
+			for (int i = 0; i < context.length; i++)
+			{
+				context[i] = new ArithmeticContext();
+			}
+			
+			ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(baos.toByteArray()));
+
+			for (int i = 0; i < aInput.length; i++)
+			{
+				output[i] = decoder.decodeExpGolomb(context);
 			}
 		}
 

@@ -245,9 +245,9 @@ public class ArithmeticDecoder
 	}
 
 	
-	public int decodeUnaryExpGolomb(ArithmeticContext aContext) throws IOException
+	public int decodeExpGolomb(ArithmeticContext[] aContext) throws IOException
 	{
-		if (decode(aContext) == 0)
+		if (decode(aContext[0]) == 0)
 		{
 			return 0;
 		}
@@ -255,10 +255,11 @@ public class ArithmeticDecoder
 		int K = 1;
 		int L;
 		int result = 0;
+		int i = 0;
 
 		do
 		{
-			L = decode(aContext);
+			L = decode(aContext[1]);
 			result++;
 			K++;
 		}

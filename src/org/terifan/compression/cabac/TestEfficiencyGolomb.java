@@ -78,10 +78,10 @@ public class TestEfficiencyGolomb
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ArithmeticEncoder encoder = new ArithmeticEncoder(baos);
-				ArithmeticContext context = new ArithmeticContext();
+				ArithmeticContext[] context = {new ArithmeticContext(),new ArithmeticContext()};
 				for (int i = 0; i < values.length; i++)
 				{
-					encoder.encodeUnaryExpGolomb(values[i], context);
+					encoder.encodeExpGolomb(values[i], context);
 				}
 				encoder.stopEncoding();
 				buffer = baos.toByteArray();
@@ -89,11 +89,11 @@ public class TestEfficiencyGolomb
 
 			{
 				ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(buffer));
-				ArithmeticContext context = new ArithmeticContext();
+				ArithmeticContext[] context = {new ArithmeticContext(),new ArithmeticContext()};
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					int b = decoder.decodeUnaryExpGolomb(context);
+					int b = decoder.decodeExpGolomb(context);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
@@ -139,18 +139,20 @@ public class TestEfficiencyGolomb
 					new CabacModel()
 				};
 
-				CabacEncoder265 encoder = new CabacEncoder265();
-				encoder.write_startcode();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				CabacEncoder265 encoder = new CabacEncoder265(baos);
+//				encoder.write_startcode();
 
 				for (int i = 0; i < values.length; i++)
 				{
 					encoder.write_CABAC_EGk(values[i], 0);
 				}
 
-				encoder.write_CABAC_term_bit(1);
+				encoder.encodeFinal(1);
 				encoder.stopEncoding();
 
-				buffer = Arrays.copyOfRange(encoder.data(), 0, encoder.size());
+//				buffer = Arrays.copyOfRange(encoder.data(), 0, encoder.size());
+				buffer = baos.toByteArray();
 			}
 
 			{
@@ -158,7 +160,7 @@ public class TestEfficiencyGolomb
 					new CabacModel()
 				};
 
-				CabacDecoder265 decoder = new CabacDecoder265(buffer, buffer.length);
+				CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer));
 
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
