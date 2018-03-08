@@ -52,6 +52,9 @@ public class TestAll
 				{
 					signed[i] = dis.readShort();
 					unsigned[i] = (signed[i] << 1) ^ (signed[i] >> 31);
+					
+//					System.out.printf("%5d", signed[i]);
+//					if ((i%64)==63)System.out.println();
 				}
 			}
 
