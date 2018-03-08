@@ -42,6 +42,11 @@ public class BasicArithmeticContext
 			mSymbolToChar[symbol] = character;
 			mSymbolFreq[symbol] = aInitialFrequencies == null ? 1 : 1 + aInitialFrequencies[character];
 			mSymbolCum[symbol - 1] = mSymbolCum[symbol] + mSymbolFreq[symbol];
+			
+			if ((long)mSymbolCum[symbol] + mSymbolFreq[symbol] >= BasicArithmeticModel.Q2)
+			{
+				throw new IllegalArgumentException("Cumulative frequencies too high: " + ((long)mSymbolCum[symbol] + mSymbolFreq[symbol]) + ", max: " + (BasicArithmeticModel.Q2 - 1));
+			}
 		}
 
 		mSymbolFreq[0] = 0;
