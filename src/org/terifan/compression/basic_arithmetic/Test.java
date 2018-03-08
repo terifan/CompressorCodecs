@@ -18,8 +18,8 @@ public class Test
 			
 			String s = "big biggles biggeled olbig bigling boggled bigs";
 
-			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, false);
-			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, true);
+			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, false);
+			test((s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s+s).getBytes(), 256, 0, true);
 		}
 		catch (Throwable e)
 		{
@@ -38,8 +38,8 @@ public class Test
 
 			try (BitOutputStream bos = new BitOutputStream(baos))
 			{
-				BasicArithmeticContext[] context = new BasicArithmeticContext[aSymbolCount];
-				for (int i = 0; i < (aPredict ? aSymbolCount : 1); i++)
+				BasicArithmeticContext[] context = new BasicArithmeticContext[aPredict ? aSymbolCount : 1];
+				for (int i = 0; i < context.length; i++)
 				{
 					context[i] = new BasicArithmeticContext(aSymbolCount, true);
 				}
@@ -63,8 +63,8 @@ public class Test
 		}
 
 		{
-			BasicArithmeticContext[] context = new BasicArithmeticContext[aSymbolCount];
-			for (int i = 0; i < (aPredict ? aSymbolCount : 1); i++)
+			BasicArithmeticContext[] context = new BasicArithmeticContext[aPredict ? aSymbolCount : 1];
+			for (int i = 0; i < context.length; i++)
 			{
 				context[i] = new BasicArithmeticContext(aSymbolCount, true);
 			}
