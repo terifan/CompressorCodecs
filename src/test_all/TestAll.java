@@ -2,15 +2,18 @@ package test_all;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.util.Random;
+import java.util.zip.InflaterInputStream;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticContext;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticDecoder;
 import org.terifan.compression.basic_arithmetic.BasicArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
+import org.terifan.compression.bwt.BWT;
 import org.terifan.compression.cabac.CabacContext;
 import org.terifan.compression.cabac.CabacDecoder;
 import org.terifan.compression.cabac.CabacEncoder;
@@ -28,24 +31,51 @@ public class TestAll
 	{
 		try
 		{
-			Random rnd = new Random();
+//			Random rnd = new Random();
+//
+//			int[] input = new int[100000];
+//			
+//			int[] bs = {2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,8};
+//
+//			int symbolCount = 1 << bs[bs.length - 1];
+//
+//			for (int i = 0; i < input.length; i++)
+//			{
+//				input[i] = rnd.nextInt(1 << bs[rnd.nextInt(bs.length)]);
+//			}
 
-			int[] input = new int[100000];
-			
-			int[] bs = {2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,8};
-
-			int symbolCount = 1 << bs[bs.length - 1];
-
-			for (int i = 0; i < input.length; i++)
+			int[] unsigned = new int[81 * 56 * 6 * 8 * 8];
+			int[] signed = new int[81 * 56 * 6 * 8 * 8];
+			try (DataInputStream dis = new DataInputStream(new InflaterInputStream(TestAll.class.getResourceAsStream("swallowtail.jpg.data"))))
 			{
-				input[i] = rnd.nextInt(1 << bs[rnd.nextInt(bs.length)]);
+				for (int i = 0; i < unsigned.length; i++)
+				{
+					signed[i] = dis.readShort();
+					unsigned[i] = (signed[i] << 1) ^ (signed[i] >> 31);
+				}
 			}
 
-			System.out.printf("dirac    %s%n", dirac(input, symbolCount));
-			System.out.printf("arith    %s%n", arith(input, symbolCount));
-			System.out.printf("cabac264 %s%n", cabac(input, symbolCount));
-			System.out.printf("cabac265 %s%n", cabac265(input, symbolCount));
-			System.out.printf("bitarith %s%n", bitarith(input, symbolCount));
+			int symbolCount = 2048;
+
+			System.out.printf("dirac(S) %s%n", dirac(signed, symbolCount, true));
+			System.out.printf("dirac    %s%n", dirac(unsigned, symbolCount, false));
+			System.out.printf("arith    %s%n", arith(unsigned, symbolCount));
+			System.out.printf("cabac264 %s%n", cabac(unsigned, symbolCount));
+			System.out.printf("cabac265 %s%n", cabac265(unsigned, symbolCount));
+
+			System.out.println();
+			
+			for (int i = 0; i < unsigned.length; i += 1024)
+			{
+				BWT.encode(unsigned, i, Math.min(1024, unsigned.length - i));
+				BWT.encode(signed, i, Math.min(1024, unsigned.length - i));
+			}
+			
+			System.out.printf("dirac(S) %s%n", dirac(signed, symbolCount, true));
+			System.out.printf("dirac    %s%n", dirac(unsigned, symbolCount, false));
+			System.out.printf("arith    %s%n", arith(unsigned, symbolCount));
+			System.out.printf("cabac264 %s%n", cabac(unsigned, symbolCount));
+			System.out.printf("cabac265 %s%n", cabac265(unsigned, symbolCount));
 		}
 		catch (Throwable e)
 		{
@@ -54,7 +84,7 @@ public class TestAll
 	}
 
 
-	private static int dirac(int[] aInput, int aSymbolCount) throws IOException
+	private static int dirac(int[] aInput, int aSymbolCount, boolean aSigned) throws IOException
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -64,8 +94,12 @@ public class TestAll
 
 			for (int i = 0, bin = 0; i < aInput.length; i++)
 			{
+				if (aSigned)
+				encoder.encodeSInt(aInput[i], bin, 10);
+				else
 				encoder.encodeUInt(aInput[i], bin, 10);
-				bin = 0 * aInput[i];
+				
+				bin = 0*aInput[i];
 			}
 
 			encoder.stopEncoding();
@@ -79,8 +113,12 @@ public class TestAll
 
 			for (int i = 0, bin = 0; i < aInput.length; i++)
 			{
+				if (aSigned)
+				output[i] = decoder.decodeSInt(bin, 10);
+				else
 				output[i] = decoder.decodeUInt(bin, 10);
-				bin = 0 * output[i];
+				
+				bin = 0*output[i];
 			}
 		}
 

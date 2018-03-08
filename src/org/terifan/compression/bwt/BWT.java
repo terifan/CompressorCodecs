@@ -43,7 +43,7 @@ public class BWT
 			rotatedStrings[i] = Arrays.copyOfRange(tmp, i, i + n);
 		}
 
-		Arrays.sort(rotatedStrings, COMPARATOR);
+		Arrays.sort(rotatedStrings, BYTE_COMPARATOR);
 
 		int index = 0;
 		for (int i = 0; i < rotatedStrings.length; i++)
@@ -74,7 +74,7 @@ public class BWT
 
 		for (int i = 0; i < n; i++)
 		{
-			count[aBuffer[i] + 1]++;
+			count[(0xff & aBuffer[i]) + 1]++;
 		}
 		for (int r = 0; r < R; r++)
 		{
@@ -82,8 +82,8 @@ public class BWT
 		}
 		for (int i = 0; i < n; i++)
 		{
-			next[count[aBuffer[i]]] = i;
-			symbols[count[aBuffer[i]]++] = aBuffer[i];
+			next[count[(0xff & aBuffer[i])]] = i;
+			symbols[count[(0xff & aBuffer[i])]++] = aBuffer[i];
 		}
 
 		for (int i = 0; i < n; i++)
@@ -94,7 +94,96 @@ public class BWT
 	}
 
 
-	private final static Comparator<byte[]> COMPARATOR = (a, b) ->
+	public static int encode(int[] aBuffer, int aOffset, int aLength)
+	{
+		int n = aLength;
+
+		int[] tmp = Arrays.copyOfRange(aBuffer, aOffset, aOffset + 2 * n);
+		System.arraycopy(aBuffer, aOffset, tmp, n, n);
+		int[][] rotatedStrings = new int[n][];
+		for (int i = 0; i < n; i++)
+		{
+			rotatedStrings[i] = Arrays.copyOfRange(tmp, i, i + n);
+		}
+
+		Arrays.sort(rotatedStrings, INT_COMPARATOR);
+
+		int index = 0;
+		for (int i = 0; i < rotatedStrings.length; i++)
+		{
+			boolean match = true;
+			for (int j = 0; j < n; j++)
+			{
+				if (rotatedStrings[i][j] != aBuffer[aOffset + j])
+				{
+					match = false;
+					break;
+				}
+			}
+			if (match)
+			{
+				index = i;
+				break;
+			}
+		}
+
+		for (int i = 0; i < n; i++)
+		{
+			aBuffer[aOffset + i] = rotatedStrings[i][n - 1];
+		}
+		
+		return index;
+	}
+
+
+	public static void decode(int[] aBuffer, int aOffset, int aLength, int aIndex)
+	{
+		int n = aLength;
+
+		int[] next = new int[n];
+		int[] symbols = new int[n];
+		int[] count = new int[R + 1];
+
+		for (int i = 0; i < n; i++)
+		{
+			count[aBuffer[aOffset + i] + 1]++;
+		}
+		for (int r = 0; r < R; r++)
+		{
+			count[r + 1] += count[r];
+		}
+		for (int i = 0; i < n; i++)
+		{
+			next[count[aBuffer[aOffset + i]]] = i;
+			symbols[count[aBuffer[aOffset + i]]++] = aBuffer[aOffset + i];
+		}
+
+		for (int i = 0; i < n; i++)
+		{
+			aBuffer[aOffset + i] = symbols[aIndex];
+			aIndex = next[aIndex];
+		}
+	}
+
+
+	private final static Comparator<byte[]> BYTE_COMPARATOR = (a, b) ->
+	{
+		for (int i = 0; i < a.length; i++)
+		{
+			if (a[i] < b[i])
+			{
+				return -1;
+			}
+			if (a[i] > b[i])
+			{
+				return 1;
+			}
+		}
+		return 0;
+	};
+
+
+	private final static Comparator<int[]> INT_COMPARATOR = (a, b) ->
 	{
 		for (int i = 0; i < a.length; i++)
 		{
