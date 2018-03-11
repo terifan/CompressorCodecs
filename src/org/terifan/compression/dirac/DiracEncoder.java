@@ -27,6 +27,12 @@ public class DiracEncoder
 	}
 
 
+	public void encodeBit(int aSymbol, int aContextNum) throws IOException
+	{
+		encodeBit(aSymbol != 0, aContextNum);
+	}
+
+
 	public void encodeBit(boolean aSymbol, int aContextNum) throws IOException
 	{
 		DiracContext ctx = mContextList[aContextNum];
@@ -100,9 +106,9 @@ public class DiracEncoder
 	}
 
 
-	public void encodeSInt(int aValue, int aBin1, int aMaxBin) throws IOException
+	public void encodeSInt(int aValue, int aBin, int aMaxBin) throws IOException
 	{
-		encodeUInt(Math.abs((long)aValue), aBin1, aMaxBin);
+		encodeUInt(Math.abs((long)aValue), aBin, aMaxBin);
 
 		if (aValue != 0)
 		{

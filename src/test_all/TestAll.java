@@ -60,8 +60,8 @@ public class TestAll
 
 			int symbolCount = 2048;
 
-			System.out.printf("dirac(S) %s%n", dirac(signed, symbolCount, true));
-			System.out.printf("dirac    %s%n", dirac(unsigned, symbolCount, false));
+			System.out.printf("dirac(S) %s%n", dirac(signed, 10*symbolCount, true));
+			System.out.printf("dirac    %s%n", dirac(unsigned, 10*symbolCount, false));
 			System.out.printf("arith    %s%n", arith(unsigned, symbolCount));
 			System.out.printf("cabac264 %s%n", cabac(unsigned, symbolCount));
 			System.out.printf("cabac265 %s%n", cabac265(unsigned, symbolCount));
@@ -74,8 +74,8 @@ public class TestAll
 				BWT.encode(signed, i, Math.min(1024, unsigned.length - i));
 			}
 			
-			System.out.printf("dirac(S) %s%n", dirac(signed, symbolCount, true));
-			System.out.printf("dirac    %s%n", dirac(unsigned, symbolCount, false));
+			System.out.printf("dirac(S) %s%n", dirac(signed, 10*symbolCount, true));
+			System.out.printf("dirac    %s%n", dirac(unsigned, 10*symbolCount, false));
 			System.out.printf("arith    %s%n", arith(unsigned, symbolCount));
 			System.out.printf("cabac264 %s%n", cabac(unsigned, symbolCount));
 			System.out.printf("cabac265 %s%n", cabac265(unsigned, symbolCount));
@@ -102,7 +102,7 @@ public class TestAll
 				else
 				encoder.encodeUInt(aInput[i], bin, 10);
 				
-				bin = 0*aInput[i];
+				bin = 0*10*Math.abs(aInput[i]);
 			}
 
 			encoder.stopEncoding();
@@ -121,7 +121,7 @@ public class TestAll
 				else
 				output[i] = decoder.decodeUInt(bin, 10);
 				
-				bin = 0*output[i];
+				bin = 0*10*Math.abs(output[i]);
 			}
 		}
 
