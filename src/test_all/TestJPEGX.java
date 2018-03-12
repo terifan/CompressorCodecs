@@ -47,9 +47,9 @@ public class TestJPEGX
 		{
 			encode(bos, aInputCoefficients);
 		}
-		
+
 		byte[] data = baos.toByteArray();
-		
+
 		System.out.println(data.length);
 
 		int[][][] outputCoefficients = new int[aInputCoefficients.length][aInputCoefficients[0].length][64];
@@ -66,9 +66,9 @@ public class TestJPEGX
 	private void encode(BitOutputStream bos, int[][][] aCoefficients) throws IOException
 	{
 		boolean mtf = false;
-		
+
 		int blockCount = aCoefficients[0].length;
-		
+
 //		int[][] order = new int[blockCount][2048 + 1 + 2048];
 //		for (int i = 1, j = 1; i <= 2048; i++)
 //		{
@@ -81,7 +81,7 @@ public class TestJPEGX
 //		}
 
 		// amplitude + längd, terminator, hål
-		
+
 		// R----X
 		// R--X
 		// R--------X
@@ -110,27 +110,36 @@ public class TestJPEGX
 
 				for (int pixel = 1; pixel < 64; pixel++)
 				{
-					int bin = 40 + pixel;
-					for (; pixel < 64; pixel++)
+					int run = 0;
+					for (int i = pixel; i < 64; i++, run++)
 					{
-						if (block[NATURAL_ORDER[pixel]] != 0)
+						if (block[NATURAL_ORDER[i]] != 0)
 						{
 							break;
 						}
-						
+					}
+
+					if (pixel + run == 64)
+					{
+						int bin = 40 + pixel;
+						for (int i = 0; i < 16; i++)
+						{
+							encoder.encodeBit(1, bin++);
+						}
+						break;
+					}
+
+					int bin = 40 + pixel;
+					for (int i = 0; pixel < 64 && i < run; pixel++, i++)
+					{
 						encoder.encodeBit(1, bin++);
 					}
 
 					encoder.encodeBit(0, bin);
 
-					if (pixel == 64)
-					{
-						break;
-					}
-
 					int coefficient = block[NATURAL_ORDER[pixel]];
-					
-					System.out.printf("%5d ", coefficient);
+
+//					System.out.printf("%5d ", coefficient);
 
 					if (coefficient > 0)
 					{
@@ -143,7 +152,7 @@ public class TestJPEGX
 					}
 
 					coefficient--;
-					
+
 					bin = 2;
 					int m = 0;
 
@@ -165,8 +174,8 @@ public class TestJPEGX
 						encoder.encodeBit(coefficient & m, 1);
 					}
 				}
-				
-				System.out.println();
+
+//				System.out.println();
 
 //					int symbol = coefficient;
 //
@@ -181,9 +190,9 @@ public class TestJPEGX
 //							}
 //						}
 //					}
-//					
+//
 //					System.out.printf("%5d ", symbol);
-//					
+//
 //					encoder.encodeSInt(symbol, bin, 10);
 //
 //					if (mtf)
@@ -202,11 +211,11 @@ public class TestJPEGX
 		encoder.stopEncoding();
 	}
 
-	
+
 	private void decode(BitInputStream bis, int[][][] aCoefficients) throws IOException
 	{
 		boolean mtf = false;
-		
+
 		int blockCount = aCoefficients[0].length;
 //		int[][] order = new int[blockCount][2048 + 1 + 2048];
 //		for (int i = 1, j = 1; i <= 2048; i++)
@@ -222,7 +231,7 @@ public class TestJPEGX
 		int[] lastdc = new int[3];
 		int[] compLookup = {0,0,0,0,1,2};
 
-		DiracDecoder decoder = new DiracDecoder(bis, 128);
+		DiracDecoder decoder = new DiracDecoder(bis, 1000);
 
 		for (int mcuIndex = 0; mcuIndex < aCoefficients.length; mcuIndex++)
 		{
@@ -231,24 +240,53 @@ public class TestJPEGX
 				int ci = compLookup[blockIndex];
 				int[] block = aCoefficients[mcuIndex][blockIndex];
 
-				block[0] = lastdc[ci] = lastdc[ci] + decoder.decodeSInt(20, 4);
+				block[0] = lastdc[ci] = lastdc[ci] + decoder.decodeSInt(500, 7);
 
 				for (int pixel = 1; pixel < 64; pixel++)
 				{
-					int run = decoder.decodeUInt(40, 4);
+					int run = 0;
+
+					int bin = 40 + pixel;
+					for (int i = 0; i < 16; i++, run++)
+					{
+						if (!decoder.decodeBit(bin++))
+						{
+							break;
+						}
+					}
 
 					while (run-- > 0)
 					{
 						block[NATURAL_ORDER[pixel++]] = 0;
 					}
-					if (pixel == 64)
+					if (run == 16)
 					{
 						break;
 					}
 
-					int coefficient = decoder.decodeSInt(0, 10);
+					boolean neg = decoder.decodeBit(0);
 
-					block[NATURAL_ORDER[pixel]] = coefficient;
+					bin = 2;
+					int m = 0;
+
+					if (decoder.decodeBit(bin++))
+					{
+						m = 1;
+
+						while (decoder.decodeBit(bin++))
+						{
+							m <<= 1;
+						}
+					}
+
+					int coefficient = 0;
+
+					while ((m >>= 1) != 0)
+					{
+						coefficient += decoder.decodeBit(1) ? m : 0;
+					}
+
+					block[NATURAL_ORDER[pixel]] = neg ? -coefficient - 1 : coefficient + 1;
 				}
 
 //				for (int pixel = 0, bin = 0*12 * blockIndex; pixel < 64; pixel++)
@@ -260,7 +298,7 @@ public class TestJPEGX
 //					{
 //						coefficient = order[blockIndex][symbol];
 //					}
-//					
+//
 //					block[NATURAL_ORDER[pixel]] = coefficient;
 //
 //					if (mtf)
@@ -275,7 +313,7 @@ public class TestJPEGX
 			}
 		}
 	}
-	
+
 
 	private int unsigned(int aSigned)
 	{
