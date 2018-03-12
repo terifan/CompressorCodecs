@@ -144,32 +144,34 @@ public class CabacEncoder
 	}
 
 
-	public void encodeUnary(int symbol, CabacContext ctx) throws IOException
+	public void encodeUnary(int aSymbol, CabacContext aContext) throws IOException
 	{
-		int l = symbol;
+		assert aSymbol >= 0;
+
+		int l = aSymbol;
 		while (l-- > 0)
 		{
-			encodeBit(0, ctx);
+			encodeBit(0, aContext);
 		}
-		encodeBit(1, ctx);
+		encodeBit(1, aContext);
 	}
 
 
-	public void encodeUnary(int symbol, CabacContext ctx0, CabacContext ctx1) throws IOException
+	public void encodeUnary(int aSymbol, CabacContext aContext0, CabacContext aContext1) throws IOException
 	{
-		if (symbol == 0)
+		if (aSymbol == 0)
 		{
-			encodeBit(0, ctx0);
+			encodeBit(0, aContext0);
 		}
 		else
 		{
-			encodeBit(1, ctx0);
-			int l = symbol;
+			encodeBit(1, aContext0);
+			int l = aSymbol;
 			while (--l > 0)
 			{
-				encodeBit(0, ctx1);
+				encodeBit(0, aContext1);
 			}
-			encodeBit(1, ctx1);
+			encodeBit(1, aContext1);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class CabacEncoder
 	}
 
 
-	public void encodeUnaryGolomb(long aSymbol, int aStep, CabacContext ctx) throws IOException
+	public void encodeUnaryGolomb(long aSymbol, int aStep, CabacContext aContext) throws IOException
 	{
 		if (aStep <= 0 || aStep > 64)
 		{
@@ -229,7 +231,7 @@ public class CabacEncoder
 
 		while (aSymbol != 0)
 		{
-			encodeBit(0, ctx);
+			encodeBit(0, aContext);
 			for (int i = 0; i < aStep; i++, len++)
 			{
 				encodeBitEqProb((int)aSymbol & 1);
@@ -239,7 +241,7 @@ public class CabacEncoder
 
 		if (len < 64)
 		{
-			encodeBit(1, ctx);
+			encodeBit(1, aContext);
 		}
 	}
 
