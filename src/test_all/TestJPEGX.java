@@ -128,6 +128,10 @@ public class TestJPEGX
 						}
 						break;
 					}
+					if (run > 15)
+					{
+						run = 15;
+					}
 
 					int bin = 40 + pixel;
 					for (int i = 0; pixel < 64 && i < run; pixel++, i++)
