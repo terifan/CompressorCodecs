@@ -109,17 +109,23 @@ public class TestJPEGX
 		int[] lastdc = new int[3];
 		int[] compLookup = {0,0,0,0,1,2};
 
-		DiracEncoder diracEncoder = new DiracEncoder(bos, 1000);
+		DiracEncoder diracEncoder = new DiracEncoder(bos, 10000);
 
 		CabacEncoder cabacEncoder = new CabacEncoder(baos);
 		CabacContext context0 = new CabacContext(0);
 		CabacContext context2 = new CabacContext(0);
 		CabacContext context4 = new CabacContext(0);
 		CabacContext context6 = new CabacContext(0);
+		CabacContext context7 = new CabacContext(0);
+		CabacContext context8 = new CabacContext(0);
 		CabacContext[] context1 = new CabacContext[65];
-		CabacContext[] context5 = new CabacContext[1000];
+		CabacContext[] context5 = new CabacContext[10000];
+		CabacContext[] context9 = new CabacContext[1000];
+		CabacContext[] context10 = new CabacContext[1000];
 		for (int i = 0; i < context1.length; i++) context1[i] = new CabacContext(0);
 		for (int i = 0; i < context5.length; i++) context5[i] = new CabacContext(0);
+		for (int i = 0; i < context9.length; i++) context9[i] = new CabacContext(0);
+		for (int i = 0; i < context10.length; i++) context10[i] = new CabacContext(0);
 
 		for (int mcuIndex = 0; mcuIndex < aCoefficients.length; mcuIndex++)
 		{
@@ -130,11 +136,49 @@ public class TestJPEGX
 
 				{
 				int coefficient = block[0] - lastdc[ci];
+				
+//				diracEncoder.encodeSInt(coefficient, 500, 7);
+//				cabacEncoder.encodeExpGolomb(encodeZigZag32(coefficient), 4, context0);
 
-				diracEncoder.encodeSInt(coefficient, 500, 7);
-				cabacEncoder.encodeExpGolomb(encodeZigZag32(coefficient), 4, context0);
+				cabacEncoder.encodeBit(coefficient == 0 ? 1 : 0, context7);
 
-//				if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5d ", block[0]);
+				if (coefficient != 0)
+				{
+					if (coefficient > 0)
+					{
+						cabacEncoder.encodeBit(0, context6);
+					}
+					else
+					{
+						coefficient = -coefficient;
+					}
+
+					coefficient--;
+					
+					
+
+					int bin = 1500;
+					int i = 0;
+					while (coefficient > 50)
+					{
+						diracEncoder.encodeBit(0, bin++);
+						cabacEncoder.encodeBit(0, context10[i++]);
+						coefficient-=50;
+					}
+					diracEncoder.encodeBit(1, bin);
+					cabacEncoder.encodeBit(1, context10[i]);
+
+					bin = 2000;
+					i = 0;
+					while (coefficient > 0)
+					{
+						diracEncoder.encodeBit(0, bin++);
+						cabacEncoder.encodeBit(0, context9[i++]);
+						coefficient--;
+					}
+					diracEncoder.encodeBit(1, bin);
+					cabacEncoder.encodeBit(1, context9[i]);
+				}
 				
 				lastdc[ci] = block[0];
 				}
@@ -152,7 +196,7 @@ public class TestJPEGX
 
 				int pixel = 1;
 
-				while (pixel <= ke)
+				for (; pixel <= ke; pixel++)
 				{
 					diracEncoder.encodeBit(0, 3);
 					cabacEncoder.encodeBit(0, context4);
@@ -165,24 +209,16 @@ public class TestJPEGX
 						{
 							break;
 						}
-//						diracEncoder.encodeBit(0, bin++);
-//						cabacEncoder.encodeBit(0, context1[pixel++]);
+						diracEncoder.encodeBit(0, bin++);
+						cabacEncoder.encodeBit(0, context1[pixel]);
 
-//						if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5s ", "*");
-
-						diracEncoder.encodeBit(0, 0);
-						cabacEncoder.encodeBit(0, context6);
 						pixel++;
 					}
 
-//					diracEncoder.encodeBit(1, bin);
-//					cabacEncoder.encodeBit(1, context1[pixel]);
-					diracEncoder.encodeBit(1, 0);
-					cabacEncoder.encodeBit(1, context6);
+					diracEncoder.encodeBit(1, bin);
+					cabacEncoder.encodeBit(1, context1[pixel]);
 
-					int coefficient = block[NATURAL_ORDER[pixel++]];
-
-//					if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5d ", coefficient);
+					int coefficient = block[NATURAL_ORDER[pixel]];
 
 					if (coefficient > 0)
 					{
@@ -198,20 +234,16 @@ public class TestJPEGX
 
 					coefficient--;
 
-					bin = 0;//pixel < 10 ? 5 : 100;
-					int i = 0;//pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
+					bin = pixel < 10 ? 5 : 100;
+					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
 					while (coefficient > 0)
 					{
-						diracEncoder.encodeBit(0, 0);
-						cabacEncoder.encodeBit(0, context5[0]);
-//						diracEncoder.encodeBit(0, bin++);
-//						cabacEncoder.encodeBit(0, context5[i++]);
+						diracEncoder.encodeBit(0, bin++);
+						cabacEncoder.encodeBit(0, context5[i++]);
 						coefficient--;
 					}
-					diracEncoder.encodeBit(1, 0);
-					cabacEncoder.encodeBit(1, context5[0]);
-//					diracEncoder.encodeBit(1, bin);
-//					cabacEncoder.encodeBit(1, context5[i]);
+					diracEncoder.encodeBit(1, bin);
+					cabacEncoder.encodeBit(1, context5[i]);
 				}
 
 				if (ke < 64)
@@ -242,7 +274,6 @@ public class TestJPEGX
 		CabacContext context0 = new CabacContext(0);
 		CabacContext context2 = new CabacContext(0);
 		CabacContext context4 = new CabacContext(0);
-		CabacContext context6 = new CabacContext(0);
 		CabacContext[] context1 = new CabacContext[65];
 		CabacContext[] context5 = new CabacContext[1000];
 		for (int i = 0; i < context1.length; i++) context1[i] = new CabacContext(0);
@@ -257,8 +288,6 @@ public class TestJPEGX
 
 				int v0 = diracDecoder.decodeSInt(500, 7);
 				long v1 = decodeZigZag32((int)cabacDecoder.decodeExpGolomb(4, context0));
-
-//				if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5d ", lastdc[ci] + v0);
 				
 				assert v0 == v1 : v0+" == "+v1;
 
@@ -266,7 +295,7 @@ public class TestJPEGX
 
 				int pixel = 1;
 
-				for (;;)
+				for (;; pixel++)
 				{
 					int v10 = diracDecoder.decodeBit(3) ? 1 : 0;
 					int v11 = cabacDecoder.decodeBit(context4);
@@ -281,17 +310,14 @@ public class TestJPEGX
 
 					for (;;)
 					{
-//						int v20 = diracDecoder.decodeBit(bin++) ? 1 : 0;
-//						int v21 = cabacDecoder.decodeBit(context1[pixel]);
-						int v20 = diracDecoder.decodeBit(0) ? 1 : 0;
-						int v21 = cabacDecoder.decodeBit(context6);
+						int v20 = diracDecoder.decodeBit(bin++) ? 1 : 0;
+						int v21 = cabacDecoder.decodeBit(context1[pixel]);
 
 						assert v20 == v21;
 						if (v20 == 1) 
 						{
 							break;
 						}
-//						if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5s ", "*");
 
 						block[NATURAL_ORDER[pixel++]] = 0;
 					}
@@ -302,14 +328,12 @@ public class TestJPEGX
 
 					int coefficient = 1;
 
-					bin = 0;//pixel < 10 ? 5 : 100;
-					int i = 0;//pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
+					bin = pixel < 10 ? 5 : 100;
+					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
 					for (;;)
 					{
-						int v30 = diracDecoder.decodeBit(0) ? 1 : 0;
-						int v31 = cabacDecoder.decodeBit(context5[0]);
-//						int v30 = diracDecoder.decodeBit(bin++) ? 1 : 0;
-//						int v31 = cabacDecoder.decodeBit(context5[i++]);
+						int v30 = diracDecoder.decodeBit(bin++) ? 1 : 0;
+						int v31 = cabacDecoder.decodeBit(context5[i++]);
 
 						assert v30 == v31;
 						if (v30 == 1) 
@@ -322,9 +346,7 @@ public class TestJPEGX
 					
 					coefficient = neg0 == 1 ? -coefficient : coefficient;
 
-//					if (mcuIndex==4535 && blockIndex==5)System.out.printf("%5d ", coefficient);
-
-					block[NATURAL_ORDER[pixel++]] = coefficient;
+					block[NATURAL_ORDER[pixel]] = coefficient;
 				}
 			}
 		}
