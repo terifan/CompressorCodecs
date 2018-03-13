@@ -159,22 +159,24 @@ public class TestJPEGX
 					coefficient--;
 
 					int bin = 1500;
-					int i = 0;
-					while (coefficient > 50)
+					int S = 10;
+					int i = 1+coefficient/S;
+					while (coefficient > S)
 					{
 						diracEncoder.encodeBit(0, bin);
-						cabacEncoder.encodeBit(0, context8);
-						coefficient-=50;
+						cabacEncoder.encodeBit(0, context10[i]);
+						coefficient-=S;
+						i--;
 					}
 					diracEncoder.encodeBit(1, bin);
-					cabacEncoder.encodeBit(1, context8);
+					cabacEncoder.encodeBit(1, context10[0]);
 
 					bin = 2000;
 					i = 0;
 					while (coefficient > 0)
 					{
 						diracEncoder.encodeBit(0, bin++);
-						cabacEncoder.encodeBit(0, context9[i++]);
+						cabacEncoder.encodeBit(0, context9[coefficient]);
 						coefficient--;
 					}
 					diracEncoder.encodeBit(1, bin);
@@ -234,15 +236,15 @@ public class TestJPEGX
 					coefficient--;
 
 					bin = pixel < 10 ? 5 : 100;
-					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
+//					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
 					while (coefficient > 0)
 					{
 						diracEncoder.encodeBit(0, bin++);
-						cabacEncoder.encodeBit(0, context5[i++]);
+						cabacEncoder.encodeBit(0, context5[coefficient]);
 						coefficient--;
 					}
 					diracEncoder.encodeBit(1, bin);
-					cabacEncoder.encodeBit(1, context5[i]);
+					cabacEncoder.encodeBit(1, context5[0]);
 				}
 
 				if (ke < 64)
