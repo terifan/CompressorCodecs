@@ -47,7 +47,7 @@ public class TestJPEGX
 	{
 		ByteArrayOutputStream baosDirac = new ByteArrayOutputStream();
 		ByteArrayOutputStream baosCabac = new ByteArrayOutputStream();
-		
+
 		try (BitOutputStream bosDirac = new BitOutputStream(baosDirac))
 		{
 			encode(bosDirac, baosCabac, aInputCoefficients);
@@ -125,7 +125,7 @@ public class TestJPEGX
 				while (--ke != 0);
 
 				int pixel = 1;
-				
+
 				for (; pixel < ke; pixel++)
 				{
 					diracEncoder.encodeBit(0, 3);
@@ -169,8 +169,8 @@ public class TestJPEGX
 
 					coefficient--;
 
-					bin = pixel < 10 ? 5 : 100;
-					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
+					bin = 0;//pixel < 10 ? 5 : 100;
+					int i = 0;//pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
 					int l = coefficient;
 					while (l-- > 0)
 					{
@@ -221,7 +221,7 @@ public class TestJPEGX
 			{
 				int ci = compLookup[blockIndex];
 				int[] block = aCoefficients[mcuIndex][blockIndex];
-				
+
 				int v0 = diracDecoder.decodeSInt(500, 7);
 				long v1 = decodeZigZag32((int)cabacDecoder.decodeExpGolomb(4, context0));
 
@@ -230,12 +230,12 @@ public class TestJPEGX
 				block[0] = lastdc[ci] = lastdc[ci] + v0;
 
 				int pixel = 1;
-				
+
 				for (;;)
 				{
 					int v10 = diracDecoder.decodeBit(3) ? 1 : 0;
 					int v11 = cabacDecoder.decodeBit(context4);
-					
+
 					assert v10 == v11;
 					if (v10 == 1) break;
 
@@ -260,13 +260,13 @@ public class TestJPEGX
 
 					int coefficient = 1;
 
-					bin = pixel < 10 ? 5 : 100;
-					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
+					bin = 0;//pixel < 10 ? 5 : 100;
+					int i = 0;//pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
 					for (;;)
 					{
 						int v30 = diracDecoder.decodeBit(bin++) ? 1 : 0;
 						int v31 = cabacDecoder.decodeBit(context5[i++]);
-						
+
 						assert v30 == v31;
 						if (v30 == 1) break;
 
