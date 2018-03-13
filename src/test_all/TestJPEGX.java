@@ -147,26 +147,27 @@ public class TestJPEGX
 					if (coefficient > 0)
 					{
 						cabacEncoder.encodeBit(0, context6);
+						diracEncoder.encodeBit(0, 8888);
 					}
 					else
 					{
 						coefficient = -coefficient;
+						cabacEncoder.encodeBit(1, context6);
+						diracEncoder.encodeBit(1, 8888);
 					}
 
 					coefficient--;
-					
-					
 
 					int bin = 1500;
 					int i = 0;
 					while (coefficient > 50)
 					{
-						diracEncoder.encodeBit(0, bin++);
-						cabacEncoder.encodeBit(0, context10[i++]);
+						diracEncoder.encodeBit(0, bin);
+						cabacEncoder.encodeBit(0, context8);
 						coefficient-=50;
 					}
 					diracEncoder.encodeBit(1, bin);
-					cabacEncoder.encodeBit(1, context10[i]);
+					cabacEncoder.encodeBit(1, context8);
 
 					bin = 2000;
 					i = 0;
@@ -194,14 +195,12 @@ public class TestJPEGX
 				}
 				while (--ke != 0);
 
-				int pixel = 1;
-
-				for (; pixel <= ke; pixel++)
+				for (int pixel = 1; pixel <= ke; pixel++)
 				{
 					diracEncoder.encodeBit(0, 3);
 					cabacEncoder.encodeBit(0, context4);
 
-					int bin = 250;
+					int bin = 250 + pixel;
 
 					while (pixel < ke)
 					{
