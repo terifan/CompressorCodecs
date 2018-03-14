@@ -89,7 +89,8 @@ public class TestJPEGX
 		CabacContext[] acmag = new CabacContext[10000];
 		CabacContext[] dc = new CabacContext[1000];
 		CabacContext[] dcmag = new CabacContext[1000];
-		CabacContext[][] ac = new CabacContext[50][1000];
+		CabacContext[][] ac = new CabacContext[64][1000];
+		CabacContext[][] ac2 = new CabacContext[64][1000];
 
 
 		public State()
@@ -99,6 +100,7 @@ public class TestJPEGX
 			for (int i = 0; i < dc.length; i++) dc[i] = new CabacContext(0);
 			for (int i = 0; i < dcmag.length; i++) dcmag[i] = new CabacContext(0);
 			for (int j = 0; j < ac.length; j++) for (int i = 0; i < ac[j].length; i++) ac[j][i] = new CabacContext(0);
+			for (int j = 0; j < ac2.length; j++) for (int i = 0; i < ac2[j].length; i++) ac2[j][i] = new CabacContext(0);
 		}
 	}
 
@@ -109,7 +111,7 @@ public class TestJPEGX
 		int[] lastdc = new int[3];
 		int[] compLookup = {0,0,0,0,1,2};
 
-		CabacEncoder cabacEncoder = new CabacEncoder(baos);
+		CabacEncoder encoder = new CabacEncoder(baos);
 
 		State[] states = {new State(), new State(), new State()};
 
@@ -124,38 +126,45 @@ public class TestJPEGX
 				{
 					int coefficient = block[0] - lastdc[ci];
 
-					cabacEncoder.encodeBit(coefficient == 0 ? 1 : 0, st.dczero);
-
-					if (coefficient != 0)
+					if (true)
 					{
-						boolean neg = coefficient < 0;
-						if (neg)
-						{
-							coefficient = -coefficient;
-						}
+						encoder.encodeExpGolomb(encodeZigZag32(coefficient), 0, st.dcmag, st.dc);
+					}
+					else
+					{
+						encoder.encodeBit(coefficient == 0 ? 1 : 0, st.dczero);
 
-						coefficient--;
-
-						int S = 10;
-						int i = 0;
-						while (coefficient >= S)
+						if (coefficient != 0)
 						{
-							cabacEncoder.encodeBit(0, st.dcmag[i]);
-							coefficient -= S;
-//							i++;
-						}
-						cabacEncoder.encodeBit(1, st.dcmag[i]);
+							boolean neg = coefficient < 0;
+							if (neg)
+							{
+								coefficient = -coefficient;
+							}
 
-						i = 0;
-						while (coefficient > 0)
-						{
-							cabacEncoder.encodeBit(0, st.dc[i]);
 							coefficient--;
-							i++;
-						}
-						cabacEncoder.encodeBit(1, st.dc[i]);
 
-						cabacEncoder.encodeBitEqProb(neg ? 1 : 0);
+							int S = 10;
+							int i = 0;
+							while (coefficient >= S)
+							{
+								encoder.encodeBit(0, st.dcmag[i]);
+								coefficient -= S;
+//								i++;
+							}
+							encoder.encodeBit(1, st.dcmag[i]);
+
+							i = 0;
+							while (coefficient > 0)
+							{
+								encoder.encodeBit(0, st.dc[i]);
+								coefficient--;
+								i++;
+							}
+							encoder.encodeBit(1, st.dc[i]);
+
+							encoder.encodeBitEqProb(neg ? 1 : 0);
+						}
 					}
 
 					lastdc[ci] = block[0];
@@ -174,7 +183,7 @@ public class TestJPEGX
 
 				for (int pixel = 1; pixel <= ke; pixel++)
 				{
-					cabacEncoder.encodeBit(0, st.stop);
+					encoder.encodeBit(0, st.stop);
 
 					int i = pixel;
 					while (pixel < ke)
@@ -183,12 +192,12 @@ public class TestJPEGX
 						{
 							break;
 						}
-						cabacEncoder.encodeBit(0, st.run[i]);
+						encoder.encodeBit(0, st.run[i]);
 						pixel++;
 						i++;
 					}
 
-					cabacEncoder.encodeBit(1, st.run[i]);
+					encoder.encodeBit(1, st.run[i]);
 
 					int coefficient = block[NATURAL_ORDER[pixel]];
 
@@ -208,12 +217,12 @@ public class TestJPEGX
 						int m = 1;
 						while (v > 0)
 						{
-							cabacEncoder.encodeBit(0, st.acmag[i]);
+							encoder.encodeBit(0, st.acmag[i]);
 							v >>= 1;
 							m <<= 1;
 							i++;
 						}
-						cabacEncoder.encodeBit(1, st.acmag[i]);
+						encoder.encodeBit(1, st.acmag[i]);
 
 						i = 0;
 						CabacContext[] ctx = st.ac[pixel / 5];
@@ -222,11 +231,15 @@ public class TestJPEGX
 						{
 //							int b = (coefficient & (1 << i)) != 0 ? 1 : 0;
 							int b = (coefficient & m) != 0 ? 1 : 0;
-							cabacEncoder.encodeBit(b, ctx[i]);
+							encoder.encodeBit(b, ctx[i]);
 //							i--;
 							i++;
 //							i+=m>>1;
 						}
+					}
+					else if (true)
+					{
+						encoder.encodeExpGolomb(coefficient, 0, st.ac[pixel], st.ac2[pixel]);
 					}
 					else
 					{
@@ -234,26 +247,26 @@ public class TestJPEGX
 						CabacContext[] ctx = st.ac[pixel / 5];
 						while (coefficient > 0)
 						{
-							cabacEncoder.encodeBit(0, ctx[i]);
+							encoder.encodeBit(0, ctx[i]);
 							coefficient--;
 							i++;
 						}
-						cabacEncoder.encodeBit(1, ctx[i]);
+						encoder.encodeBit(1, ctx[i]);
 					}
 
-					cabacEncoder.encodeBit(neg ? 1 : 0, st.acsign);
+					encoder.encodeBit(neg ? 1 : 0, st.acsign);
 				}
 
 				if (ke < 64)
 				{
-					cabacEncoder.encodeBit(1, st.stop);
+					encoder.encodeBit(1, st.stop);
 				}
 			}
 		}
 
-		cabacEncoder.encodeFinal(1);
+		encoder.encodeFinal(1);
 
-		cabacEncoder.stopEncoding();
+		encoder.stopEncoding();
 	}
 
 
@@ -264,7 +277,7 @@ public class TestJPEGX
 		int[] lastdc = new int[3];
 		int[] compLookup = {0,0,0,0,1,2};
 
-		CabacDecoder cabacDecoder = new CabacDecoder(new PushbackInputStream(bais));
+		CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(bais));
 
 		State[] states = {new State(), new State(), new State()};
 
@@ -276,42 +289,49 @@ public class TestJPEGX
 				int[] block = aCoefficients[mcuIndex][blockIndex];
 				State st = states[ci];
 
-				if (cabacDecoder.decodeBit(st.dczero) == 1)
+				if (true)
 				{
-					block[0] = lastdc[ci] = lastdc[ci] + 0;
+					block[0] = lastdc[ci] = lastdc[ci] + decodeZigZag32((int)decoder.decodeExpGolomb(0, st.dcmag, st.dc));
 				}
 				else
 				{
-					int coefficient = 1;
-
-					int S = 10;
-					int i = 0;
-
-					while (cabacDecoder.decodeBit(st.dcmag[i]) == 0)
+					if (decoder.decodeBit(st.dczero) == 1)
 					{
-						coefficient += S;
-//						i++;
+						block[0] = lastdc[ci] = lastdc[ci] + 0;
 					}
-
-					i = 0;
-					while (cabacDecoder.decodeBit(st.dc[i]) == 0)
+					else
 					{
-						coefficient++;
-						i++;
-					}
+						int coefficient = 1;
 
-					block[0] = lastdc[ci] = lastdc[ci] + (cabacDecoder.decodeBitEqProb() == 1 ? -coefficient : coefficient);
+						int S = 10;
+						int i = 0;
+
+						while (decoder.decodeBit(st.dcmag[i]) == 0)
+						{
+							coefficient += S;
+//							i++;
+						}
+
+						i = 0;
+						while (decoder.decodeBit(st.dc[i]) == 0)
+						{
+							coefficient++;
+							i++;
+						}
+
+						block[0] = lastdc[ci] = lastdc[ci] + (decoder.decodeBitEqProb() == 1 ? -coefficient : coefficient);
+					}
 				}
 
 				for (int pixel = 1;; pixel++)
 				{
-					if (cabacDecoder.decodeBit(st.stop) == 1)
+					if (decoder.decodeBit(st.stop) == 1)
 					{
 						break;
 					}
 
 					int i = pixel;
-					while (cabacDecoder.decodeBit(st.run[i]) == 0)
+					while (decoder.decodeBit(st.run[i]) == 0)
 					{
 						block[NATURAL_ORDER[i]] = 0;
 						i++;
@@ -320,15 +340,22 @@ public class TestJPEGX
 
 					int coefficient = 1;
 
-					i = 0;
-					CabacContext[] ctx = st.ac[pixel / 5];
-					while (cabacDecoder.decodeBit(ctx[i]) == 0)
+					if (true)
 					{
-						coefficient++;
-						i++;
+						coefficient += (int)decoder.decodeExpGolomb(0, st.ac[pixel], st.ac2[pixel]);
+					}
+					else
+					{
+						i = 0;
+						CabacContext[] ctx = st.ac[pixel / 5];
+						while (decoder.decodeBit(ctx[i]) == 0)
+						{
+							coefficient++;
+							i++;
+						}
 					}
 
-					block[NATURAL_ORDER[pixel]] = cabacDecoder.decodeBit(st.acsign) == 1 ? -coefficient : coefficient;
+					block[NATURAL_ORDER[pixel]] = decoder.decodeBit(st.acsign) == 1 ? -coefficient : coefficient;
 				}
 			}
 		}
@@ -377,7 +404,6 @@ public class TestJPEGX
 		try
 		{
 			int[][][] coefficients = readImageData();
-
 			new TestJPEGX(coefficients);
 		}
 		catch (Throwable e)
