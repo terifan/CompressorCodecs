@@ -87,7 +87,6 @@ public class TestJPEGX
 	{
 		CabacContext acsign = new CabacContext(0);
 		CabacContext stop = new CabacContext(0);
-		CabacContext dcsign = new CabacContext(0);
 		CabacContext dczero = new CabacContext(0);
 		CabacContext[] run = new CabacContext[65];
 		CabacContext[] acmag = new CabacContext[10000];
@@ -109,14 +108,6 @@ public class TestJPEGX
 	private void encode(ByteArrayOutputStream baos, int[][][] aCoefficients) throws IOException
 	{
 		int blockCount = aCoefficients[0].length;
-
-		// amplitude + längd, terminator, hål
-
-		// R----X
-		// R--X
-		// R--------X
-		// R-----------R----------R----------X
-		// R...........R.....R---------X
 
 		int[] lastdc = new int[3];
 		int[] compLookup = {0,0,0,0,1,2};
@@ -140,14 +131,10 @@ public class TestJPEGX
 
 					if (coefficient != 0)
 					{
-						if (coefficient > 0)
-						{
-							cabacEncoder.encodeBit(0, st.dcsign);
-						}
-						else
+						boolean neg = coefficient < 0;
+						if (neg)
 						{
 							coefficient = -coefficient;
-							cabacEncoder.encodeBit(1, st.dcsign);
 						}
 
 						coefficient--;
@@ -158,17 +145,20 @@ public class TestJPEGX
 						{
 							cabacEncoder.encodeBit(0, st.dcmag[i]);
 							coefficient -= S;
-							i++;
+//							i++;
 						}
 						cabacEncoder.encodeBit(1, st.dcmag[i]);
 
 						i = 0;
 						while (coefficient > 0)
 						{
-							cabacEncoder.encodeBit(0, st.dc[i++]);
+							cabacEncoder.encodeBit(0, st.dc[i]);
 							coefficient--;
+							i++;
 						}
 						cabacEncoder.encodeBit(1, st.dc[i]);
+
+						cabacEncoder.encodeBitEqProb(neg ? 1 : 0);
 					}
 
 					lastdc[ci] = block[0];
