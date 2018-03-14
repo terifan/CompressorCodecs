@@ -204,25 +204,31 @@ public class TestJPEGX
 
 					coefficient--;
 
-					if (false)
+					if (!false)
 					{
 						i = 0;
 						int v = coefficient;
 						int m = 1;
 						while (v > 0)
 						{
-							cabacEncoder.encodeBit(0, st.acmag[i++]);
+							cabacEncoder.encodeBit(0, st.acmag[i]);
 							v >>= 1;
 							m <<= 1;
+							i++;
 						}
 						cabacEncoder.encodeBit(1, st.acmag[i]);
 
 						i = 0;
 						CabacContext[] ctx = st.ac[min(pixel-1,49)];
+//						CabacContext[] ctx = st.ac[0];
 						while ((m>>=1)!=0)
 						{
+//							int b = (coefficient & (1 << i)) != 0 ? 1 : 0;
 							int b = (coefficient & m) != 0 ? 1 : 0;
-							cabacEncoder.encodeBit(b, ctx[i++]);
+							cabacEncoder.encodeBit(b, ctx[i]);
+//							i--;
+							i++;
+//							i+=m>>1;
 						}
 					}
 					else
@@ -231,8 +237,9 @@ public class TestJPEGX
 						CabacContext[] ctx = st.ac[min(pixel-1,49)];
 						while (coefficient > 0)
 						{
-							cabacEncoder.encodeBit(0, ctx[i++]);
+							cabacEncoder.encodeBit(0, ctx[i]);
 							coefficient--;
+							i++;
 						}
 						cabacEncoder.encodeBit(1, ctx[i]);
 					}
