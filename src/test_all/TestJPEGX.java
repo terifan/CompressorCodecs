@@ -204,7 +204,7 @@ public class TestJPEGX
 
 					coefficient--;
 
-					if (!false)
+					if (false)
 					{
 						i = 0;
 						int v = coefficient;
@@ -268,13 +268,8 @@ public class TestJPEGX
 		int[] compLookup = {0,0,0,0,1,2};
 
 		CabacDecoder cabacDecoder = new CabacDecoder(new PushbackInputStream(bais));
-		CabacContext context0 = new CabacContext(0);
-		CabacContext context2 = new CabacContext(0);
-		CabacContext context4 = new CabacContext(0);
-		CabacContext[] context1 = new CabacContext[65];
-		CabacContext[] context5 = new CabacContext[1000];
-		for (int i = 0; i < context1.length; i++) context1[i] = new CabacContext(0);
-		for (int i = 0; i < context5.length; i++) context5[i] = new CabacContext(0);
+
+		State[] states = {new State(), new State(), new State()};
 
 		for (int mcuIndex = 0; mcuIndex < aCoefficients.length; mcuIndex++)
 		{
@@ -282,44 +277,61 @@ public class TestJPEGX
 			{
 				int ci = compLookup[blockIndex];
 				int[] block = aCoefficients[mcuIndex][blockIndex];
+				State st = states[ci];
 
-				block[0] = lastdc[ci] = lastdc[ci] + decodeZigZag32((int)cabacDecoder.decodeExpGolomb(4, context0));
-
-				int pixel = 1;
-
-				for (;; pixel++)
+				if (cabacDecoder.decodeBit(st.dczero) == 1)
 				{
-					if (cabacDecoder.decodeBit(context4) == 1)
+					block[0] = lastdc[ci] = lastdc[ci] + 0;
+				}
+				else
+				{
+					int coefficient = 1;
+
+					int S = 10;
+					int i = 0;
+
+					while (cabacDecoder.decodeBit(st.dcmag[i]) == 0)
+					{
+						coefficient += S;
+//						i++;
+					}
+
+					i = 0;
+					while (cabacDecoder.decodeBit(st.dc[i]) == 0)
+					{
+						coefficient++;
+						i++;
+					}
+
+					block[0] = lastdc[ci] = lastdc[ci] + (cabacDecoder.decodeBitEqProb() == 1 ? -coefficient : coefficient);
+				}
+
+				for (int pixel = 1;; pixel++)
+				{
+					if (cabacDecoder.decodeBit(st.stop) == 1)
 					{
 						break;
 					}
 
-					for (;;)
+					int i = pixel;
+					while (cabacDecoder.decodeBit(st.run[i]) == 0)
 					{
-						if (cabacDecoder.decodeBit(context1[pixel]) == 1)
-						{
-							break;
-						}
-
-						block[NATURAL_ORDER[pixel++]] = 0;
+						block[NATURAL_ORDER[i]] = 0;
+						i++;
+						pixel++;
 					}
 
 					int coefficient = 1;
 
-					int i = pixel < 5 ? 0 : pixel < 15 ? 100 : 500;
-					for (;;)
+					i = 0;
+					CabacContext[] ctx = st.ac[min(pixel-1,49)];
+					while (cabacDecoder.decodeBit(ctx[i]) == 0)
 					{
-						if (cabacDecoder.decodeBit(context5[i++]) == 1)
-						{
-							break;
-						}
-
 						coefficient++;
+						i++;
 					}
 
-					coefficient = cabacDecoder.decodeBit(context2) == 1 ? -coefficient : coefficient;
-
-					block[NATURAL_ORDER[pixel]] = coefficient;
+					block[NATURAL_ORDER[pixel]] = cabacDecoder.decodeBit(st.acsign) == 1 ? -coefficient : coefficient;
 				}
 			}
 		}
