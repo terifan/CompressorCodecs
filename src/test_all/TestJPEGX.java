@@ -11,8 +11,6 @@ import java.util.zip.InflaterInputStream;
 import org.terifan.compression.cabac.CabacContext;
 import org.terifan.compression.cabac.CabacDecoder;
 import org.terifan.compression.cabac.CabacEncoder;
-import org.terifan.compression.io.BitInputStream;
-import org.terifan.compression.io.BitOutputStream;
 
 
 public class TestJPEGX
@@ -61,21 +59,19 @@ public class TestJPEGX
 			for (int blockIndex = 0; blockIndex < outputCoefficients[0].length; blockIndex++)
 			{
 				if (!Arrays.equals(aInputCoefficients[mcuIndex][blockIndex], outputCoefficients[mcuIndex][blockIndex]))
-//				if (mcuIndex==4535 && blockIndex==5)
 				{
-					System.out.println();
-//					System.out.println(mcuIndex+" "+blockIndex);
-					for (int i = 0; i < 64; i++)
-					{
-						/*if (aInputCoefficients[mcuIndex][blockIndex][i]!=0)*/ System.out.printf("%5d ", aInputCoefficients[mcuIndex][blockIndex][NATURAL_ORDER[i]]);
-					}
-					System.out.println();
-
-					for (int i = 0; i < 64; i++)
-					{
-						/*if (outputCoefficients[mcuIndex][blockIndex][i]!=0)*/ System.out.printf("%5d ", outputCoefficients[mcuIndex][blockIndex][NATURAL_ORDER[i]]);
-					}
-					System.out.println();
+//					System.out.println();
+//					for (int i = 0; i < 64; i++)
+//					{
+//						/*if (aInputCoefficients[mcuIndex][blockIndex][i]!=0)*/ System.out.printf("%5d ", aInputCoefficients[mcuIndex][blockIndex][NATURAL_ORDER[i]]);
+//					}
+//					System.out.println();
+//
+//					for (int i = 0; i < 64; i++)
+//					{
+//						/*if (outputCoefficients[mcuIndex][blockIndex][i]!=0)*/ System.out.printf("%5d ", outputCoefficients[mcuIndex][blockIndex][NATURAL_ORDER[i]]);
+//					}
+//					System.out.println();
 				}
 			}
 		}
@@ -85,6 +81,7 @@ public class TestJPEGX
 
 	static class State
 	{
+		CabacContext dclow = new CabacContext(0);
 		CabacContext acsign = new CabacContext(0);
 		CabacContext stop = new CabacContext(0);
 		CabacContext dczero = new CabacContext(0);
@@ -141,7 +138,7 @@ public class TestJPEGX
 
 						int S = 10;
 						int i = 0;
-						while (coefficient > S)
+						while (coefficient >= S)
 						{
 							cabacEncoder.encodeBit(0, st.dcmag[i]);
 							coefficient -= S;
@@ -219,7 +216,7 @@ public class TestJPEGX
 						cabacEncoder.encodeBit(1, st.acmag[i]);
 
 						i = 0;
-						CabacContext[] ctx = st.ac[min(pixel-1,49)];
+						CabacContext[] ctx = st.ac[pixel / 5];
 //						CabacContext[] ctx = st.ac[0];
 						while ((m>>=1)!=0)
 						{
@@ -234,7 +231,7 @@ public class TestJPEGX
 					else
 					{
 						i = 0;
-						CabacContext[] ctx = st.ac[min(pixel-1,49)];
+						CabacContext[] ctx = st.ac[pixel / 5];
 						while (coefficient > 0)
 						{
 							cabacEncoder.encodeBit(0, ctx[i]);
@@ -324,7 +321,7 @@ public class TestJPEGX
 					int coefficient = 1;
 
 					i = 0;
-					CabacContext[] ctx = st.ac[min(pixel-1,49)];
+					CabacContext[] ctx = st.ac[pixel / 5];
 					while (cabacDecoder.decodeBit(ctx[i]) == 0)
 					{
 						coefficient++;
