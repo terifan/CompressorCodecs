@@ -179,18 +179,19 @@ public class TestJPEGX
 				{
 					cabacEncoder.encodeBit(0, st.stop);
 
+					int i = pixel;
 					while (pixel < ke)
 					{
 						if (block[NATURAL_ORDER[pixel]] != 0)
 						{
 							break;
 						}
-						cabacEncoder.encodeBit(0, st.run[pixel]);
-
+						cabacEncoder.encodeBit(0, st.run[i]);
 						pixel++;
+						i++;
 					}
 
-					cabacEncoder.encodeBit(1, st.run[pixel]);
+					cabacEncoder.encodeBit(1, st.run[i]);
 
 					int coefficient = block[NATURAL_ORDER[pixel]];
 
@@ -205,7 +206,7 @@ public class TestJPEGX
 
 					if (false)
 					{
-						int i = 0;
+						i = 0;
 						int v = coefficient;
 						int m = 1;
 						while (v > 0)
@@ -226,7 +227,7 @@ public class TestJPEGX
 					}
 					else
 					{
-						int i = 0;
+						i = 0;
 						CabacContext[] ctx = st.ac[min(pixel-1,49)];
 						while (coefficient > 0)
 						{
