@@ -65,20 +65,7 @@ class Encoder
 
 					encoder.encodeBit(1, st.run[i]);
 
-					int coefficient = block[NATURAL_ORDER[pixel]];
-
-					boolean neg = coefficient < 0;
-
-					if (neg)
-					{
-						coefficient = -coefficient;
-					}
-
-					coefficient--;
-
-					encodeAC(coefficient, pixel);
-
-					encoder.encodeBit(neg ? 1 : 0, st.acsign);
+					encodeAC(block[NATURAL_ORDER[pixel]], pixel);
 				}
 
 				if (ke < 64)
@@ -96,59 +83,89 @@ class Encoder
 
 	private void encodeAC(int aCoefficient, int aPixel) throws IOException
 	{
-		if (false)
+		boolean neg = aCoefficient < 0;
+
+		if (neg)
 		{
-			int v = aCoefficient+1;
+			aCoefficient = -aCoefficient;
+		}
+
+		encoder.encodeBit(neg ? 1 : 0, st.acsign);
+
+		aCoefficient--;
+
+		if (!true)
+		{
+			int v = aCoefficient;
 			int m = 0;
 			int i = 0;
-			if ((v -= 1) != 0)
+			if (v != 0)
 			{
-				encoder.encodeBit(1, st.acmag[i]);
-				m = 1;
-				int v2 = v;
-				if ((v2 >>= 1) != 0)
+				while (v >= (1 << m))
 				{
-					encoder.encodeBit(1, st.acmag[i]);
-					m <<= 1;
-					while ((v2 >>= 1) != 0)
-					{
-						encoder.encodeBit(1, st.acmag[i]);
-						m <<= 1;
-						i += 1;
-					}
+					encoder.encodeBit(0, st.acmag[i++]);
+
+					v -= 1 << m;
+					m++;
 				}
 			}
-			encoder.encodeBit(0, st.acmag[i]);
+			encoder.encodeBit(1, st.acmag[i]);
 
+			int ix = 0; //(neg ? 3 : 0) + (m < 5 ? 0 : m < 10 ? 1 : 2);
+
+			m = 1 << m;
+			
 			while ((m >>= 1) != 0)
 			{
-				encoder.encodeBit((m & v) != 0 ? 1 : 0, st.ac3);
+				encoder.encodeBit((m & v) != 0 ? 1 : 0, st.ac[ix]);
 			}
+
+			if(aPixel==1)System.out.print(aCoefficient+"\t");
 		}
-		else if (true)
+		else if (!true)
 		{
 			encoder.encodeExpGolomb(aCoefficient, 0, st.acmag2[aPixel], st.acres[aPixel]);
 		}
 		else
 		{
-			int i = 0;
-			CabacContext[] ctx = st.acmag2[aPixel];
-			while (aCoefficient > 0)
-			{
-				encoder.encodeBit(0, ctx[i]);
-				aCoefficient--;
-				i++;
-			}
-			encoder.encodeBit(1, ctx[i]);
+			encoder.encodeUnary(aCoefficient, st.acmag[aPixel], st.acmag[64 + aPixel]);
+
+//			int i = 0;
+//			for (; aCoefficient > 0; i++)
+//			{
+//				encoder.encodeBit(0, st.acmag2[aPixel][i]);
+//				aCoefficient--;
+//			}
+//			encoder.encodeBit(1, st.acmag2[aPixel][i]);
 		}
 	}
 
 
 	private void encodeDC(int aCoefficient) throws IOException
 	{
-		if (!true)
+		if (true)
 		{
 			encoder.encodeExpGolomb(encodeZigZag32(aCoefficient), 0, st.dcmag, st.dc);
+		}
+		else if (true)
+		{
+			encoder.encodeBit(aCoefficient == 0 ? 1 : 0, st.dczero);
+
+			if (aCoefficient != 0)
+			{
+				if (aCoefficient > 0)
+				{
+					encoder.encodeBit(0, st.dcsign);
+
+					encoder.encodeExpGolomb(aCoefficient - 1, 0, st.dcmag0, st.dc0);
+				}
+				else
+				{
+					encoder.encodeBit(1, st.dcsign);
+
+					encoder.encodeExpGolomb(-aCoefficient - 1, 0, st.dcmag1, st.dc1);
+				}
+			}
 		}
 		else
 		{

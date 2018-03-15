@@ -18,6 +18,7 @@ public class TestJPEGX
 
 		byte[] data = baos.toByteArray();
 
+		System.out.println();
 		System.out.println(data.length);
 
 		int[][][] outputCoefficients = new int[aInputCoefficients.length][aInputCoefficients[0].length][64];
@@ -46,6 +47,7 @@ public class TestJPEGX
 			}
 		}
 
+		System.out.println();
 		System.out.println(Arrays.deepEquals(aInputCoefficients, outputCoefficients));
 	}
 

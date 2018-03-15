@@ -34,14 +34,10 @@ class Decoder
 
 				block[0] = lastdc[ci] = lastdc[ci] + decodeDC();
 
-				for (int pixel = 1;; pixel++)
+				for (int pixel = 1; decoder.decodeBit(st.stop) == 0; pixel++)
 				{
-					if (decoder.decodeBit(st.stop) == 1)
-					{
-						break;
-					}
-
 					int i = pixel;
+
 					while (decoder.decodeBit(st.run[i]) == 0)
 					{
 						block[NATURAL_ORDER[i]] = 0;
@@ -58,34 +54,74 @@ class Decoder
 
 	private int decodeAC(int aPixel) throws IOException
 	{
+		boolean neg = decoder.decodeBit(st.acsign) == 1;
+
 		int coefficient = 1;
 		
-		if (true)
+		if (!true)
+		{
+			int m = 0;
+			int i = 0;
+			
+			while (decoder.decodeBit(st.acmag[i++]) == 0)
+			{
+				m++;
+			}
+
+			int ix = 0; //(neg ? 3 : 0) + (m < 5 ? 0 : m < 10 ? 1 : 2);
+
+			m = 1 << m;
+			
+			while ((m >>= 1) > 0)
+			{
+				coefficient += m * decoder.decodeBit(st.ac[ix]);
+			}
+
+			if(aPixel==1)System.out.print(coefficient+"\t");
+		}
+		else if (!true)
 		{
 			coefficient += (int)decoder.decodeExpGolomb(0, st.acmag2[aPixel], st.acres[aPixel]);
 		}
 		else
 		{
-			int i = 0;
-			CabacContext[] ctx = st.acmag2[aPixel / 5];
-			while (decoder.decodeBit(ctx[i]) == 0)
-			{
-				coefficient++;
-				i++;
-			}
+			coefficient += decoder.decodeUnary(st.acmag[aPixel], st.acmag[64 + aPixel]);
+
+//			for (int i = 0; decoder.decodeBit(st.acmag2[aPixel][i]) == 0; i++)
+//			{
+//				coefficient++;
+//			}
 		}
 
-		return decoder.decodeBit(st.acsign) == 1 ? -coefficient : coefficient;
+		return neg ? -coefficient : coefficient;
 	}
 
 
 	private int decodeDC() throws IOException
 	{
 		int coefficient;
-		
-		if (!true)
+
+		if (true)
 		{
 			coefficient = decodeZigZag32((int)decoder.decodeExpGolomb(0, st.dcmag, st.dc));
+		}
+		else if (true)
+		{
+			if (decoder.decodeBit(st.dczero) == 1)
+			{
+				coefficient = 0;
+			}
+			else
+			{
+				if (decoder.decodeBit(st.dcsign) == 0)
+				{
+					coefficient = (int)decoder.decodeExpGolomb(0, st.dcmag0, st.dc0) + 1;
+				}
+				else
+				{
+					coefficient = (int)decoder.decodeExpGolomb(0, st.dcmag1, st.dc1) * -1 - 1;
+				}
+			}
 		}
 		else
 		{
