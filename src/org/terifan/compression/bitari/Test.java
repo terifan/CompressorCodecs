@@ -18,7 +18,7 @@ public class Test
 ////				{
 ////					System.out.printf("%8d ", i+j==0?0:30000*j/(i+j));
 ////				}
-////				
+////
 ////				System.out.print("    ");
 ////
 ////				for (int j = 0; j < 8; j++)
@@ -28,7 +28,7 @@ public class Test
 ////				}
 ////				System.out.println("");
 ////			}
-//			
+//
 ////			test1();
 //			test2();
 //		}
@@ -37,8 +37,8 @@ public class Test
 //			e.printStackTrace(System.out);
 //		}
 //	}
-//	
-//	
+//
+//
 //	public static void test2() throws IOException
 //	{
 //		for (int test = 0; test < 10000; test++)
@@ -155,7 +155,7 @@ public class Test
 //					}
 //				}
 //			}
-//			
+//
 //			System.out.printf("%8d %8d %8d\n", bits.length, 8*buffer1.length, 8*buffer2.length);
 //
 //			if (err > 0)
@@ -165,8 +165,8 @@ public class Test
 //			}
 //		}
 //	}
-//	
-//	
+//
+//
 //	public static void test1()
 //	{
 //		try
@@ -202,7 +202,7 @@ public class Test
 //					buffer = baos.toByteArray();
 ////					System.out.println("");
 //				}
-//				
+//
 ////				System.out.println("Size: "+buffer.length);
 ////				System.out.println("Encode: "+t/1000000);
 //
@@ -233,7 +233,7 @@ public class Test
 //
 ////				System.out.println("Decode: "+t/1000000);
 ////				System.out.println("Errors: "+err);
-//				
+//
 //				if (err > 0)
 //				{
 //					System.out.println("decode failed "+test+", errors: "+err);

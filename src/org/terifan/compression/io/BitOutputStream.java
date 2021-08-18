@@ -167,37 +167,34 @@ public class BitOutputStream implements AutoCloseable //extends OutputStream
 //			aStep += aIncrement;
 //		}
 //	}
-//
-//
-//	@Override
-//	public void write(int aByte) throws IOException
-//	{
-//		writeBits(0xff & aByte, 8);
-//	}
-//
-//
-//	@Override
-//	public void write(byte[] aBuffer) throws IOException
-//	{
-//		write(aBuffer, 0, aBuffer.length);
-//	}
-//
-//
-//	@Override
-//	public void write(byte[] aBuffer, int aOffset, int aLength) throws IOException
-//	{
-//		if (mBitsToGo == 8)
-//		{
-//			mOutputStream.write(aBuffer, aOffset, aLength);
-//		}
-//		else
-//		{
-//			while (aLength-- > 0)
-//			{
-//				writeBits(aBuffer[aOffset++] & 0xFF, 8);
-//			}
-//		}
-//	}
+
+
+	public void write(int aByte) throws IOException
+	{
+		writeBits(0xff & aByte, 8);
+	}
+
+
+	public void write(byte[] aBuffer) throws IOException
+	{
+		write(aBuffer, 0, aBuffer.length);
+	}
+
+
+	public void write(byte[] aBuffer, int aOffset, int aLength) throws IOException
+	{
+		if (mBitsToGo == 8)
+		{
+			mOutputStream.write(aBuffer, aOffset, aLength);
+		}
+		else
+		{
+			while (aLength-- > 0)
+			{
+				writeBits(aBuffer[aOffset++] & 0xFF, 8);
+			}
+		}
+	}
 
 
 	public void finish() throws IOException
