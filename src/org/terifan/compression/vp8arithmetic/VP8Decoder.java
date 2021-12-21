@@ -74,6 +74,44 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
+	public long readExpGolomb(int aStep) throws IOException
+	{
+		int x = decodeBitEqProb();
+
+		long result = 0;
+
+		while (decodeBit(240) == 0)
+		{
+			result += 1L << aStep;
+			aStep++;
+		}
+
+		long binarySymbol = 0;
+		while (aStep-- > 0)
+		{
+			if (decodeBitEqProb()== 1)
+			{
+				binarySymbol |= 1L << aStep;
+			}
+		}
+
+		return ((result + binarySymbol) << 1) + x;
+	}
+
+
+	public int readUnary() throws IOException
+	{
+		int symbol = 0;
+
+		while (decodeBit(240) == 0)
+		{
+			symbol++;
+		}
+
+		return symbol;
+	}
+
+
 	@Override
 	public void close() throws IOException
 	{

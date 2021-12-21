@@ -147,4 +147,41 @@ public class VP8Encoder implements AutoCloseable
 			mRun++;
 		}
 	}
+
+
+	public void writeExpGolomb(int aSymbol, int aStep) throws IOException
+	{
+		int Q = 240;
+
+		encodeBitEqProb(aSymbol & 1);
+		aSymbol >>>= 1;
+
+		while (aSymbol >= (1L << aStep))
+		{
+			encodeBit(0, Q);
+
+			aSymbol -= 1L << aStep;
+			aStep++;
+		}
+
+		encodeBit(1, Q);
+
+		while (aStep-- > 0)
+		{
+			encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
+		}
+	}
+
+
+	public void writeUnary(int aSymbol) throws IOException
+	{
+		assert aSymbol >= 0;
+
+		int l = aSymbol;
+		while (l-- > 0)
+		{
+			encodeBit(0, 240);
+		}
+		encodeBit(1, 240);
+	}
 }
