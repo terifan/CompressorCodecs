@@ -75,6 +75,16 @@ public class DynamicStats implements SymbolStatistics
 	}
 
 
+	public void set(int aSymbol, int aCount)
+	{
+		assert aSymbol < mNumSymbols;
+
+		mTotalCount -= mCounts[aSymbol];
+		mCounts[aSymbol] = aCount;
+		mTotalCount += aCount;
+	}
+
+
 	@Override
 	public void finish()
 	{
