@@ -3,19 +3,19 @@ package org.terifan.compression.rans;
 import java.util.Arrays;
 
 
-final public class IntStack
+class Stack
 {
-	private int[] mBuffer;
+	private StateInfo[] mBuffer;
 	private int mPosition;
 
 
-	public IntStack()
+	Stack()
 	{
-		mBuffer = new int[4096];
+		mBuffer = new StateInfo[4096];
 	}
 
 
-	public void push(int aValue)
+	public void push(StateInfo aValue)
 	{
 		if (mBuffer.length == mPosition)
 		{
@@ -25,11 +25,11 @@ final public class IntStack
 	}
 
 
-	public int pop()
+	public StateInfo pop()
 	{
 		if (mPosition <= 0)
 		{
-			throw new RuntimeException("Underflow");
+			throw new IllegalStateException("Underflow");
 		}
 
 		return mBuffer[--mPosition];

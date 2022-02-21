@@ -46,7 +46,7 @@ public class DynamicStats implements SymbolStatistics
 	@Override
 	public int getScaleBits()
 	{
-		return requiredBits(mTotalCount);
+		return Integer.numberOfTrailingZeros(Integer.highestOneBit(mTotalCount)) + 1;
 	}
 
 
@@ -82,11 +82,5 @@ public class DynamicStats implements SymbolStatistics
 		mTotalCount -= mCounts[aSymbol];
 		mCounts[aSymbol] = aCount;
 		mTotalCount += aCount;
-	}
-
-
-	static int requiredBits(int aMax)
-	{
-		return Integer.numberOfTrailingZeros(Integer.highestOneBit(aMax)) + 1;
 	}
 }

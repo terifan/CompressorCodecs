@@ -42,7 +42,7 @@ public class RANSDecoder
 	{
 		int x = aFreq * (mState >>> aScaleBits) + (mState & (1 << aScaleBits) - 1) - aStart;
 
-		while (Integer.compareUnsigned(x, RANS_BYTE_L) < 0)
+		while (x < RANS_BYTE_L)
 		{
 			x = (x << 8) | readByte();
 		}

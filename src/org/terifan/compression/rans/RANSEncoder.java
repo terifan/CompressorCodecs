@@ -10,9 +10,7 @@ public class RANSEncoder
 
 	private OutputStream mOutput;
 	private SymbolStatistics mStats;
-	private IntStack mStartHistory;
-	private IntStack mFreqHistory;
-	private IntStack mScaleBitsHistory;
+	private Stack mStack;
 	private int mState;
 
 
@@ -21,9 +19,7 @@ public class RANSEncoder
 		mOutput = aOutput;
 		mStats = aStats;
 
-		mScaleBitsHistory = new IntStack();
-		mFreqHistory = new IntStack();
-		mStartHistory = new IntStack();
+		mStack = new Stack();
 		mState = RANS_BYTE_L;
 	}
 
@@ -37,36 +33,30 @@ public class RANSEncoder
 	public void write(int aSymbol, SymbolStatistics aStats)
 	{
 		SymbolInfo symbInfo = aStats.get(aSymbol);
-		mScaleBitsHistory.push(aStats.getScaleBits());
-		mStartHistory.push(symbInfo.mStart);
-		mFreqHistory.push(symbInfo.mFreq);
+		mStack.push(new StateInfo(aStats.getScaleBits(), symbInfo.mStart, symbInfo.mFreq));
 		aStats.update(aSymbol);
 	}
 
 
 	public void finish() throws IOException
 	{
-		for (int i = 0, count = mStartHistory.size(); i < count; i++)
+		for (int i = 0, count = mStack.size(); i < count; i++)
 		{
-			int freq = mFreqHistory.pop();
-			int start = mStartHistory.pop();
-			int scaleBits = mScaleBitsHistory.pop();
-			int x = ransEncRenorm(freq, scaleBits);
-			mState = (Integer.divideUnsigned(x, freq) << scaleBits) + (Integer.remainderUnsigned(x, freq)) + start;
+			StateInfo p = mStack.pop();
+			int x = ransEncRenorm(p.mFreq, p.mScale);
+			mState = ((x / p.mFreq) << p.mScale) + ((x % p.mFreq)) + p.mStart;
 		}
 
-		mOutput.write(mState);
-		mOutput.write(mState >>> 8);
-		mOutput.write(mState >>> 16);
-		mOutput.write(mState >>> 24);
+		mOutput.write(0xff & mState);
+		mOutput.write(0xff & (mState >>> 8));
+		mOutput.write(0xff & (mState >>> 16));
+		mOutput.write(0xff & (mState >>> 24));
 		mOutput.close();
 	}
 
 
 	private int ransEncRenorm(int aFreq, int aScaleBits) throws IOException
 	{
-		assert aFreq != 0;
-
 		int x = mState;
 		int max = ((RANS_BYTE_L >>> aScaleBits) << 8) * aFreq;
 

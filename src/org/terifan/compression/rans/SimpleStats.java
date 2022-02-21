@@ -1,7 +1,5 @@
 package org.terifan.compression.rans;
 
-import static org.terifan.compression.rans.DynamicStats.requiredBits;
-
 
 public class SimpleStats implements SymbolStatistics
 {
@@ -18,7 +16,7 @@ public class SimpleStats implements SymbolStatistics
 	public SimpleStats(int aMax)
 	{
 		mMax = aMax;
-		mMaxBits = requiredBits(aMax * (aMax + 1) / 2) + 2;
+		mMaxBits = Integer.numberOfTrailingZeros(Integer.highestOneBit(aMax * (aMax + 1) / 2)) + 1 + 2;
 	}
 
 
