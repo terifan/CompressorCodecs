@@ -14,11 +14,4 @@ public class SymbolInfo
 		mStart = aStart;
 		mSymbol = aSymbol;
 	}
-
-
-	@Override
-	public String toString()
-	{
-		return "SymbolInfo [freq=" + mFreq + ", start=" + mStart + ", symbol=" + mSymbol + "]";
-	}
 }

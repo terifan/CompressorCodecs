@@ -1,64 +1,43 @@
 package org.terifan.compression.rans;
 
+import java.util.Arrays;
+
 
 final public class IntStack
 {
-	private static final int MAX_SIZE = 8 * 1024 * 1024;
-
-	final private int[] mBuffer = new int[MAX_SIZE];
-	private int mSize = 0;
+	private int[] mBuffer;
+	private int mPosition;
 
 
-	public void push(int value)
+	public IntStack()
 	{
-		if (mSize >= MAX_SIZE)
+		mBuffer = new int[4096];
+	}
+
+
+	public void push(int aValue)
+	{
+		if (mBuffer.length == mPosition)
 		{
-			throw new RuntimeException("Exceeded capacity");
+			mBuffer = Arrays.copyOfRange(mBuffer, 0, mBuffer.length * 3 / 2);
 		}
-		else
-		{
-			mBuffer[mSize++] = value;
-		}
+		mBuffer[mPosition++] = aValue;
 	}
 
 
 	public int pop()
 	{
-		if (mSize <= 0)
+		if (mPosition <= 0)
 		{
 			throw new RuntimeException("Underflow");
 		}
-		else
-		{
-			return mBuffer[--mSize];
-		}
 
+		return mBuffer[--mPosition];
 	}
 
 
-	public int getCount()
+	public int size()
 	{
-		return mSize;
-	}
-
-
-	/**
-	 * O(N) implementation. Useful for testing
-	 */
-	public int dequeue()
-	{
-		if (mSize <= 0)
-		{
-			throw new RuntimeException("Underflow");
-		}
-		else
-		{
-			int result = mBuffer[0];
-			for (int i = 0; i < mSize - 1; i++)
-			{
-				mBuffer[i] = mBuffer[i + 1];
-			}
-			return result;
-		}
+		return mPosition;
 	}
 }

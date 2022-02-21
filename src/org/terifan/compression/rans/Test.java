@@ -12,7 +12,7 @@ public class Test
 	{
 		try
 		{
-			byte[] buf = new byte[10000];
+			byte[] buf = new byte[1024 * 1024 * 7];
 			new Random().nextBytes(buf);
 
 			test("The quick brown fox jumps over the lazy dog".getBytes());
@@ -41,10 +41,10 @@ public class Test
 
 	private static void test(byte[] aText) throws IOException
 	{
-		testCodec(new VerySimpleStats(), new VerySimpleStats(), aText);
-		testCodec(new SimpleStats(256), new SimpleStats(256), aText);
+//		testCodec(new VerySimpleStats(), new VerySimpleStats(), aText);
+//		testCodec(new SimpleStats(256), new SimpleStats(256), aText);
 		testCodec(new DynamicStats(256), new DynamicStats(256), aText);
-		testCodec(english(), english(), aText);
+//		testCodec(english(), english(), aText);
 	}
 
 

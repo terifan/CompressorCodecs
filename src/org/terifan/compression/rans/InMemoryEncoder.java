@@ -17,9 +17,9 @@ public class InMemoryEncoder
 	}
 
 
-	public void write(int aChar)
+	public void write(int aSymbol)
 	{
-		mEncoder.write(aChar);
+		mEncoder.write(aSymbol);
 	}
 
 

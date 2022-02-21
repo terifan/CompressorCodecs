@@ -52,13 +52,7 @@ public class SimpleStats implements SymbolStatistics
 
 
 	@Override
-	public void update(int aChar)
-	{
-	}
-
-
-	@Override
-	public void finish()
+	public void update(int aSymbol)
 	{
 	}
 }

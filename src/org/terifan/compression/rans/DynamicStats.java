@@ -85,12 +85,6 @@ public class DynamicStats implements SymbolStatistics
 	}
 
 
-	@Override
-	public void finish()
-	{
-	}
-
-
 	static int requiredBits(int aMax)
 	{
 		return Integer.numberOfTrailingZeros(Integer.highestOneBit(aMax)) + 1;

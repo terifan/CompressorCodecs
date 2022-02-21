@@ -28,10 +28,4 @@ public class VerySimpleStats implements SymbolStatistics
 	public void update(int aSymbol)
 	{
 	}
-
-
-	@Override
-	public void finish()
-	{
-	}
 }
