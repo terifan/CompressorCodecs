@@ -13,7 +13,4 @@ public interface SymbolStatistics
 
 
 	void update(int aSymbol);
-
-
-	void finish();
 }
