@@ -26,9 +26,7 @@ public class BWT
 			System.out.printf("%12s: %d%n", "index", index);
 			System.out.printf("%12s: %s%n", "plain-text", new String(plainText));
 			System.out.printf("%12s: %s%n", "bwt-text", new String(bwtText));
-
 			System.out.printf("%12s: %s%n", "success", new String(decodedText).equals(new String(plainText)));
-
 			System.out.printf("%12s: %d%n", "plain-input", plainText.length);
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
