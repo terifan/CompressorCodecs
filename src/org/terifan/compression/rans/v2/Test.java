@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import testdata.LoadTestData.Source;
 import static testdata.LoadTestData.loadTestData;
 
 
@@ -25,7 +26,7 @@ public class Test
 
 	private static void test2() throws IOException
 	{
-		byte[] sourceBuffer = loadTestData();
+		byte[] sourceBuffer = loadTestData(Source.BOOK);
 
 		SymbolStats stats = new SymbolStats(14);
 		stats.count_freqs(sourceBuffer);
@@ -93,7 +94,7 @@ public class Test
 
 	private static void test1() throws IOException
 	{
-		byte[] sourceBuffer = loadTestData();
+		byte[] sourceBuffer = loadTestData(Source.LENNA_GRAY);
 
 		SymbolStats stats = new SymbolStats(16);
 		stats.count_freqs(sourceBuffer);

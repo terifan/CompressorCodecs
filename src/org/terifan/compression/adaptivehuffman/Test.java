@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.terifan.compression.io.BitInputStream;
 import org.terifan.compression.io.BitOutputStream;
+import testdata.LoadTestData.Source;
 import static testdata.LoadTestData.loadTestData;
 
 
@@ -15,7 +16,7 @@ public class Test
 	{
 		try
 		{
-			byte[] text = loadTestData();
+			byte[] text = loadTestData(Source.BOOK);
 
 			test(text, 8);
 
