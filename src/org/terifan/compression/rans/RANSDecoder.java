@@ -10,11 +10,11 @@ public class RANSDecoder
 	private final static int RANS_BYTE_L = 1 << 23;
 
 	private InputStream mInput;
-	private SymbolStatistics mStats;
+	private SymbolStats mStats;
 	private int mState;
 
 
-	public RANSDecoder(InputStream aInput, SymbolStatistics aStats) throws IOException
+	public RANSDecoder(InputStream aInput, SymbolStats aStats) throws IOException
 	{
 		mInput = aInput;
 		mStats = aStats;
@@ -24,16 +24,10 @@ public class RANSDecoder
 
 	public int read() throws IOException
 	{
-		return read(mStats);
-	}
-
-
-	public int read(SymbolStatistics aStats) throws IOException
-	{
-		int scaleBits = aStats.getScaleBits();
-		SymbolInfo symbInfo = aStats.findSymbol(mState & ((1 << scaleBits) - 1));
+		int scaleBits = mStats.getScaleBits();
+		SymbolInfo symbInfo = mStats.findSymbol(mState & ((1 << scaleBits) - 1));
 		advance(scaleBits, symbInfo.mFreq, symbInfo.mStart);
-		aStats.update(symbInfo.mSymbol);
+		mStats.update(symbInfo.mSymbol);
 		return symbInfo.mSymbol;
 	}
 

@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 
-/**
- * Source: https://code.google.com/p/adaptive-huffman-coding/source/browse/trunk/AdaptiveHuffmanCoding/src/com/adaptivehuffman/
- */
 class Model
 {
 	static int NEW = Integer.MAX_VALUE;
@@ -39,24 +36,24 @@ class Model
 	 * It's a very important method that is used for updating the structure of tree after read
 	 * each symbol. Called both during encoding and decoding.
 	 *
-	 * @param c the next character
+	 * @param aSymbol the next character
 	 */
-	public void updateTree(int c)
+	public void updateTree(int aSymbol)
 	{
 		Node toBeAdd;
 
-		if (mAlreadyExist.contains(c))
+		if (mAlreadyExist.contains(aSymbol))
 		{
-			toBeAdd = mNodeLookup.get(c);
+			toBeAdd = mNodeLookup.get(aSymbol);
 		}
 		else
 		{
 			// if the character is not yet existed, create two nodes. The one is for the new character,
 			// the other is for its father node.
 			Node innerNode = new Node(-1, 1); //inner node with null letter
-			Node newNode = new Node(c, 1); //stores symbol
-			
-			mNodeLookup.put(c, newNode);
+			Node newNode = new Node(aSymbol, 1); //stores symbol
+
+			mNodeLookup.put(aSymbol, newNode);
 
 			// pay attention to the linking process among nodes.
 			innerNode.left = mNytNode;
@@ -77,7 +74,7 @@ class Model
 			mNodeList.add(1, innerNode);
 			mNodeList.add(1, newNode);
 
-			mAlreadyExist.add(c);
+			mAlreadyExist.add(aSymbol);
 
 			toBeAdd = innerNode.parent;
 		}

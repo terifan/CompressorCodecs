@@ -3,29 +3,28 @@ package org.terifan.compression.rans;
 import java.util.Arrays;
 
 
-public class DynamicStats implements SymbolStatistics
+public class SymbolStats
 {
-	private int mTotalCount;
+	private int mCumulative;
 	private int mNumSymbols;
 	private int[] mCounts;
 
 
-	public DynamicStats()
+	public SymbolStats()
 	{
 		this(256);
 	}
 
 
-	public DynamicStats(int aNumSymbols)
+	public SymbolStats(int aNumSymbols)
 	{
 		mNumSymbols = aNumSymbols;
-		mTotalCount = mNumSymbols;
+		mCumulative = mNumSymbols;
 		mCounts = new int[mNumSymbols];
 		Arrays.fill(mCounts, 1);
 	}
 
 
-	@Override
 	public SymbolInfo findSymbol(int aCumFreq)
 	{
 		int sum = 0;
@@ -43,14 +42,12 @@ public class DynamicStats implements SymbolStatistics
 	}
 
 
-	@Override
 	public int getScaleBits()
 	{
-		return Integer.numberOfTrailingZeros(Integer.highestOneBit(mTotalCount)) + 1;
+		return Integer.numberOfTrailingZeros(Integer.highestOneBit(mCumulative)) + 1;
 	}
 
 
-	@Override
 	public SymbolInfo get(int aSymbol)
 	{
 		assert aSymbol < mNumSymbols;
@@ -65,13 +62,12 @@ public class DynamicStats implements SymbolStatistics
 	}
 
 
-	@Override
 	public void update(int aSymbol)
 	{
 		assert aSymbol < mNumSymbols;
 
 		mCounts[aSymbol]++;
-		mTotalCount++;
+		mCumulative++;
 	}
 
 
@@ -79,8 +75,8 @@ public class DynamicStats implements SymbolStatistics
 	{
 		assert aSymbol < mNumSymbols;
 
-		mTotalCount -= mCounts[aSymbol];
+		mCumulative -= mCounts[aSymbol];
 		mCounts[aSymbol] = aCount;
-		mTotalCount += aCount;
+		mCumulative += aCount;
 	}
 }

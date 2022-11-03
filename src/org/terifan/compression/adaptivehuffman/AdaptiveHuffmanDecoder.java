@@ -5,9 +5,6 @@ import java.io.OutputStream;
 import org.terifan.compression.io.BitInputStream;
 
 
-/**
- * Source: https://code.google.com/p/adaptive-huffman-coding/source/browse/trunk/AdaptiveHuffmanCoding/src/com/adaptivehuffman/
- */
 public class AdaptiveHuffmanDecoder
 {
 	private Model mModel;
@@ -21,7 +18,7 @@ public class AdaptiveHuffmanDecoder
 		{
 			throw new IllegalArgumentException("aBitsPerSymbol must be between 1 and 30 bits.");
 		}
-		
+
 		mBitsPerSymbol = aBitsPerSymbol;
 		mModel = new Model();
 		mFirst = true;
@@ -75,23 +72,10 @@ public class AdaptiveHuffmanDecoder
 		}
 	}
 
-	
+
 	public void learn(int aSymbol) throws IOException
 	{
 		mModel.updateTree(aSymbol);
 		mFirst = false;
-	}
-
-
-	public void setBitsPerSymbol(int aBitsPerSymbol)
-	{
-		if (aBitsPerSymbol < 1 || aBitsPerSymbol > 30)
-		{
-			throw new IllegalArgumentException("aBitsPerSymbol must be between 1 and 30 bits.");
-		}
-		
-		assert aBitsPerSymbol >= mBitsPerSymbol : aBitsPerSymbol + " >= " + mBitsPerSymbol;
-		
-		mBitsPerSymbol = aBitsPerSymbol;
 	}
 }

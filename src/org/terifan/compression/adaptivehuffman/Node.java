@@ -1,9 +1,6 @@
 package org.terifan.compression.adaptivehuffman;
 
 
-/**
- * Source: https://code.google.com/p/adaptive-huffman-coding/source/browse/trunk/AdaptiveHuffmanCoding/src/com/adaptivehuffman/
- */
 class Node
 {
 	Node left;

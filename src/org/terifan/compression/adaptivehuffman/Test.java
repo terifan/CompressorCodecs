@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.terifan.compression.io.BitInputStream;
 import org.terifan.compression.io.BitOutputStream;
+import static testdata.LoadTestData.loadTestData;
 
 
 public class Test
@@ -14,9 +15,13 @@ public class Test
 	{
 		try
 		{
-			test("ByteArrayOutputStream encoded = new ByteArrayOutputStream();".getBytes(), 7);
-			test("aacabaacabacababacabbaa".getBytes(), 7);
-			test("0320649934964".getBytes(), 6);
+			byte[] text = loadTestData();
+
+			test(text, 8);
+
+//			test("ByteArrayOutputStream encoded = new ByteArrayOutputStream();".getBytes(), 7);
+//			test("aacabaacabacababacabbaa".getBytes(), 7);
+//			test("0320649934964".getBytes(), 6);
 		}
 		catch (Exception e)
 		{
