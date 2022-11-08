@@ -221,34 +221,24 @@ public class CabacEncoder
 	}
 
 
-	public void encodeExpGolomb(long aSymbol, int aStep, CabacContext[] aContext1, CabacContext[] aContext2) throws IOException
+	public void encodeExpGolomb(int aSymbol, int aStep, CabacContext[] aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 
 		int i = 0;
 
-		while (aSymbol >= (1L << aStep))
+		while (aSymbol >= (1 << aStep))
 		{
-			encodeBit(0, aContext1[i++]);
-
-			aSymbol -= 1L << aStep;
+			encodeBit(0, aContext[i++]);
+			aSymbol -= 1 << aStep;
 			aStep++;
 		}
 
-		encodeBit(1, aContext1[i]);
-
-		i = 0;
+		encodeBit(1, aContext[i]);
 
 		while (aStep-- > 0)
 		{
-			if (aContext2 == null)
-			{
-				encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
-			}
-			else
-			{
-				encodeBit((int)(aSymbol >>> aStep) & 1, aContext2[i++]);
-			}
+			encodeBitEqProb((aSymbol >>> aStep) & 1);
 		}
 	}
 

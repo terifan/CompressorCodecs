@@ -58,7 +58,7 @@ public class TestEfficiencyGolomb
 				CabacContext[] context = fill(new CabacContext[BITS]);
 				for (int i = 0; i < values.length; i++)
 				{
-					writer.encodeExpGolomb(values[i], 1, context, null);
+					writer.encodeExpGolomb(values[i], 1, context);
 				}
 				writer.encodeFinal(1);
 				writer.stopEncoding();
@@ -71,7 +71,7 @@ public class TestEfficiencyGolomb
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					long b = reader.decodeExpGolomb(1, context, null);
+					long b = reader.decodeExpGolomb(1, context);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;

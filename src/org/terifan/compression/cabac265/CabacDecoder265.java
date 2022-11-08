@@ -232,16 +232,13 @@ public class CabacDecoder265
 	{
 		int value = 0;
 
-		if (/*likely*/(nBits <= 8))
+		if (nBits <= 8)
 		{
 			if (nBits == 0)
 			{
 				return 0;
 			}
-			else
-			{
-				value = decode_CABAC_FL_bypass_parallel(nBits);
-			}
+			value = decode_CABAC_FL_bypass_parallel(nBits);
 		}
 		else
 		{
