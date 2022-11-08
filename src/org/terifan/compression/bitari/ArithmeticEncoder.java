@@ -214,7 +214,7 @@ public class ArithmeticEncoder
 		else
 		{
 			int i = 0;
-			encode(1, aContext[1]);
+			encode(1, aContext[0]);
 			int L = aValue;
 			int K = 1;
 			while ((--L > 0) && (++K <= GOLOMB_EXP_START))

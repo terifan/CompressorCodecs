@@ -24,13 +24,13 @@ public class TestEfficiencyGolomb
 	{
 		try
 		{
-			final int BITS = 8;
+			final int BITS = 14;
 			final int SYMBOLS = 1 << BITS;
 
 			int entropy = 0;
 
 			int [] values = new int[10000];
-			Random rnd = new Random();
+			Random rnd = new Random(1);
 			for (int i = 0; i < values.length; i++)
 			{
 				int len = rnd.nextInt(BITS);
@@ -49,10 +49,10 @@ public class TestEfficiencyGolomb
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				CabacEncoder writer = new CabacEncoder(baos);
-				CabacContext context = new CabacContext(0);
+				CabacContext[] context1 = fill(new CabacContext[BITS]);
 				for (int i = 0; i < values.length; i++)
 				{
-					writer.encodeExpGolomb(values[i], 0, context);
+					writer.encodeExpGolomb(values[i], 1, context1, null);
 				}
 				writer.encodeFinal(1);
 				writer.stopEncoding();
@@ -61,11 +61,11 @@ public class TestEfficiencyGolomb
 
 			{
 				CabacDecoder reader = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer)));
-				CabacContext context = new CabacContext(0);
+				CabacContext[] context1 = fill(new CabacContext[BITS]);
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					long b = reader.decodeExpGolomb(0, context);
+					long b = reader.decodeExpGolomb(1, context1, null);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
@@ -177,5 +177,15 @@ public class TestEfficiencyGolomb
 		{
 			e.printStackTrace(System.out);
 		}
+	}
+
+
+	private static CabacContext[] fill(CabacContext[] aCabacContext)
+	{
+		for (int i = 0; i < aCabacContext.length; i++)
+		{
+			aCabacContext[i] = new CabacContext(0);
+		}
+		return aCabacContext;
 	}
 }

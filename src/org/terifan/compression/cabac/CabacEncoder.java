@@ -241,7 +241,14 @@ public class CabacEncoder
 
 		while (aStep-- > 0)
 		{
-			encodeBit((int)(aSymbol >>> aStep) & 1, aContext2[i++]);
+			if (aContext2 == null)
+			{
+				encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
+			}
+			else
+			{
+				encodeBit((int)(aSymbol >>> aStep) & 1, aContext2[i++]);
+			}
 		}
 	}
 

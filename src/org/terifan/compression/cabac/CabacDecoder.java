@@ -167,23 +167,23 @@ public class CabacDecoder
 	}
 
 
-	public long decodeExpGolomb(int aStep, CabacContext[] aContext, CabacContext[] aContext1) throws IOException
+	public long decodeExpGolomb(int aStep, CabacContext[] aContext1, CabacContext[] aContext2) throws IOException
 	{
 		long result = 0;
 		int i = 0;
 
-		while (decodeBit(aContext[i++]) == 0)
+		while (decodeBit(aContext1[i++]) == 0)
 		{
 			result += 1L << aStep;
 			aStep++;
 		}
 
 		i = 0;
-		
+
 		long binarySymbol = 0;
 		while (aStep-- > 0)
 		{
-			if (decodeBit(aContext1[i++]) == 1)
+			if ((aContext2 == null ? decodeBitEqProb() : decodeBit(aContext2[i++])) == 1)
 			{
 				binarySymbol |= 1L << aStep;
 			}
