@@ -22,6 +22,12 @@ public class TestEfficiencyGolomb
 {
 	public static void main(String... args)
 	{
+		for (int i = 0; i<  100; i++)test();
+	}
+
+
+	private static void test()
+	{
 		try
 		{
 			final int BITS = 14;
@@ -29,7 +35,7 @@ public class TestEfficiencyGolomb
 
 			int entropy = 0;
 
-			int [] values = new int[10000];
+			int [] values = new int[100000];
 			Random rnd = new Random(1);
 			for (int i = 0; i < values.length; i++)
 			{
@@ -49,10 +55,10 @@ public class TestEfficiencyGolomb
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				CabacEncoder writer = new CabacEncoder(baos);
-				CabacContext[] context1 = fill(new CabacContext[BITS]);
+				CabacContext[] context = fill(new CabacContext[BITS]);
 				for (int i = 0; i < values.length; i++)
 				{
-					writer.encodeExpGolomb(values[i], 1, context1, null);
+					writer.encodeExpGolomb(values[i], 1, context, null);
 				}
 				writer.encodeFinal(1);
 				writer.stopEncoding();
@@ -61,11 +67,11 @@ public class TestEfficiencyGolomb
 
 			{
 				CabacDecoder reader = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer)));
-				CabacContext[] context1 = fill(new CabacContext[BITS]);
+				CabacContext[] context = fill(new CabacContext[BITS]);
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					long b = reader.decodeExpGolomb(1, context1, null);
+					long b = reader.decodeExpGolomb(1, context, null);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
@@ -78,10 +84,10 @@ public class TestEfficiencyGolomb
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ArithmeticEncoder encoder = new ArithmeticEncoder(baos);
-				ArithmeticContext[] context = {new ArithmeticContext(),new ArithmeticContext()};
+				ArithmeticContext[] context = fill(new ArithmeticContext[BITS]);
 				for (int i = 0; i < values.length; i++)
 				{
-					encoder.encodeExpGolomb(values[i], context);
+					encoder.encodeExpGolomb(values[i], 1, context);
 				}
 				encoder.stopEncoding();
 				buffer = baos.toByteArray();
@@ -89,11 +95,11 @@ public class TestEfficiencyGolomb
 
 			{
 				ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(buffer));
-				ArithmeticContext[] context = {new ArithmeticContext(),new ArithmeticContext()};
+				ArithmeticContext[] context = fill(new ArithmeticContext[BITS]);
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					int b = decoder.decodeExpGolomb(context);
+					long b = decoder.decodeExpGolomb(1, context);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
@@ -103,69 +109,63 @@ public class TestEfficiencyGolomb
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			{
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				try (BitOutputStream bis = new BitOutputStream(baos))
-				{
-					BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bis);
-					BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
-					for (int i = 0; i < values.length; i++)
-					{
-						encoder.encode(values[i], context);
-					}
-					encoder.close();
-				}
-				buffer = baos.toByteArray();
-			}
-
-			{
-				BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(buffer)));
-				BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
-				t = System.nanoTime();
-				for (int i = 0; i < values.length; i++)
-				{
-					int b = decoder.decode(context);
-					assert b == values[i] : b+" == "+values[i];
-				}
-				t = System.nanoTime()-t;
-			}
-
-			System.out.println("BasicArith - Size: "+buffer.length+", Time: "+t/1000000);
+//			{
+//				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//				try (BitOutputStream bis = new BitOutputStream(baos))
+//				{
+//					BasicArithmeticEncoder encoder = new BasicArithmeticEncoder(bis);
+//					BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
+//					for (int i = 0; i < values.length; i++)
+//					{
+//						encoder.encode(values[i], context);
+//					}
+//					encoder.close();
+//				}
+//				buffer = baos.toByteArray();
+//			}
+//
+//			{
+//				BasicArithmeticDecoder decoder = new BasicArithmeticDecoder(new BitInputStream(new ByteArrayInputStream(buffer)));
+//				BasicArithmeticContext context = new BasicArithmeticContext(SYMBOLS, true);
+//				t = System.nanoTime();
+//				for (int i = 0; i < values.length; i++)
+//				{
+//					int b = decoder.decode(context);
+//					assert b == values[i] : b+" == "+values[i];
+//				}
+//				t = System.nanoTime()-t;
+//			}
+//
+//			System.out.println("BasicArith - Size: "+buffer.length+", Time: "+t/1000000);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			{
-				CabacModel[] models = {
-					new CabacModel()
-				};
+				CabacModel[] models = fill(new CabacModel[BITS]);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				CabacEncoder265 encoder = new CabacEncoder265(baos);
-//				encoder.write_startcode();
 
 				for (int i = 0; i < values.length; i++)
 				{
-					encoder.write_CABAC_EGk(values[i], 0);
+					encoder.write_CABAC_EGk(values[i], 0, models);
 				}
 
 				encoder.encodeFinal(1);
 				encoder.stopEncoding();
 
-//				buffer = Arrays.copyOfRange(encoder.data(), 0, encoder.size());
 				buffer = baos.toByteArray();
 			}
 
 			{
-				CabacModel[] models = {
-					new CabacModel()
-				};
+				CabacModel[] models = fill(new CabacModel[BITS]);
 
 				CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer));
 
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					int b = decoder.decode_CABAC_EGk_bypass(0);
+					int b = decoder.decode_CABAC_EGk(0, models);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;
@@ -185,6 +185,26 @@ public class TestEfficiencyGolomb
 		for (int i = 0; i < aCabacContext.length; i++)
 		{
 			aCabacContext[i] = new CabacContext(0);
+		}
+		return aCabacContext;
+	}
+
+
+	private static ArithmeticContext[] fill(ArithmeticContext[] aCabacContext)
+	{
+		for (int i = 0; i < aCabacContext.length; i++)
+		{
+			aCabacContext[i] = new ArithmeticContext();
+		}
+		return aCabacContext;
+	}
+
+
+	private static CabacModel[] fill(CabacModel[] aCabacContext)
+	{
+		for (int i = 0; i < aCabacContext.length; i++)
+		{
+			aCabacContext[i] = new CabacModel();
 		}
 		return aCabacContext;
 	}

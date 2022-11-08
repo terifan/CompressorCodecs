@@ -62,7 +62,7 @@ public class ArithmeticDecoder
 //		int mid = mLow + (mHigh - mLow) * aContext.mSymbolFreq1 / (aContext.mSymbolFreq0 + aContext.mSymbolFreq1);
 
 		int mid = mLow + (((mHigh - mLow) * aContext.mSymbolFreq1 * tbl[aContext.mSymbolFreq0 + aContext.mSymbolFreq1]) >> 14);
-		
+
 //		int mid = mLow + (((mHigh - mLow) * tbl[(aContext.mSymbolFreq1 & 0x3e0)+((aContext.mSymbolFreq0+aContext.mSymbolFreq1)>>5)]) >> 14);
 
 		if (mValue >= mid)
@@ -115,7 +115,7 @@ public class ArithmeticDecoder
 		return bit;
 	}
 
-	
+
 
 	public int decode(int aProb) throws IOException
 	{
@@ -165,7 +165,7 @@ public class ArithmeticDecoder
 		return bit;
 	}
 
-	
+
 	public int decodeEqProb() throws IOException
 	{
 		int bit;
@@ -214,8 +214,8 @@ public class ArithmeticDecoder
 
 		return bit;
 	}
-	
-	
+
+
 	public int decodeExpGolombEqProb(int K) throws IOException
 	{
 		int L, binarySymbol;
@@ -240,37 +240,58 @@ public class ArithmeticDecoder
 				binarySymbol |= 1 << K;
 			}
 		}
-		
+
 		return result + binarySymbol;
 	}
 
-	
-	public int decodeExpGolomb(ArithmeticContext[] aContext) throws IOException
+
+	public long decodeExpGolomb(int aStep, ArithmeticContext[] aContext) throws IOException
 	{
-		if (decode(aContext[0]) == 0)
-		{
-			return 0;
-		}
-		
-		int K = 1;
-		int L;
-		int result = 0;
+		long result = 0;
+
 		int i = 0;
 
-		do
+		while (decode(aContext[i++]) == 0)
 		{
-			L = decode(aContext[1]);
-			result++;
-			K++;
-		}
-		while ((L != 0) && (K != GOLOMB_EXP_START));
-
-		if (L != 0)
-		{
-			result += decodeExpGolombEqProb(0) + 1;
+			result += 1L << aStep;
+			aStep++;
 		}
 
-		return result;
+		long binarySymbol = 0;
+		while (aStep-- > 0)
+		{
+			if (decodeEqProb() == 1)
+			{
+				binarySymbol |= 1L << aStep;
+			}
+		}
+
+		return result + binarySymbol;
+
+//		if (decode(aContext[0]) == 0)
+//		{
+//			return 0;
+//		}
+//
+//		int K = 1;
+//		int L;
+//		int result = 0;
+//		int i = 0;
+//
+//		do
+//		{
+//			L = decode(aContext[1]);
+//			result++;
+//			K++;
+//		}
+//		while ((L != 0) && (K != GOLOMB_EXP_START));
+//
+//		if (L != 0)
+//		{
+//			result += decodeExpGolombEqProb(0) + 1;
+//		}
+//
+//		return result;
 	}
 
 
@@ -295,8 +316,8 @@ public class ArithmeticDecoder
 		mBitBuffer = 255 & mInBuffer[mInBufferOffset++];
 		mBitsToGo = 7;
 	}
-	
-	
+
+
 	private void readBuffer() throws IOException
 	{
 		mInBufferLength = mInputStream.read(mInBuffer);

@@ -104,6 +104,48 @@ public class CabacEncoder265
 	}
 
 
+	public void write_CABAC_EGk(int val, int k, CabacModel[] aModel) throws IOException
+	{
+		int i = 0;
+
+		while (val >= (1 << k))
+		{
+			write_CABAC_bit(aModel[i++], 1);
+			val = val - (1 << k);
+			k++;
+		}
+
+		write_CABAC_bit(aModel[i], 0);
+
+		while (k > 0)
+		{
+			k--;
+			write_CABAC_bypass((val >>> k) & 1);
+		}
+	}
+
+
+	public void write_CABAC_EGk(int val, int k, CabacModel aModel) throws IOException
+	{
+		int i = 0;
+
+		while (val >= (1 << k))
+		{
+			write_CABAC_bit(aModel, 1);
+			val = val - (1 << k);
+			k++;
+		}
+
+		write_CABAC_bit(aModel, 0);
+
+		while (k > 0)
+		{
+			k--;
+			write_CABAC_bypass((val >>> k) & 1);
+		}
+	}
+
+
 	public void write_uvlc(int value) throws IOException
 	{
 		assert value >= 0;

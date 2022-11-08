@@ -295,4 +295,51 @@ public class CabacDecoder265
 
 		return base + suffix;
 	}
+
+
+	public int decode_CABAC_EGk(int k, CabacModel[] aModels) throws IOException
+	{
+		int base = 0;
+		int n = k;
+		int i = 0;
+
+		while (decode_CABAC_bit(aModels[i++]) != 0)
+		{
+			base += 1 << n;
+			n++;
+
+			if (n == k + MAX_PREFIX)
+			{
+				System.out.println("err");
+				return 0; // TODO: error
+			}
+		}
+
+		int suffix = decode_CABAC_FL_bypass(n);
+
+		return base + suffix;
+	}
+
+
+	public int decode_CABAC_EGk(int k, CabacModel aModels) throws IOException
+	{
+		int base = 0;
+		int n = k;
+
+		while (decode_CABAC_bit(aModels) != 0)
+		{
+			base += 1 << n;
+			n++;
+
+			if (n == k + MAX_PREFIX)
+			{
+				System.out.println("err");
+				return 0; // TODO: error
+			}
+		}
+
+		int suffix = decode_CABAC_FL_bypass(n);
+
+		return base + suffix;
+	}
 }

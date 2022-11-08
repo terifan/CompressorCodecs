@@ -205,30 +205,27 @@ public class ArithmeticEncoder
 	}
 
 
-	public void encodeExpGolomb(int aValue, ArithmeticContext[] aContext) throws IOException
+	public void encodeExpGolomb(int aSymbol, int aStep, ArithmeticContext[] aContext) throws IOException
 	{
-		if (aValue == 0)
+		assert aSymbol >= 0;
+
+		int i = 0;
+
+		while (aSymbol >= (1L << aStep))
 		{
-			encode(0, aContext[0]);
+			encode(0, aContext[i++]);
+
+			aSymbol -= 1L << aStep;
+			aStep++;
 		}
-		else
+
+		encode(1, aContext[i]);
+
+		i = 0;
+
+		while (aStep-- > 0)
 		{
-			int i = 0;
-			encode(1, aContext[0]);
-			int L = aValue;
-			int K = 1;
-			while ((--L > 0) && (++K <= GOLOMB_EXP_START))
-			{
-				encode(1, aContext[1]);
-			}
-			if (aValue < GOLOMB_EXP_START)
-			{
-				encode(0, aContext[1]);
-			}
-			else
-			{
-				encodeExpGolombEqProb(aValue - GOLOMB_EXP_START, 0);
-			}
+			encodeEqProb((int)(aSymbol >>> aStep) & 1);
 		}
 	}
 

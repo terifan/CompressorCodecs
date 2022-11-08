@@ -34,7 +34,7 @@ public class TestAll
 //			Random rnd = new Random();
 //
 //			int[] input = new int[100000];
-//			
+//
 //			int[] bs = {2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,8};
 //
 //			int symbolCount = 1 << bs[bs.length - 1];
@@ -52,7 +52,7 @@ public class TestAll
 				{
 					signed[i] = dis.readShort();
 					unsigned[i] = (signed[i] << 1) ^ (signed[i] >> 31);
-					
+
 //					System.out.printf("%5d", signed[i]);
 //					if ((i%64)==63)System.out.println();
 				}
@@ -67,13 +67,13 @@ public class TestAll
 			System.out.printf("cabac265 %s%n", cabac265(unsigned, symbolCount));
 
 			System.out.println();
-			
+
 			for (int i = 0; i < unsigned.length; i += 1024)
 			{
 				BWT.encode(unsigned, i, Math.min(1024, unsigned.length - i));
 				BWT.encode(signed, i, Math.min(1024, unsigned.length - i));
 			}
-			
+
 			System.out.printf("dirac(S) %s%n", dirac(signed, 10*symbolCount, true));
 			System.out.printf("dirac    %s%n", dirac(unsigned, 10*symbolCount, false));
 			System.out.printf("arith    %s%n", arith(unsigned, symbolCount));
@@ -101,7 +101,7 @@ public class TestAll
 				encoder.encodeSInt(aInput[i], bin, 10);
 				else
 				encoder.encodeUInt(aInput[i], bin, 10);
-				
+
 				bin = 0*10*Math.abs(aInput[i]);
 			}
 
@@ -120,7 +120,7 @@ public class TestAll
 				output[i] = decoder.decodeSInt(bin, 10);
 				else
 				output[i] = decoder.decodeUInt(bin, 10);
-				
+
 				bin = 0*10*Math.abs(output[i]);
 			}
 		}
@@ -244,12 +244,12 @@ public class TestAll
 			{
 				context[i] = new ArithmeticContext();
 			}
-			
+
 			ArithmeticEncoder encoder = new ArithmeticEncoder(baos);
 
 			for (int i = 0; i < aInput.length; i++)
 			{
-				encoder.encodeExpGolomb(aInput[i], context);
+				encoder.encodeExpGolomb(aInput[i], 1, context);
 			}
 
 			encoder.stopEncoding();
@@ -263,12 +263,12 @@ public class TestAll
 			{
 				context[i] = new ArithmeticContext();
 			}
-			
+
 			ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(baos.toByteArray()));
 
 			for (int i = 0; i < aInput.length; i++)
 			{
-				output[i] = decoder.decodeExpGolomb(context);
+				output[i] = (int)decoder.decodeExpGolomb(1, context);
 			}
 		}
 
