@@ -1,6 +1,7 @@
 package org.terifan.compression.rans.v2;
 
 import java.io.EOFException;
+import java.util.Arrays;
 
 
 public class SymbolStats
@@ -28,13 +29,17 @@ public class SymbolStats
 
 	void count_freqs(byte[] aBuffer) throws EOFException
 	{
-		for (int i = 0; i < NSYMS; i++)
+		if (aBuffer == null)
 		{
-			freqs[i] = 0;
+			Arrays.fill(freqs, 1);
 		}
-		for (int i = 0; i < aBuffer.length; i++)
+		else
 		{
-			freqs[0xff & aBuffer[i]]++;
+			Arrays.fill(freqs, 0);
+			for (int i = 0; i < aBuffer.length; i++)
+			{
+				freqs[0xff & aBuffer[i]]++;
+			}
 		}
 	}
 

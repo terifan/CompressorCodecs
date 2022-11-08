@@ -94,7 +94,7 @@ public class Test
 
 	private static void test1() throws IOException
 	{
-		byte[] sourceBuffer = loadTestData(Source.LENNA_GRAY);
+		byte[] sourceBuffer = loadTestData(Source.BOOK);
 
 		SymbolStats stats = new SymbolStats(16);
 		stats.count_freqs(sourceBuffer);
