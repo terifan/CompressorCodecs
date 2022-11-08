@@ -98,7 +98,7 @@ public class Test
 						p = sym;
 					}
 				}
-				encoder.stopEncoding();
+				encoder.close();
 			}
 
 			compressedData = baos.toByteArray();

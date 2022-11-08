@@ -213,7 +213,7 @@ public class TestAll
 				encoder.encode(aInput[i], context);
 			}
 
-			encoder.stopEncoding();
+			encoder.close();
 		}
 
 		int[] output = new int[aInput.length];

@@ -113,7 +113,7 @@ public class TestEfficiencyGolomb
 					{
 						encoder.encode(values[i], context);
 					}
-					encoder.stopEncoding();
+					encoder.close();
 				}
 				buffer = baos.toByteArray();
 			}

@@ -63,7 +63,7 @@ public class BasicArithmeticEncoder
 	}
 
 
-	public void stopEncoding() throws IOException
+	public void close() throws IOException
 	{
 		mModel.mShifts++;
 		writeBit(mModel.mLow < BasicArithmeticModel.Q1 ? 0 : 1);
