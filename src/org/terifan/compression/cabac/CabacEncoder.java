@@ -110,6 +110,8 @@ public class CabacEncoder
 
 	public void encodeBitEqProb(int aBit) throws IOException
 	{
+		assert aBit == 0 || aBit == 1;
+
 		int low = mLow;
 		mBitsToGo--;
 
@@ -200,6 +202,8 @@ public class CabacEncoder
 
 	public void encodeExpGolomb(long aSymbol, int aStep, CabacContext aContext) throws IOException
 	{
+		assert aSymbol >= 0;
+
 		while (aSymbol >= (1L << aStep))
 		{
 			encodeBit(0, aContext);
@@ -219,6 +223,8 @@ public class CabacEncoder
 
 	public void encodeExpGolomb(long aSymbol, int aStep, CabacContext[] aContext1, CabacContext[] aContext2) throws IOException
 	{
+		assert aSymbol >= 0;
+
 		int i = 0;
 
 		while (aSymbol >= (1L << aStep))
@@ -232,7 +238,7 @@ public class CabacEncoder
 		encodeBit(1, aContext1[i]);
 
 		i = 0;
-		
+
 		while (aStep-- > 0)
 		{
 			encodeBit((int)(aSymbol >>> aStep) & 1, aContext2[i++]);
@@ -242,6 +248,8 @@ public class CabacEncoder
 
 	public void encodeUnaryGolomb(long aSymbol, int aStep, CabacContext aContext) throws IOException
 	{
+		assert aSymbol >= 0;
+
 		if (aStep <= 0 || aStep > 64)
 		{
 			throw new IllegalArgumentException();

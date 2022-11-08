@@ -61,7 +61,7 @@ public class TestPerformanceEqProb
 				{
 					for (int i = 0; i < bits.length; i++)
 					{
-						encoder.encodeBitEqProb(bits[i]);
+						encoder.writeBitEqProb(bits[i]);
 					}
 				}
 				buffer = baos.toByteArray();
@@ -72,7 +72,7 @@ public class TestPerformanceEqProb
 				t = System.nanoTime();
 				for (int i = 0; i < bits.length; i++)
 				{
-					int b = decoder.decodeBitEqProb();
+					int b = decoder.readBitEqProb();
 					assert b == bits[i];
 				}
 				t = System.nanoTime()-t;

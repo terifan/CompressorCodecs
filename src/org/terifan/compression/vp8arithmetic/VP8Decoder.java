@@ -21,7 +21,7 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public int decodeBit(int aProb) throws IOException
+	public int readBit(int aProb) throws IOException
 	{
 		int split = (mRange * aProb) >> 8;
 
@@ -57,18 +57,18 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public int decodeBitEqProb() throws IOException
+	public int readBitEqProb() throws IOException
 	{
-		return decodeBit(0x80);
+		return readBit(0x80);
 	}
 
 
-	public int decodeValue(int aNumBits) throws IOException
+	public int readValue(int aNumBits) throws IOException
 	{
 		int v = 0;
 		while (aNumBits-- > 0)
 		{
-			v |= decodeBitEqProb() << aNumBits;
+			v |= readBitEqProb() << aNumBits;
 		}
 		return v;
 	}
@@ -76,11 +76,11 @@ public class VP8Decoder implements AutoCloseable
 
 	public long readExpGolomb(int aStep) throws IOException
 	{
-		int x = decodeBitEqProb();
+		int x = readBitEqProb();
 
 		long result = 0;
 
-		while (decodeBit(240) == 0)
+		while (readBit(240) == 0)
 		{
 			result += 1L << aStep;
 			aStep++;
@@ -89,7 +89,7 @@ public class VP8Decoder implements AutoCloseable
 		long binarySymbol = 0;
 		while (aStep-- > 0)
 		{
-			if (decodeBitEqProb()== 1)
+			if (readBitEqProb()== 1)
 			{
 				binarySymbol |= 1L << aStep;
 			}
@@ -103,7 +103,7 @@ public class VP8Decoder implements AutoCloseable
 	{
 		int symbol = 0;
 
-		while (decodeBit(240) == 0)
+		while (readBit(240) == 0)
 		{
 			symbol++;
 		}

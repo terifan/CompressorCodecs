@@ -29,7 +29,7 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public int encodeBit(int aBit, int aProb) throws IOException
+	public int writeBit(int aBit, int aProb) throws IOException
 	{
 		int split = (mRange * aProb) >> 8;
 		if (aBit != 0)
@@ -58,7 +58,7 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public int encodeBitEqProb(int aBit) throws IOException
+	public int writeBitEqProb(int aBit) throws IOException
 	{
 		int split = mRange >> 1;
 		if (aBit != 0)
@@ -84,11 +84,11 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void encodeValue(int aValue, int aNumBits) throws IOException
+	public void writeValue(int aValue, int aNumBits) throws IOException
 	{
 		for (long mask = 1L << (aNumBits - 1); mask != 0; mask >>= 1)
 		{
-			encodeBitEqProb((int)(aValue & mask));
+			writeBitEqProb((int)(aValue & mask));
 		}
 	}
 
@@ -96,7 +96,7 @@ public class VP8Encoder implements AutoCloseable
 	@Override
 	public void close() throws IOException
 	{
-		encodeValue(0, 9 - mNbBits);
+		writeValue(0, 9 - mNbBits);
 		mNbBits = 0;   // pad with zeroes
 		flush();
 
@@ -153,22 +153,22 @@ public class VP8Encoder implements AutoCloseable
 	{
 		int Q = 240;
 
-		encodeBitEqProb(aSymbol & 1);
+		writeBitEqProb(aSymbol & 1);
 		aSymbol >>>= 1;
 
 		while (aSymbol >= (1L << aStep))
 		{
-			encodeBit(0, Q);
+			writeBit(0, Q);
 
 			aSymbol -= 1L << aStep;
 			aStep++;
 		}
 
-		encodeBit(1, Q);
+		writeBit(1, Q);
 
 		while (aStep-- > 0)
 		{
-			encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
+			writeBitEqProb((int)(aSymbol >>> aStep) & 1);
 		}
 	}
 
@@ -180,8 +180,8 @@ public class VP8Encoder implements AutoCloseable
 		int l = aSymbol;
 		while (l-- > 0)
 		{
-			encodeBit(0, 240);
+			writeBit(0, 240);
 		}
-		encodeBit(1, 240);
+		writeBit(1, 240);
 	}
 }

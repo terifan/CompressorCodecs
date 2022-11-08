@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import org.terifan.compression.bwt.BWT;
 import org.terifan.compression.io.BitInputStream;
 import org.terifan.compression.io.BitOutputStream;
 import testdata.LoadTestData.Source;

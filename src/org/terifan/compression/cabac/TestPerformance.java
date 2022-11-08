@@ -94,7 +94,7 @@ public class TestPerformance
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				encoder.encodeBit(bits[i], prob);
+				encoder.writeBit(bits[i], prob);
 			}
 			t1 = System.nanoTime()-t1;
 			encoder.close();
@@ -106,7 +106,7 @@ public class TestPerformance
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				int b = reader.decodeBit(prob);
+				int b = reader.readBit(prob);
 				assert b == bits[i];
 			}
 			t2 = System.nanoTime()-t2;
