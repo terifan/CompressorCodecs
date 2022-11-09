@@ -19,14 +19,13 @@ public class Test
 				};
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
+
 				CabacEncoder265 encoder = new CabacEncoder265(baos);
-				encoder.setContextModels(models);
-				encoder.write_CABAC_EGk(8985, 2);
-				encoder.write_CABAC_EGk(777, 2);
-				encoder.write_CABAC_EGk(152, 2);
-				encoder.write_CABAC_EGk(18, 2);
-				encoder.write_CABAC_EGk(682, 2);
+				encoder.writeCABAC_EGk(8985, 2, models);
+				encoder.writeCABAC_EGk(777, 2, models);
+				encoder.writeCABAC_EGk(152, 2, models);
+				encoder.writeCABAC_EGk(18, 2, models);
+				encoder.writeCABAC_EGk(682, 2, models);
 				encoder.encodeFinal(1);
 				encoder.stopEncoding();
 
@@ -41,10 +40,10 @@ public class Test
 				};
 
 				CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data));
-				Log.out.println(decoder.decode_CABAC_EGk_bypass(2));
-				Log.out.println(decoder.decode_CABAC_EGk_bypass(2));
-				Log.out.println(decoder.decode_CABAC_EGk_bypass(2));
-				Log.out.println(decoder.decode_CABAC_EGk_bypass(2));
+				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
+				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
+				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
+				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
 			}
 		}
 		catch (Throwable e)

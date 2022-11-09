@@ -8,75 +8,67 @@ import static org.terifan.compression.cabac265.CabacConstants.*;
 public class CabacEncoder265
 {
 	private OutputStream mOutputStream;
-	private CabacModel[] mCtxModels;
 
 	// VLC
-	private int vlc_buffer;
-	private int vlc_buffer_len;
+	private int mVLCBuffer;
+	private int mVLCBufferLen;
 
 	// CABAC
-	private int range;
-	private int low;
-	private int bits_left;
-	private int buffered_byte;
-	private int num_buffered_bytes;
+	private int mRange;
+	private int mLow;
+	private int mBitsLeft;
+	private int mBufferedByte;
+	private int mNumBufferedBytes;
 
 
 	public CabacEncoder265(OutputStream aOutputStream)
 	{
 		mOutputStream = aOutputStream;
 
-		range = 510;
-		low = 0;
+		mRange = 510;
+		mLow = 0;
 
-		bits_left = 23;
-		buffered_byte = 0xFF;
-		num_buffered_bytes = 0;
+		mBitsLeft = 23;
+		mBufferedByte = 0xFF;
+		mNumBufferedBytes = 0;
 	}
 
 
-	public void setContextModels(CabacModel[] models)
+	public void writeBit(int aBit) throws IOException
 	{
-		mCtxModels = models;
+		writeBits(aBit, 1);
 	}
 
 
-	public void write_bit(int bit) throws IOException
+	public void writeCABAC_TU_bypass(int aValue, int aMax) throws IOException
 	{
-		write_bits(bit, 1);
-	}
-
-
-	public void write_CABAC_TU_bypass(int value, int cMax) throws IOException
-	{
-		for (int i = 0; i < value; i++)
+		for (int i = 0; i < aValue; i++)
 		{
-			write_CABAC_bypass(1);
+			writeCABAC_bypass(1);
 		}
 
-		if (value < cMax)
+		if (aValue < aMax)
 		{
-			write_CABAC_bypass(0);
+			writeCABAC_bypass(0);
 		}
 	}
 
 
-	public void write_CABAC_FL_bypass(int value, int n) throws IOException
+	public void writeCABAC_FL_bypass(int aValue, int aLength) throws IOException
 	{
-		while (n > 0)
+		while (aLength > 0)
 		{
-			n--;
-			write_CABAC_bypass(value & (1 << n));
+			aLength--;
+			writeCABAC_bypass(aValue & (1 << aLength));
 		}
 	}
 
 
-	public float RDBits_for_CABAC_bin(int modelIdx, int bit)
+	public float RDBits_for_CABAC_bin(int aBit, CabacModel aModel)
 	{
-		CabacModel model = mCtxModels[modelIdx];
-		int idx = model.state << 1;
+		int idx = aModel.state << 1;
 
-		if (bit != model.MPSbit)
+		if (aBit != aModel.MPSbit)
 		{
 			idx++;
 		}
@@ -85,147 +77,126 @@ public class CabacEncoder265
 	}
 
 
-	public void write_CABAC_EGk(int val, int k) throws IOException
+	public void writeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
 	{
-		while (val >= (1 << k))
+		while (aValue >= (1 << aStep))
 		{
-			write_CABAC_bypass(1);
-			val = val - (1 << k);
-			k++;
+			writeCABAC_bypass(1);
+			aValue = aValue - (1 << aStep);
+			aStep++;
 		}
 
-		write_CABAC_bypass(0);
+		writeCABAC_bypass(0);
 
-		while (k > 0)
+		while (aStep > 0)
 		{
-			k--;
-			write_CABAC_bypass((val >>> k) & 1);
+			aStep--;
+			writeCABAC_bypass((aValue >>> aStep) & 1);
 		}
 	}
 
 
-	public void write_CABAC_EGk(int val, int k, CabacModel[] aModel) throws IOException
+	public void writeCABAC_EGk(int aValue, int aStep, CabacModel[] aModels) throws IOException
 	{
 		int i = 0;
 
-		while (val >= (1 << k))
+		while (aValue >= (1 << aStep))
 		{
-			write_CABAC_bit(aModel[i++], 1);
-			val = val - (1 << k);
-			k++;
+			writeCABAC_bit(aModels[i++], 1);
+			aValue = aValue - (1 << aStep);
+			aStep++;
 		}
 
-		write_CABAC_bit(aModel[i], 0);
+		writeCABAC_bit(aModels[i], 0);
 
-		while (k > 0)
+		while (aStep > 0)
 		{
-			k--;
-			write_CABAC_bypass((val >>> k) & 1);
-		}
-	}
-
-
-	public void write_CABAC_EGk(int val, int k, CabacModel aModel) throws IOException
-	{
-		int i = 0;
-
-		while (val >= (1 << k))
-		{
-			write_CABAC_bit(aModel, 1);
-			val = val - (1 << k);
-			k++;
-		}
-
-		write_CABAC_bit(aModel, 0);
-
-		while (k > 0)
-		{
-			k--;
-			write_CABAC_bypass((val >>> k) & 1);
+			aStep--;
+			writeCABAC_bypass((aValue >>> aStep) & 1);
 		}
 	}
 
 
-	public void write_uvlc(int value) throws IOException
+	public void writeUVLC(int aValue) throws IOException
 	{
-		assert value >= 0;
+		assert aValue >= 0;
 
 		int nLeadingZeros = 0;
 		int base = 0;
 		int range = 1;
 
-		while (value >= base + range)
+		while (aValue >= base + range)
 		{
 			base += range;
 			range <<= 1;
 			nLeadingZeros++;
 		}
 
-		write_bits((1 << nLeadingZeros) | (value - base), 2 * nLeadingZeros + 1);
+		writeBits((1 << nLeadingZeros) | (aValue - base), 2 * nLeadingZeros + 1);
 	}
 
 
-	public void write_svlc(int value) throws IOException
+	public void writeSVLC(int aValue) throws IOException
 	{
-		if (value == 0)
+		if (aValue == 0)
 		{
-			write_bits(1, 1);
+			writeBits(1, 1);
 		}
-		else if (value > 0)
+		else if (aValue > 0)
 		{
-			write_uvlc(2 * value - 1);
+			writeUVLC(2 * aValue - 1);
 		}
 		else
 		{
-			write_uvlc(-2 * value);
+			writeUVLC(-2 * aValue);
 		}
 	}
 
 
-	public void add_trailing_bits() throws IOException
+	public void addTrailingBits() throws IOException
 	{
-		write_bit(1);
-		int nZeros = number_free_bits_in_byte();
-		write_bits(0, nZeros);
+		writeBit(1);
+		int nZeros = freeBitsInByteCount();
+		writeBits(0, nZeros);
 	}
 
 
-	public void encodeFinal(int bit) throws IOException
+	public void encodeFinal(int aBit) throws IOException
 	{
-		range -= 2;
+		mRange -= 2;
 
-		if (bit != 0)
+		if (aBit != 0)
 		{
-			low += range;
+			mLow += mRange;
 
-			low <<= 7;
-			range = 2 << 7;
-			bits_left -= 7;
+			mLow <<= 7;
+			mRange = 2 << 7;
+			mBitsLeft -= 7;
 		}
-		else if (range >= 256)
+		else if (mRange >= 256)
 		{
 			return;
 		}
 		else
 		{
-			low <<= 1;
-			range <<= 1;
-			bits_left--;
+			mLow <<= 1;
+			mRange <<= 1;
+			mBitsLeft--;
 		}
 
 		testAndWriteOut();
 	}
 
 
-	public void write_CABAC_bypass(int bin) throws IOException
+	public void writeCABAC_bypass(int aBit) throws IOException
 	{
-		low <<= 1;
+		mLow <<= 1;
 
-		if (bin != 0)
+		if (aBit != 0)
 		{
-			low += range;
+			mLow += mRange;
 		}
-		bits_left--;
+		mBitsLeft--;
 
 		testAndWriteOut();
 	}
@@ -233,178 +204,178 @@ public class CabacEncoder265
 
 	public void testAndWriteOut() throws IOException
 	{
-		if (bits_left < 12)
+		if (mBitsLeft < 12)
 		{
-			write_out();
+			writeOut();
 		}
 	}
 
 
-	public void write_CABAC_bit(CabacModel model, int bin) throws IOException
+	public void writeCABAC_bit(CabacModel aModel, int aBit) throws IOException
 	{
-		int LPS = LPS_table[model.state][(range >> 6) - 4];
-		range -= LPS;
+		int LPS = LPS_table[aModel.state][(mRange >> 6) - 4];
+		mRange -= LPS;
 
-		if (bin != model.MPSbit)
+		if (aBit != aModel.MPSbit)
 		{
 			int num_bits = renorm_table[LPS >> 3];
-			low = (low + range) << num_bits;
-			range = LPS << num_bits;
+			mLow = (mLow + mRange) << num_bits;
+			mRange = LPS << num_bits;
 
-			if (model.state == 0)
+			if (aModel.state == 0)
 			{
-				model.MPSbit = 1 - model.MPSbit;
+				aModel.MPSbit = 1 - aModel.MPSbit;
 			}
 
-			model.state = next_state_LPS[model.state];
+			aModel.state = next_state_LPS[aModel.state];
 
-			bits_left -= num_bits;
+			mBitsLeft -= num_bits;
 		}
 		else
 		{
-			model.state = next_state_MPS[model.state];
+			aModel.state = next_state_MPS[aModel.state];
 
 			// renorm
-			if (range >= 256)
+			if (mRange >= 256)
 			{
 				return;
 			}
 
-			low <<= 1;
-			range <<= 1;
-			bits_left--;
+			mLow <<= 1;
+			mRange <<= 1;
+			mBitsLeft--;
 		}
 
 		testAndWriteOut();
 	}
 
 
-	public void write_out() throws IOException
+	public void writeOut() throws IOException
 	{
-		int leadByte = low >>> (24 - bits_left);
-		bits_left += 8;
-		low &= 0xffffffff >>> bits_left;
+		int leadByte = mLow >>> (24 - mBitsLeft);
+		mBitsLeft += 8;
+		mLow &= 0xffffffff >>> mBitsLeft;
 
 		if (leadByte == 0xff)
 		{
-			num_buffered_bytes++;
+			mNumBufferedBytes++;
 		}
 		else
 		{
-			if (num_buffered_bytes > 0)
+			if (mNumBufferedBytes > 0)
 			{
 				int carry = leadByte >> 8;
-				int byte_ = buffered_byte + carry;
-				buffered_byte = leadByte & 0xff;
-				append_byte(byte_);
+				int byte_ = mBufferedByte + carry;
+				mBufferedByte = leadByte & 0xff;
+				appendByte(byte_);
 
 				byte_ = (0xff + carry) & 0xff;
-				while (num_buffered_bytes > 1)
+				while (mNumBufferedBytes > 1)
 				{
-					append_byte(byte_);
-					num_buffered_bytes--;
+					appendByte(byte_);
+					mNumBufferedBytes--;
 				}
 			}
 			else
 			{
-				num_buffered_bytes = 1;
-				buffered_byte = leadByte;
+				mNumBufferedBytes = 1;
+				mBufferedByte = leadByte;
 			}
 		}
 	}
 
 
 	// output all remaining bits and fill with zeros to next byte boundary
-	public void flush_VLC() throws IOException
+	public void flushVLC() throws IOException
 	{
-		while (vlc_buffer_len >= 8)
+		while (mVLCBufferLen >= 8)
 		{
-			append_byte((vlc_buffer >>> (vlc_buffer_len - 8)) & 0xFF);
-			vlc_buffer_len -= 8;
+			appendByte((mVLCBuffer >>> (mVLCBufferLen - 8)) & 0xFF);
+			mVLCBufferLen -= 8;
 		}
 
-		if (vlc_buffer_len > 0)
+		if (mVLCBufferLen > 0)
 		{
-			append_byte(vlc_buffer << (8 - vlc_buffer_len));
-			vlc_buffer_len = 0;
+			appendByte(mVLCBuffer << (8 - mVLCBufferLen));
+			mVLCBufferLen = 0;
 		}
 
-		vlc_buffer = 0;
+		mVLCBuffer = 0;
 	}
 
 
-	public void skip_bits(int nBits) throws IOException
+	public void skipBits(int aLength) throws IOException
 	{
-		while (nBits >= 8)
+		while (aLength >= 8)
 		{
-			write_bits(0, 8);
-			nBits -= 8;
+			writeBits(0, 8);
+			aLength -= 8;
 		}
 
-		if (nBits > 0)
+		if (aLength > 0)
 		{
-			write_bits(0, nBits);
+			writeBits(0, aLength);
 		}
 	}
 
 
-	public int number_free_bits_in_byte()
+	public int freeBitsInByteCount()
 	{
-		if ((vlc_buffer_len % 8) == 0)
+		if ((mVLCBufferLen % 8) == 0)
 		{
 			return 0;
 		}
-		return 8 - (vlc_buffer_len % 8);
+		return 8 - (mVLCBufferLen % 8);
 	}
 
 
-	public void append_byte(int byte_) throws IOException
+	public void appendByte(int aByte) throws IOException
 	{
-		mOutputStream.write(byte_);
+		mOutputStream.write(aByte);
 	}
 
 
 	public void stopEncoding() throws IOException
 	{
-		if ((low >>> (32 - bits_left)) != 0)
+		if ((mLow >>> (32 - mBitsLeft)) != 0)
 		{
-			append_byte(buffered_byte + 1);
-			while (num_buffered_bytes > 1)
+			appendByte(mBufferedByte + 1);
+			while (mNumBufferedBytes > 1)
 			{
-				append_byte(0x00);
-				num_buffered_bytes--;
+				appendByte(0x00);
+				mNumBufferedBytes--;
 			}
 
-			low -= 1 << (32 - bits_left);
+			mLow -= 1 << (32 - mBitsLeft);
 		}
 		else
 		{
-			if (num_buffered_bytes > 0)
+			if (mNumBufferedBytes > 0)
 			{
-				append_byte(buffered_byte);
+				appendByte(mBufferedByte);
 			}
 
-			while (num_buffered_bytes > 1)
+			while (mNumBufferedBytes > 1)
 			{
-				append_byte(0xff);
-				num_buffered_bytes--;
+				appendByte(0xff);
+				mNumBufferedBytes--;
 			}
 		}
 
-		write_bits(low >>> 8, 24 - bits_left);
+		writeBits(mLow >>> 8, 24 - mBitsLeft);
 	}
 
 
-	public void write_bits(int bits, int n) throws IOException
+	public void writeBits(int aBits, int aLength) throws IOException
 	{
-		vlc_buffer <<= n;
-		vlc_buffer |= bits;
-		vlc_buffer_len += n;
+		mVLCBuffer <<= aLength;
+		mVLCBuffer |= aBits;
+		mVLCBufferLen += aLength;
 
-		while (vlc_buffer_len >= 8)
+		while (mVLCBufferLen >= 8)
 		{
-			append_byte((vlc_buffer >>> (vlc_buffer_len - 8)) & 0xFF);
-			vlc_buffer_len -= 8;
+			appendByte((mVLCBuffer >>> (mVLCBufferLen - 8)) & 0xFF);
+			mVLCBufferLen -= 8;
 		}
 	}
 }

@@ -148,7 +148,7 @@ public class TestEfficiencyGolomb
 
 				for (int i = 0; i < values.length; i++)
 				{
-					encoder.write_CABAC_EGk(values[i], 0, models);
+					encoder.writeCABAC_EGk(values[i], 0, models);
 				}
 
 				encoder.encodeFinal(1);
@@ -165,7 +165,7 @@ public class TestEfficiencyGolomb
 				t = System.nanoTime();
 				for (int i = 0; i < values.length; i++)
 				{
-					int b = decoder.decode_CABAC_EGk(0, models);
+					int b = decoder.decodeCABAC_EGk(0, models);
 					assert b == values[i] : b+" == "+values[i];
 				}
 				t = System.nanoTime()-t;

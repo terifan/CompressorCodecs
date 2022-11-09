@@ -175,7 +175,7 @@ public class TestAll
 
 			for (int i = 0; i < aInput.length; i++)
 			{
-				encoder.write_CABAC_EGk(aInput[i], 0);
+				encoder.writeCABAC_EGk_bypass(aInput[i], 0);
 			}
 
 			encoder.encodeFinal(1);
@@ -189,7 +189,7 @@ public class TestAll
 
 			for (int i = 0; i < aInput.length; i++)
 			{
-				output[i] = (int)decoder.decode_CABAC_EGk_bypass(0);
+				output[i] = (int)decoder.decodeCABAC_EGk_bypass(0);
 			}
 		}
 
