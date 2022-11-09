@@ -17,6 +17,17 @@ public class LoadTestData
 		LENNA_GRAY,
 	}
 
+	public static int[] loadTestDataInt(Source aSource) throws IOException
+	{
+		byte[] data = loadTestData(aSource);
+		int[] out = new int[data.length];
+		for (int i = 0; i < data.length; i++)
+		{
+			out[i] = 0xff & data[i];
+		}
+		return out;
+	}
+
 	public static byte[] loadTestData(Source aSource) throws IOException
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();

@@ -267,31 +267,6 @@ public class ArithmeticDecoder
 		}
 
 		return result + binarySymbol;
-
-//		if (decode(aContext[0]) == 0)
-//		{
-//			return 0;
-//		}
-//
-//		int K = 1;
-//		int L;
-//		int result = 0;
-//		int i = 0;
-//
-//		do
-//		{
-//			L = decode(aContext[1]);
-//			result++;
-//			K++;
-//		}
-//		while ((L != 0) && (K != GOLOMB_EXP_START));
-//
-//		if (L != 0)
-//		{
-//			result += decodeExpGolombEqProb(0) + 1;
-//		}
-//
-//		return result;
 	}
 
 

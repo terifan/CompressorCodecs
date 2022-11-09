@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac;
+package org.terifan.compression.cabac264;
 
 
 interface CabacConstants

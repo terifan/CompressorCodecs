@@ -78,7 +78,7 @@ public class DiracEncoder
 	public void encodeUInt(long aValue, int aBin, int aMaxBin) throws IOException
 	{
 		long value = aValue + 1;
-		int info_ctx = aMaxBin + 1;
+		int ctx = aMaxBin + 1;
 		long topBit = 1;
 
 		long maxValue = 1;
@@ -86,7 +86,7 @@ public class DiracEncoder
 		{
 			topBit <<= 1;
 			maxValue <<= 1;
-			maxValue += 1;
+			maxValue++;
 		}
 
 		boolean stop = topBit == 1;
@@ -94,8 +94,8 @@ public class DiracEncoder
 
 		while (!stop)
 		{
-			topBit >>= 1;
-			encodeBit((value & topBit) != 0, info_ctx);
+			topBit >>>= 1;
+			encodeBit((value & topBit) != 0, ctx);
 			if (aBin < aMaxBin)
 			{
 				aBin++;

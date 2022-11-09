@@ -8,16 +8,16 @@ public class DiracDecoder
 {
 	private DiracContext[] mContextList;
 	private BitInputStream mInput;
-    private int mCode;
+	private int mCode;
 	private int mRange;
 	private int mLowCode;
 
-	
+
 	public DiracDecoder(BitInputStream aInput, int aContextCount) throws IOException
 	{
 		mInput = aInput;
 		mRange = 0xFFFF;
-		
+
 		mInput.setReturnZeroOnEOF(true);
 
 		mCode = 0;
@@ -40,7 +40,7 @@ public class DiracDecoder
 	{
 		DiracContext ctx = mContextList[aContextNum];
 
-        int count = mCode - mLowCode;
+		int count = mCode - mLowCode;
 		int range_x_prob = (mRange * ctx.getScaledProb()) >>> 16;
 		boolean symbol = count >= range_x_prob;
 
@@ -79,21 +79,21 @@ public class DiracDecoder
 
 	private long decode(int aBin, int aMaxBin) throws IOException
 	{
-		int info_ctx = (aMaxBin + 1);
+		int ctx = (aMaxBin + 1);
 		long value = 1;
 		while (!decodeBit(aBin))
 		{
 			value <<= 1;
-			if (decodeBit(info_ctx))
+			if (decodeBit(ctx))
 			{
 				value += 1;
 			}
 			if (aBin < aMaxBin)
 			{
-				aBin += 1;
+				aBin++;
 			}
 		}
-		value -= 1;
+		value--;
 		return value;
 	}
 
@@ -113,10 +113,7 @@ public class DiracDecoder
 			{
 				return (int)-magnitude;
 			}
-			else
-			{
-				return (int)magnitude;
-			}
+			return (int)magnitude;
 		}
 		return 0;
 	}
