@@ -102,12 +102,12 @@ public class CabacEncoder265
 
 		while (aValue >= (1 << aStep))
 		{
-			writeCABAC_bit(aModels[i++], 1);
+			writeCABAC_bit(1, aModels[i++]);
 			aValue = aValue - (1 << aStep);
 			aStep++;
 		}
 
-		writeCABAC_bit(aModels[i], 0);
+		writeCABAC_bit(0, aModels[i]);
 
 		while (aStep > 0)
 		{
@@ -211,7 +211,7 @@ public class CabacEncoder265
 	}
 
 
-	public void writeCABAC_bit(CabacModel aModel, int aBit) throws IOException
+	public void writeCABAC_bit(int aBit, CabacModel aModel) throws IOException
 	{
 		int LPS = LPS_table[aModel.state][(mRange >> 6) - 4];
 		mRange -= LPS;

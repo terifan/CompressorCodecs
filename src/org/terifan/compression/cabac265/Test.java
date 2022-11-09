@@ -2,7 +2,7 @@ package org.terifan.compression.cabac265;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import org.terifan.compression.util.Log;
+import static org.terifan.compression.util.Log.hexDump;
 
 
 public class Test
@@ -15,7 +15,7 @@ public class Test
 
 			{
 				CabacModel[] models = {
-					new CabacModel()
+					new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel()
 				};
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -32,18 +32,19 @@ public class Test
 				data = baos.toByteArray();
 			}
 
-			Log.hexDump(data);
+			hexDump(data);
 
 			{
 				CabacModel[] models = {
-					new CabacModel()
+					new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel()
 				};
 
 				CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data));
-				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
-				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
-				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
-				Log.out.println(decoder.decodeCABAC_EGk_bypass(2));
+				System.out.println(decoder.decodeCABAC_EGk(2, models));
+				System.out.println(decoder.decodeCABAC_EGk(2, models));
+				System.out.println(decoder.decodeCABAC_EGk(2, models));
+				System.out.println(decoder.decodeCABAC_EGk(2, models));
+				System.out.println(decoder.decodeCABAC_EGk(2, models));
 			}
 		}
 		catch (Throwable e)
