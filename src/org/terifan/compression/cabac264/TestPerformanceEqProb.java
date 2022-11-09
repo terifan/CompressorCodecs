@@ -71,7 +71,7 @@ public class TestPerformanceEqProb
 					encoder.writeCABAC_bypass(bits[i]);
 				}
 				encoder.encodeFinal(1);
-				encoder.stopEncoding();
+				encoder.close();
 				buffer = baos.toByteArray();
 			}
 

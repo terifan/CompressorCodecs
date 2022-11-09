@@ -179,7 +179,7 @@ public class TestAll
 			}
 
 			encoder.encodeFinal(1);
-			encoder.stopEncoding();
+			encoder.close();
 		}
 
 		int[] output = new int[aInput.length];

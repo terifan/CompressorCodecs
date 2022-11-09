@@ -6,7 +6,7 @@ import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
 // https://github.com/strukturag/libde265/blob/master/libde265/cabac.cc
-public class CabacDecoder265
+public class CabacDecoder265 implements AutoCloseable
 {
 	private final static int MAX_PREFIX = 32;
 
@@ -33,22 +33,22 @@ public class CabacDecoder265
 
 	public int decodeCABAC_bit(CabacModel aModel) throws IOException
 	{
-		int decoded_bit;
+		int decodedBit;
 		int LPS = LPS_table[aModel.state][(mDecoderRange >> 6) - 4];
 		mDecoderRange -= LPS;
 
-		int scaled_range = mDecoderRange << 7;
+		int scaledRange = mDecoderRange << 7;
 
-		if (mDecoderValue < scaled_range)
+		if (mDecoderValue < scaledRange)
 		{
 			// MPS path
-			decoded_bit = aModel.MPSbit;
+			decodedBit = aModel.MPSbit;
 			aModel.state = next_state_MPS[aModel.state];
 
-			if (scaled_range < (256 << 7))
+			if (scaledRange < (256 << 7))
 			{
 				// scaled range, highest bit (15) not set
-				mDecoderRange = scaled_range >> 6; // shift range by one bit
+				mDecoderRange = scaledRange >> 6; // shift range by one bit
 				mDecoderValue <<= 1;               // shift value by one bit
 				mBitsNeeded++;
 
@@ -66,17 +66,17 @@ public class CabacDecoder265
 		else
 		{
 			// LPS path
-			mDecoderValue = (mDecoderValue - scaled_range);
+			mDecoderValue = (mDecoderValue - scaledRange);
 
-			int num_bits = renorm_table[LPS >> 3];
-			mDecoderValue <<= num_bits;
-			mDecoderRange = LPS << num_bits;  // this is always >= 0x100 except for state 63, but state 63 is never used
+			int numBits = renorm_table[LPS >> 3];
+			mDecoderValue <<= numBits;
+			mDecoderRange = LPS << numBits;  // this is always >= 0x100 except for state 63, but state 63 is never used
 
-			int num_bitsTab = renorm_table[LPS >> 3];
+			int numBitsTab = renorm_table[LPS >> 3];
 
-			assert (num_bits == num_bitsTab);
+			assert numBits == numBitsTab;
 
-			decoded_bit = 1 - aModel.MPSbit;
+			decodedBit = 1 - aModel.MPSbit;
 
 			if (aModel.state == 0)
 			{
@@ -84,7 +84,7 @@ public class CabacDecoder265
 			}
 			aModel.state = next_state_LPS[aModel.state];
 
-			mBitsNeeded += num_bits;
+			mBitsNeeded += numBits;
 
 			if (mBitsNeeded >= 0)
 			{
@@ -98,7 +98,7 @@ public class CabacDecoder265
 			}
 		}
 
-		return decoded_bit;
+		return decodedBit;
 	}
 
 
@@ -151,10 +151,10 @@ public class CabacDecoder265
 		}
 
 		int bit;
-		int scaled_range = mDecoderRange << 7;
-		if (mDecoderValue >= scaled_range)
+		int scaledRange = mDecoderRange << 7;
+		if (mDecoderValue >= scaledRange)
 		{
-			mDecoderValue -= scaled_range;
+			mDecoderValue -= scaledRange;
 			bit = 1;
 		}
 		else
@@ -170,8 +170,7 @@ public class CabacDecoder265
 	{
 		for (int i = 0; i < aMax; i++)
 		{
-			int bit = decodeCABAC_bypass();
-			if (bit == 0)
+			if (decodeCABAC_bypass() == 0)
 			{
 				return i;
 			}
@@ -185,8 +184,7 @@ public class CabacDecoder265
 	{
 		for (int i = 0; i < aMax; i++)
 		{
-			int bit = decodeCABAC_bit(aModel);
-			if (bit == 0)
+			if (decodeCABAC_bit(aModel) == 0)
 			{
 				return i;
 			}
@@ -214,15 +212,15 @@ public class CabacDecoder265
 			}
 		}
 
-		int scaled_range = mDecoderRange << 7;
-		int value = mDecoderValue / scaled_range;
+		int scaledRange = mDecoderRange << 7;
+		int value = mDecoderValue / scaledRange;
 		if (/*unlikely*/(value >= (1 << aLength)))
 		{
 			value = (1 << aLength) - 1;
 		}
 
 		// may happen with broken bitstreams
-		mDecoderValue -= value * scaled_range;
+		mDecoderValue -= value * scaledRange;
 
 		return value;
 	}
@@ -315,5 +313,16 @@ public class CabacDecoder265
 		int suffix = decodeCABAC_FL_bypass(n);
 
 		return base + suffix;
+	}
+
+
+	@Override
+	public void close() throws Exception
+	{
+		if (mInputStream != null)
+		{
+			mInputStream.close();
+			mInputStream = null;
+		}
 	}
 }

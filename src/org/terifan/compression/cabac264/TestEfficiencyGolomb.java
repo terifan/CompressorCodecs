@@ -115,15 +115,15 @@ public class TestEfficiencyGolomb
 				CabacModel[] models = fill(new CabacModel[aBits]);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				CabacEncoder265 encoder = new CabacEncoder265(baos);
-
-				for (int i = 0; i < aValues.length; i++)
+				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
-					encoder.writeCABAC_EGk(aValues[i], 0, models);
-				}
+					for (int i = 0; i < aValues.length; i++)
+					{
+						encoder.writeCABAC_EGk(aValues[i], 0, models);
+					}
 
-				encoder.encodeFinal(1);
-				encoder.stopEncoding();
+					encoder.encodeFinal(1);
+				}
 
 				buffer = baos.toByteArray();
 			}
@@ -131,15 +131,16 @@ public class TestEfficiencyGolomb
 			{
 				CabacModel[] models = fill(new CabacModel[aBits]);
 
-				CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer));
-
-				t = System.nanoTime();
-				for (int i = 0; i < aValues.length; i++)
+				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer)))
 				{
-					int b = decoder.decodeCABAC_EGk(0, models);
-					assert b == aValues[i] : b + " == " + aValues[i];
+					t = System.nanoTime();
+					for (int i = 0; i < aValues.length; i++)
+					{
+						int b = decoder.decodeCABAC_EGk(0, models);
+						assert b == aValues[i] : b + " == " + aValues[i];
+					}
+					t = System.nanoTime() - t;
 				}
-				t = System.nanoTime() - t;
 			}
 
 			System.out.println("CABAC265 - Size: " + buffer.length + ", Time: " + t / 1000000);

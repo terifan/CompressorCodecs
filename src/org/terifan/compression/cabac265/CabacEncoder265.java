@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
-public class CabacEncoder265
+public class CabacEncoder265 implements AutoCloseable
 {
 	private OutputStream mOutputStream;
 
@@ -82,7 +82,7 @@ public class CabacEncoder265
 		while (aValue >= (1 << aStep))
 		{
 			writeCABAC_bypass(1);
-			aValue = aValue - (1 << aStep);
+			aValue -= 1 << aStep;
 			aStep++;
 		}
 
@@ -218,9 +218,9 @@ public class CabacEncoder265
 
 		if (aBit != aModel.MPSbit)
 		{
-			int num_bits = renorm_table[LPS >> 3];
-			mLow = (mLow + mRange) << num_bits;
-			mRange = LPS << num_bits;
+			int numBits = renorm_table[LPS >> 3];
+			mLow = (mLow + mRange) << numBits;
+			mRange = LPS << numBits;
 
 			if (aModel.state == 0)
 			{
@@ -229,7 +229,7 @@ public class CabacEncoder265
 
 			aModel.state = next_state_LPS[aModel.state];
 
-			mBitsLeft -= num_bits;
+			mBitsLeft -= numBits;
 		}
 		else
 		{
@@ -265,14 +265,14 @@ public class CabacEncoder265
 			if (mNumBufferedBytes > 0)
 			{
 				int carry = leadByte >> 8;
-				int byte_ = mBufferedByte + carry;
+				int symbol = mBufferedByte + carry;
 				mBufferedByte = leadByte & 0xff;
-				appendByte(byte_);
+				appendByte(symbol);
 
-				byte_ = (0xff + carry) & 0xff;
+				symbol = (0xff + carry) & 0xff;
 				while (mNumBufferedBytes > 1)
 				{
-					appendByte(byte_);
+					appendByte(symbol);
 					mNumBufferedBytes--;
 				}
 			}
@@ -335,34 +335,41 @@ public class CabacEncoder265
 	}
 
 
-	public void stopEncoding() throws IOException
+	@Override
+	public void close() throws IOException
 	{
-		if ((mLow >>> (32 - mBitsLeft)) != 0)
+		if (mOutputStream != null)
 		{
-			appendByte(mBufferedByte + 1);
-			while (mNumBufferedBytes > 1)
+			if ((mLow >>> (32 - mBitsLeft)) != 0)
 			{
-				appendByte(0x00);
-				mNumBufferedBytes--;
+				appendByte(mBufferedByte + 1);
+				while (mNumBufferedBytes > 1)
+				{
+					appendByte(0x00);
+					mNumBufferedBytes--;
+				}
+
+				mLow -= 1 << (32 - mBitsLeft);
+			}
+			else
+			{
+				if (mNumBufferedBytes > 0)
+				{
+					appendByte(mBufferedByte);
+				}
+
+				while (mNumBufferedBytes > 1)
+				{
+					appendByte(0xff);
+					mNumBufferedBytes--;
+				}
 			}
 
-			mLow -= 1 << (32 - mBitsLeft);
+			writeBits(mLow >>> 8, 24 - mBitsLeft);
+
+			mOutputStream.close();
+			mOutputStream = null;
 		}
-		else
-		{
-			if (mNumBufferedBytes > 0)
-			{
-				appendByte(mBufferedByte);
-			}
-
-			while (mNumBufferedBytes > 1)
-			{
-				appendByte(0xff);
-				mNumBufferedBytes--;
-			}
-		}
-
-		writeBits(mLow >>> 8, 24 - mBitsLeft);
 	}
 
 

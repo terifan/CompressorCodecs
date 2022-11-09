@@ -99,7 +99,7 @@ public class TestPerformance
 				writer.writeCABAC_bit(bits[i], model);
 			}
 			writer.encodeFinal(1);
-			writer.stopEncoding();
+			writer.close();
 			t1 = System.nanoTime() - t1;
 			buffer = baos.toByteArray();
 		}
