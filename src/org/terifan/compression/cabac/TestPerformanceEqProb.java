@@ -6,6 +6,12 @@ import java.io.PushbackInputStream;
 import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
+import org.terifan.compression.cabac265.CabacDecoder265;
+import org.terifan.compression.cabac265.CabacEncoder265;
+import org.terifan.compression.dirac.DiracDecoder;
+import org.terifan.compression.dirac.DiracEncoder;
+import org.terifan.compression.io.BitInputStream;
+import org.terifan.compression.io.BitOutputStream;
 import org.terifan.compression.vp8arithmetic.VP8Decoder;
 import org.terifan.compression.vp8arithmetic.VP8Encoder;
 
@@ -27,6 +33,8 @@ public class TestPerformanceEqProb
 
 			byte [] buffer;
 			long t;
+
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -51,7 +59,34 @@ public class TestPerformanceEqProb
 				t = System.nanoTime()-t;
 			}
 
-			System.out.println("CABAC   - Size: "+buffer.length+", Time: "+t/1000000);
+			System.out.println("CABAC    - Size: "+buffer.length+", Time: "+t/1000000);
+
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			{
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				CabacEncoder265 encoder = new CabacEncoder265(baos);
+				for (int i = 0; i < bits.length; i++)
+				{
+					encoder.writeCABAC_bypass(bits[i]);
+				}
+				encoder.encodeFinal(1);
+				encoder.stopEncoding();
+				buffer = baos.toByteArray();
+			}
+
+			{
+				CabacDecoder265 reader = new CabacDecoder265(new PushbackInputStream(new ByteArrayInputStream(buffer)));
+				t = System.nanoTime();
+				for (int i = 0; i < bits.length; i++)
+				{
+					int b = reader.decodeCABAC_bypass();
+					assert b == bits[i];
+				}
+				t = System.nanoTime()-t;
+			}
+
+			System.out.println("CABAC265 - Size: "+buffer.length+", Time: "+t/1000000);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +113,7 @@ public class TestPerformanceEqProb
 				t = System.nanoTime()-t;
 			}
 
-			System.out.println("VP8     - Size: "+buffer.length+", Time: "+t/1000000);
+			System.out.println("VP8      - Size: "+buffer.length+", Time: "+t/1000000);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -104,7 +139,35 @@ public class TestPerformanceEqProb
 				t = System.nanoTime()-t;
 			}
 
-			System.out.println("Arith   - Size: "+buffer.length+", Time: "+t/1000000);
+			System.out.println("Arith    - Size: "+buffer.length+", Time: "+t/1000000);
+
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			{
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				BitOutputStream bos = new BitOutputStream(baos);
+				DiracEncoder encoder = new DiracEncoder(bos, 1);
+				for (int i = 0; i < bits.length; i++)
+				{
+					encoder.encodeBit(bits[i], 0);
+				}
+				encoder.stopEncoding();
+				bos.close();
+				buffer = baos.toByteArray();
+			}
+
+			{
+				DiracDecoder decoder = new DiracDecoder(new BitInputStream(new ByteArrayInputStream(buffer)), 1);
+				t = System.nanoTime();
+				for (int i = 0; i < bits.length; i++)
+				{
+					int b = decoder.decodeBit(0) ? 1 : 0;
+					assert b == bits[i];
+				}
+				t = System.nanoTime()-t;
+			}
+
+			System.out.println("Dirac    - Size: "+buffer.length+", Time: "+t/1000000);
 		}
 		catch (Throwable e)
 		{
