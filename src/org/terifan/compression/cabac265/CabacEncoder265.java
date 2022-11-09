@@ -54,6 +54,17 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
+	public void writeCABAC_TU(int aValue, CabacModel[] aModels) throws IOException
+	{
+		for (int i = 0; i < aValue; i++)
+		{
+			writeCABAC_bit(0, aModels[i]);
+		}
+
+		writeCABAC_bit(1, aModels[aValue]);
+	}
+
+
 	public void writeCABAC_FL_bypass(int aValue, int aLength) throws IOException
 	{
 		while (aLength > 0)
@@ -79,6 +90,8 @@ public class CabacEncoder265 implements AutoCloseable
 
 	public void writeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
 	{
+		assert aValue >= 0;
+
 		while (aValue >= (1 << aStep))
 		{
 			writeCABAC_bypass(1);
@@ -98,6 +111,8 @@ public class CabacEncoder265 implements AutoCloseable
 
 	public void writeCABAC_EGk(int aValue, int aStep, CabacModel[] aModels) throws IOException
 	{
+		assert aValue >= 0;
+
 		int i = 0;
 
 		while (aValue >= (1 << aStep))
