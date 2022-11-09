@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.terifan.compression.io.BitInputStream;
 
 
-public class BasicArithmeticDecoder
+public class BasicArithmeticDecoder implements AutoCloseable
 {
 	private BitInputStream mInputStream;
 	private BasicArithmeticModel mModel;
@@ -95,5 +95,16 @@ public class BasicArithmeticDecoder
 	private int readBit() throws IOException
 	{
 		return mInputStream.readBit();
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		if (mInputStream != null)
+		{
+			mInputStream.close();
+			mInputStream = null;
+		}
 	}
 }

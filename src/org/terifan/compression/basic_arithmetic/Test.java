@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.terifan.compression.io.BitInputStream;
 import org.terifan.compression.io.BitOutputStream;
-import testdata.LoadTestData.Source;
-import static testdata.LoadTestData.loadTestData;
+import org.terifan.compression.test_suit._LoadTestData.Source;
+import static org.terifan.compression.test_suit._LoadTestData.loadTestData;
 
 
 public class Test

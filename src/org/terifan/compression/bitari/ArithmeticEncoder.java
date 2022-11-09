@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import static org.terifan.compression.bitari.ArithmeticModel.*;
 
 
-public class ArithmeticEncoder
+public class ArithmeticEncoder implements AutoCloseable
 {
 	private OutputStream mOutputStream;
 
@@ -253,7 +253,8 @@ public class ArithmeticEncoder
 	}
 
 
-	public void stopEncoding() throws IOException
+	@Override
+	public void close() throws IOException
 	{
 		mBitsToFollow++;
 		putOneBitPlusOutstanding(mLow < Q1 ? 0 : 1);

@@ -317,7 +317,7 @@ public class CabacDecoder265 implements AutoCloseable
 
 
 	@Override
-	public void close() throws Exception
+	public void close() throws IOException
 	{
 		if (mInputStream != null)
 		{

@@ -1,4 +1,4 @@
-package testdata;
+package org.terifan.compression.test_suit;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 //			byte [] input = "The quick brown fox jumped over the lazy dog.".getBytes();
 
 
-public class LoadTestData
+public class _LoadTestData
 {
 	public static enum Source
 	{
@@ -33,7 +33,7 @@ public class LoadTestData
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		if (aSource == Source.BOOK)
 		{
-			try ( InputStream in = LoadTestData.class.getResourceAsStream("book1.txt"))
+			try ( InputStream in = _LoadTestData.class.getResourceAsStream("book1.txt"))
 			{
 				byte[] buf = new byte[4096];
 				for (int len; (len = in.read(buf)) > 0;)
@@ -44,7 +44,7 @@ public class LoadTestData
 		}
 		else if (aSource == Source.LENNA_GRAY)
 		{
-			BufferedImage image = ImageIO.read(LoadTestData.class.getResourceAsStream("lenna_gray.png"));
+			BufferedImage image = ImageIO.read(_LoadTestData.class.getResourceAsStream("lenna_gray.png"));
 			for (int y = 0; y < image.getHeight(); y++)
 			{
 				for (int x = 0; x < image.getWidth(); x++)
@@ -55,7 +55,7 @@ public class LoadTestData
 		}
 		else if (aSource == Source.LENNA_COLOR)
 		{
-			BufferedImage image = ImageIO.read(LoadTestData.class.getResourceAsStream("lenna.png"));
+			BufferedImage image = ImageIO.read(_LoadTestData.class.getResourceAsStream("lenna.png"));
 			for (int c = 0; c < 3; c++)
 			{
 				for (int y = 0; y < image.getHeight(); y++)

@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.terifan.compression.io.BitInputStream;
 
 
-public class DiracDecoder
+public class DiracDecoder implements AutoCloseable
 {
 	private DiracContext[] mContextList;
 	private BitInputStream mInput;
@@ -116,5 +116,16 @@ public class DiracDecoder
 			return (int)magnitude;
 		}
 		return 0;
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		if (mInput != null)
+		{
+			mInput.close();
+			mInput = null;
+		}
 	}
 }

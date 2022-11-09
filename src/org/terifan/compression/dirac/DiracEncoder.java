@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.terifan.compression.io.BitOutputStream;
 
 
-public class DiracEncoder
+public class DiracEncoder implements AutoCloseable
 {
 	private DiracContext[] mContextList;
 	private BitOutputStream mOutput;
@@ -117,35 +117,42 @@ public class DiracEncoder
 	}
 
 
-	public void stopEncoding() throws IOException
+	@Override
+	public void close() throws IOException
 	{
-		while (((mLowCode + mRange - 1) ^ mLowCode) < 0x8000)
+		if (mOutput != null)
 		{
-			mOutput.writeBit((mLowCode & 0x8000) != 0 ? 1 : 0);
-			for (; mUnderflow > 0; mUnderflow--)
+			while (((mLowCode + mRange - 1) ^ mLowCode) < 0x8000)
 			{
-				mOutput.writeBit((~mLowCode & 0x8000) != 0 ? 1 : 0);
+				mOutput.writeBit((mLowCode & 0x8000) != 0 ? 1 : 0);
+				for (; mUnderflow > 0; mUnderflow--)
+				{
+					mOutput.writeBit((~mLowCode & 0x8000) != 0 ? 1 : 0);
+				}
+
+				mLowCode <<= 1;
+				mLowCode &= 0xFFFF;
+				mRange <<= 1;
 			}
 
-			mLowCode <<= 1;
-			mLowCode &= 0xFFFF;
-			mRange <<= 1;
-		}
+			while (((mLowCode & 0x4000) != 0) && !(((mLowCode + mRange - 1) & 0x4000) != 0))
+			{
+				mUnderflow++;
+				mLowCode ^= 0x4000;
+				mLowCode <<= 1;
+				mLowCode &= 0xFFFF;
+				mRange <<= 1;
+			}
 
-		while (((mLowCode & 0x4000) != 0) && !(((mLowCode + mRange - 1) & 0x4000) != 0))
-		{
-			mUnderflow++;
-			mLowCode ^= 0x4000;
-			mLowCode <<= 1;
-			mLowCode &= 0xFFFF;
-			mRange <<= 1;
-		}
+			mOutput.writeBit((mLowCode & 0x4000) != 0 ? 1 : 0);
+			while (mUnderflow >= 0)
+			{
+				mOutput.writeBit((~mLowCode & 0x4000) != 0 ? 1 : 0);
+				mUnderflow--;
+			}
 
-		mOutput.writeBit((mLowCode & 0x4000) != 0 ? 1 : 0);
-		while (mUnderflow >= 0)
-		{
-			mOutput.writeBit((~mLowCode & 0x4000) != 0 ? 1 : 0);
-			mUnderflow--;
+			mOutput.close();
+			mOutput = null;
 		}
 	}
 }

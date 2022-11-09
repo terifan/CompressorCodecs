@@ -33,7 +33,7 @@ public class Test
 						encoder.encodeExpGolomb(values[i], 0, context);
 					}
 					encoder.encodeFinal(1);
-					encoder.stopEncoding();
+					encoder.close();
 					buffer = baos.toByteArray();
 //					System.out.println("");
 				}
@@ -99,7 +99,7 @@ public class Test
 						encoder.encodeBit(bits[i], context);
 					}
 					encoder.encodeFinal(1);
-					encoder.stopEncoding();
+					encoder.close();
 					buffer = baos.toByteArray();
 //					System.out.println("");
 				}

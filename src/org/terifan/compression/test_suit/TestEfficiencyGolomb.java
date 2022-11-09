@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac264;
+package org.terifan.compression.test_suit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,6 +7,9 @@ import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
+import org.terifan.compression.cabac264.CabacContext;
+import org.terifan.compression.cabac264.CabacDecoder;
+import org.terifan.compression.cabac264.CabacEncoder;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
 import org.terifan.compression.cabac265.CabacModel;
@@ -16,8 +19,7 @@ import org.terifan.compression.io.BitInputStream;
 import org.terifan.compression.io.BitOutputStream;
 import org.terifan.compression.vp8arithmetic.VP8Decoder;
 import org.terifan.compression.vp8arithmetic.VP8Encoder;
-import testdata.LoadTestData;
-import static testdata.LoadTestData.loadTestDataInt;
+import static org.terifan.compression.test_suit._LoadTestData.loadTestDataInt;
 
 
 public class TestEfficiencyGolomb
@@ -92,7 +94,7 @@ public class TestEfficiencyGolomb
 					writer.encodeExpGolomb(aValues[i], 1, context);
 				}
 				writer.encodeFinal(1);
-				writer.stopEncoding();
+				writer.close();
 				buffer = baos.toByteArray();
 			}
 
@@ -154,7 +156,7 @@ public class TestEfficiencyGolomb
 				{
 					encoder.encodeExpGolomb(aValues[i], 1, context);
 				}
-				encoder.stopEncoding();
+				encoder.close();
 				buffer = baos.toByteArray();
 			}
 
@@ -181,7 +183,7 @@ public class TestEfficiencyGolomb
 				{
 					encoder.encodeUInt(aValues[i], 0, aBits);
 				}
-				encoder.stopEncoding();
+				encoder.close();
 				bos.close();
 				buffer = baos.toByteArray();
 			}

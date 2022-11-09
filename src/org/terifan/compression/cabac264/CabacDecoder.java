@@ -5,7 +5,7 @@ import java.io.PushbackInputStream;
 import static org.terifan.compression.cabac264.CabacConstants.*;
 
 
-public class CabacDecoder
+public class CabacDecoder implements AutoCloseable
 {
 	private final static int HALF = 0x01FE;    //(1 << (B_BITS-1)) - 2
 	private final static int QUARTER = 0x0100; //(1 << (B_BITS-2))
@@ -317,6 +317,17 @@ public class CabacDecoder
 			{
 				mInputStream.unread(mValue & 0xFF);
 			}
+		}
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		if (mInputStream != null)
+		{
+			mInputStream.close();
+			mInputStream = null;
 		}
 	}
 }

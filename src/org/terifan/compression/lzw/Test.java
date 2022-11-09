@@ -3,8 +3,8 @@ package org.terifan.compression.lzw;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
-import testdata.LoadTestData.Source;
-import static testdata.LoadTestData.loadTestData;
+import org.terifan.compression.test_suit._LoadTestData.Source;
+import static org.terifan.compression.test_suit._LoadTestData.loadTestData;
 
 
 public class Test

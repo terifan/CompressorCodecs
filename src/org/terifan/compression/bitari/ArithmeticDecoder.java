@@ -6,7 +6,7 @@ import java.util.Arrays;
 import static org.terifan.compression.bitari.ArithmeticModel.*;
 
 
-public class ArithmeticDecoder
+public class ArithmeticDecoder implements AutoCloseable
 {
 	private InputStream mInputStream;
 
@@ -302,6 +302,17 @@ public class ArithmeticDecoder
 		{
 			Arrays.fill(mInBuffer, (byte)0);
 			mInBufferLength = mInBuffer.length;
+		}
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		if (mInputStream != null)
+		{
+			mInputStream.close();
+			mInputStream = null;
 		}
 	}
 }

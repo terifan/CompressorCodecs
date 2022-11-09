@@ -47,7 +47,7 @@ public class Test
 				{
 					encoder.encodeSInt(i, 0, 0);
 				}
-				encoder.stopEncoding();
+				encoder.close();
 			}
 
 //			Debug.hexDump(baos.toByteArray());

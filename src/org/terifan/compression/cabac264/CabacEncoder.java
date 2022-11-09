@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import static org.terifan.compression.cabac264.CabacConstants.*;
 
 
-public class CabacEncoder
+public class CabacEncoder implements AutoCloseable
 {
 	private final static int BITS_TO_LOAD = 16;
 	private final static int MAX_BITS = 26;             //(B_BITS + BITS_TO_LOAD)
@@ -436,54 +436,61 @@ public class CabacEncoder
 	}
 
 
-	public void stopEncoding() throws IOException
+	@Override
+	public void close() throws IOException
 	{
-		int remainingBits = BITS_TO_LOAD - mBitsToGo; // output (2 + remaining) bits for terminating the codeword + one stop bit
-		int mask;
-
-		if (remainingBits <= 5) // one terminating byte
+		if (mOutputStream != null)
 		{
-			mask = (255 - ((1 << (6 - remainingBits)) - 1));
-			mLow = (mLow >> (MAX_BITS - 8)) & mask;
-			mLow += (1 << (5 - remainingBits));       // put the terminating stop bit '1'
+			int remainingBits = BITS_TO_LOAD - mBitsToGo; // output (2 + remaining) bits for terminating the codeword + one stop bit
+			int mask;
 
-			putLastChunkPlusOutstandingFinal(mLow);
-			putBuffer();
-		}
-		else if (remainingBits <= 13)            // two terminating bytes
-		{
-			putLastChunkPlusOutstandingFinal(((mLow >> (MAX_BITS - 8)) & 0xFF)); // mask out the 8 MSBs for output
-			putBuffer();
+			if (remainingBits <= 5) // one terminating byte
+			{
+				mask = (255 - ((1 << (6 - remainingBits)) - 1));
+				mLow = (mLow >> (MAX_BITS - 8)) & mask;
+				mLow += (1 << (5 - remainingBits));       // put the terminating stop bit '1'
 
-			if (remainingBits > 6)
-			{
-				mask = (255 - ((1 << (14 - remainingBits)) - 1));
-				mLow = (mLow >> (MAX_BITS - 16)) & mask;
-				mLow += (1 << (13 - remainingBits));     // put the terminating stop bit '1'
-				putOneByteFinal(mLow);
+				putLastChunkPlusOutstandingFinal(mLow);
+				putBuffer();
 			}
-			else
+			else if (remainingBits <= 13)            // two terminating bytes
 			{
-				putOneByteFinal(128); // second byte contains terminating stop bit '1' only
-			}
-		}
-		else             // three terminating bytes
-		{
-			putLastChunkPlusOutstanding(((mLow >> (MAX_BITS - BITS_TO_LOAD)) & B_LOAD_MASK)); // mask out the 16 MSBs for output
-			putBuffer();
+				putLastChunkPlusOutstandingFinal(((mLow >> (MAX_BITS - 8)) & 0xFF)); // mask out the 8 MSBs for output
+				putBuffer();
 
-			if (remainingBits > 14)
-			{
-				mask = (255 - ((1 << (22 - remainingBits)) - 1));
-				mLow = (mLow >> (MAX_BITS - 24)) & mask;
-				mLow += 1 << (21 - remainingBits);       // put the terminating stop bit '1'
-				putOneByteFinal(mLow);
+				if (remainingBits > 6)
+				{
+					mask = (255 - ((1 << (14 - remainingBits)) - 1));
+					mLow = (mLow >> (MAX_BITS - 16)) & mask;
+					mLow += (1 << (13 - remainingBits));     // put the terminating stop bit '1'
+					putOneByteFinal(mLow);
+				}
+				else
+				{
+					putOneByteFinal(128); // second byte contains terminating stop bit '1' only
+				}
 			}
-			else
+			else             // three terminating bytes
 			{
-				putOneByteFinal(128); // third byte contains terminating stop bit '1' only
+				putLastChunkPlusOutstanding(((mLow >> (MAX_BITS - BITS_TO_LOAD)) & B_LOAD_MASK)); // mask out the 16 MSBs for output
+				putBuffer();
+
+				if (remainingBits > 14)
+				{
+					mask = (255 - ((1 << (22 - remainingBits)) - 1));
+					mLow = (mLow >> (MAX_BITS - 24)) & mask;
+					mLow += 1 << (21 - remainingBits);       // put the terminating stop bit '1'
+					putOneByteFinal(mLow);
+				}
+				else
+				{
+					putOneByteFinal(128); // third byte contains terminating stop bit '1' only
+				}
 			}
+			mBitsToGo = 8;
+
+			mOutputStream.close();
+			mOutputStream = null;
 		}
-		mBitsToGo = 8;
 	}
 }

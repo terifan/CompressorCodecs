@@ -74,7 +74,7 @@ public class Test
 				{
 					encoder.encode(bits[i], ctx);
 				}
-				encoder.stopEncoding();
+				encoder.close();
 				buffer1 = baos.toByteArray();
 			}
 
@@ -123,7 +123,7 @@ public class Test
 				{
 					encoder.encode(bits[i], ctx);
 				}
-				encoder.stopEncoding();
+				encoder.close();
 				buffer2 = baos.toByteArray();
 			}
 

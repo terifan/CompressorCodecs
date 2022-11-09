@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.terifan.compression.io.BitOutputStream;
 
 
-public class BasicArithmeticEncoder
+public class BasicArithmeticEncoder implements AutoCloseable
 {
 	private BitOutputStream mOutputStream;
 	private BasicArithmeticModel mModel;
@@ -63,10 +63,17 @@ public class BasicArithmeticEncoder
 	}
 
 
+	@Override
 	public void close() throws IOException
 	{
-		mModel.mShifts++;
-		writeBit(mModel.mLow < BasicArithmeticModel.Q1 ? 0 : 1);
+		if (mOutputStream != null)
+		{
+			mModel.mShifts++;
+			writeBit(mModel.mLow < BasicArithmeticModel.Q1 ? 0 : 1);
+
+			mOutputStream.close();
+			mOutputStream = null;
+		}
 	}
 
 

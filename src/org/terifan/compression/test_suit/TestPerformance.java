@@ -1,4 +1,4 @@
-package org.terifan.compression.cabac264;
+package org.terifan.compression.test_suit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +8,9 @@ import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
+import org.terifan.compression.cabac264.CabacContext;
+import org.terifan.compression.cabac264.CabacDecoder;
+import org.terifan.compression.cabac264.CabacEncoder;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
 import org.terifan.compression.cabac265.CabacModel;
@@ -69,7 +72,7 @@ public class TestPerformance
 				writer.encodeBit(bits[i], context);
 			}
 			writer.encodeFinal(1);
-			writer.stopEncoding();
+			writer.close();
 			t1 = System.nanoTime() - t1;
 			buffer = baos.toByteArray();
 		}
@@ -155,7 +158,7 @@ public class TestPerformance
 			{
 				encoder.encode(bits[i], context);
 			}
-			encoder.stopEncoding();
+			encoder.close();
 			t1 = System.nanoTime() - t1;
 			buffer = baos.toByteArray();
 		}
@@ -184,7 +187,7 @@ public class TestPerformance
 			{
 				encoder.encodeBit(bits[i] == 1, 0);
 			}
-			encoder.stopEncoding();
+			encoder.close();
 			bos.close();
 			t1 = System.nanoTime() - t1;
 			buffer = baos.toByteArray();
