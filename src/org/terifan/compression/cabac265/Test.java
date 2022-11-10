@@ -14,19 +14,19 @@ public class Test
 			byte[] data;
 
 			{
-				CabacContect265[] models = {
-					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
+				CabacContext265[] models = {
+					new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265()
 				};
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
-					encoder.writeCABAC_EGk(8985, 2, models);
-					encoder.writeCABAC_EGk(777, 2, models);
-					encoder.writeCABAC_EGk(152, 2, models);
-					encoder.writeCABAC_EGk(18, 2, models);
-					encoder.writeCABAC_EGk(682, 2, models);
+					encoder.encodeCABAC_EGk(8985, 2, models);
+					encoder.encodeCABAC_EGk(777, 2, models);
+					encoder.encodeCABAC_EGk(152, 2, models);
+					encoder.encodeCABAC_EGk(18, 2, models);
+					encoder.encodeCABAC_EGk(682, 2, models);
 					encoder.encodeFinal(1);
 				}
 
@@ -36,8 +36,8 @@ public class Test
 			hexDump(data);
 
 			{
-				CabacContect265[] models = {
-					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
+				CabacContext265[] models = {
+					new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265(),new CabacContext265()
 				};
 
 				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data)))

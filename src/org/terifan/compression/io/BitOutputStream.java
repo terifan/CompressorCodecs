@@ -2,7 +2,7 @@ package org.terifan.compression.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import org.terifan.compression.cabac265.CabacContect265;
+import org.terifan.compression.cabac265.CabacContext265;
 
 
 /**

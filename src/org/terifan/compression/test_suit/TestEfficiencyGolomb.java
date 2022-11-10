@@ -12,7 +12,7 @@ import org.terifan.compression.cabac264.CabacDecoder264;
 import org.terifan.compression.cabac264.CabacEncoder264;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
-import org.terifan.compression.cabac265.CabacContect265;
+import org.terifan.compression.cabac265.CabacContext265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -199,13 +199,13 @@ public class TestEfficiencyGolomb
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
-				CabacContect265[] models = fill(new CabacContect265[aBits]);
+				CabacContext265[] models = fill(new CabacContext265[aBits]);
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
 					for (int i = 0; i < aValues.length; i++)
 					{
-						encoder.writeCABAC_EGk(aValues[i], 0, models);
+						encoder.encodeCABAC_EGk(aValues[i], 0, models);
 					}
 
 					encoder.encodeFinal(1);
@@ -215,7 +215,7 @@ public class TestEfficiencyGolomb
 			}
 
 			{
-				CabacContect265[] models = fill(new CabacContect265[aBits]);
+				CabacContext265[] models = fill(new CabacContext265[aBits]);
 				t = System.nanoTime();
 				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer)))
 				{
@@ -343,11 +343,11 @@ public class TestEfficiencyGolomb
 	}
 
 
-	private static CabacContect265[] fill(CabacContect265[] aCabacContext)
+	private static CabacContext265[] fill(CabacContext265[] aCabacContext)
 	{
 		for (int i = 0; i < aCabacContext.length; i++)
 		{
-			aCabacContext[i] = new CabacContect265();
+			aCabacContext[i] = new CabacContext265();
 		}
 		return aCabacContext;
 	}

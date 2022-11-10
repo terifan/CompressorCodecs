@@ -34,48 +34,48 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeBit(int aBit) throws IOException
+	public void encodeBit(int aBit) throws IOException
 	{
-		writeBits(aBit, 1);
+		encodeBits(aBit, 1);
 	}
 
 
-	public void writeCABAC_TU_bypass(int aValue, int aMax) throws IOException
+	public void encodeCABAC_TU_bypass(int aValue, int aMax) throws IOException
 	{
 		for (int i = 0; i < aValue; i++)
 		{
-			writeCABAC_bypass(1);
+			encodeCABAC_bypass(1);
 		}
 
 		if (aValue < aMax)
 		{
-			writeCABAC_bypass(0);
+			encodeCABAC_bypass(0);
 		}
 	}
 
 
-	public void writeCABAC_TU(int aValue, CabacContect265[] aModels) throws IOException
+	public void encodeCABAC_TU(int aValue, CabacContext265[] aModels) throws IOException
 	{
 		for (int i = 0; i < aValue; i++)
 		{
-			writeCABAC_bit(0, aModels[i]);
+			encodeCABAC_bit(1, aModels[i]);
 		}
 
-		writeCABAC_bit(1, aModels[aValue]);
+		encodeCABAC_bit(0, aModels[aValue]);
 	}
 
 
-	public void writeCABAC_FL_bypass(int aValue, int aLength) throws IOException
+	public void encodeCABAC_FL_bypass(int aValue, int aLength) throws IOException
 	{
 		while (aLength > 0)
 		{
 			aLength--;
-			writeCABAC_bypass(aValue & (1 << aLength));
+			encodeCABAC_bypass(aValue & (1 << aLength));
 		}
 	}
 
 
-	public float RDBits_for_CABAC_bin(int aBit, CabacContect265 aModel)
+	public float RDBits_for_CABAC_bin(int aBit, CabacContext265 aModel)
 	{
 		int idx = aModel.state << 1;
 
@@ -88,28 +88,28 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
+	public void encodeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
 	{
 		assert aValue >= 0;
 
 		while (aValue >= (1 << aStep))
 		{
-			writeCABAC_bypass(1);
+			encodeCABAC_bypass(1);
 			aValue -= 1 << aStep;
 			aStep++;
 		}
 
-		writeCABAC_bypass(0);
+		encodeCABAC_bypass(0);
 
 		while (aStep > 0)
 		{
 			aStep--;
-			writeCABAC_bypass((aValue >>> aStep) & 1);
+			encodeCABAC_bypass((aValue >>> aStep) & 1);
 		}
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aModels) throws IOException
+	public void encodeCABAC_EGk(int aValue, int aStep, CabacContext265[] aModels) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -117,22 +117,22 @@ public class CabacEncoder265 implements AutoCloseable
 
 		while (aValue >= (1 << aStep))
 		{
-			writeCABAC_bit(1, aModels[i++]);
+			encodeCABAC_bit(1, aModels[i++]);
 			aValue -= 1 << aStep;
 			aStep++;
 		}
 
-		writeCABAC_bit(0, aModels[i]);
+		encodeCABAC_bit(0, aModels[i]);
 
 		while (aStep > 0)
 		{
 			aStep--;
-			writeCABAC_bypass((aValue >>> aStep) & 1);
+			encodeCABAC_bypass((aValue >>> aStep) & 1);
 		}
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aMagnitude, CabacContect265[][] aValueModels) throws IOException
+	public void encodeCABAC_EGk(int aValue, int aStep, CabacContext265[] aMagnitude, CabacContext265[][] aValueModels) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -140,22 +140,22 @@ public class CabacEncoder265 implements AutoCloseable
 
 		while (aValue >= (1 << aStep))
 		{
-			writeCABAC_bit(1, aMagnitude[i++]);
+			encodeCABAC_bit(1, aMagnitude[i++]);
 			aValue -= 1 << aStep;
 			aStep++;
 		}
 
-		writeCABAC_bit(0, aMagnitude[i]);
+		encodeCABAC_bit(0, aMagnitude[i]);
 
 		for (int j = 0; aStep > 0; j++)
 		{
 			aStep--;
-			writeCABAC_bit((aValue >>> aStep) & 1, aValueModels[i][j]);
+			encodeCABAC_bit((aValue >>> aStep) & 1, aValueModels[i][j]);
 		}
 	}
 
 
-	public void writeUVLC(int aValue) throws IOException
+	public void encodeUVLC(int aValue) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -170,32 +170,32 @@ public class CabacEncoder265 implements AutoCloseable
 			nLeadingZeros++;
 		}
 
-		writeBits((1 << nLeadingZeros) | (aValue - base), 2 * nLeadingZeros + 1);
+		encodeBits((1 << nLeadingZeros) | (aValue - base), 2 * nLeadingZeros + 1);
 	}
 
 
-	public void writeSVLC(int aValue) throws IOException
+	public void encodeSVLC(int aValue) throws IOException
 	{
 		if (aValue == 0)
 		{
-			writeBits(1, 1);
+			encodeBits(1, 1);
 		}
 		else if (aValue > 0)
 		{
-			writeUVLC(2 * aValue - 1);
+			encodeUVLC(2 * aValue - 1);
 		}
 		else
 		{
-			writeUVLC(-2 * aValue);
+			encodeUVLC(-2 * aValue);
 		}
 	}
 
 
 	public void addTrailingBits() throws IOException
 	{
-		writeBit(1);
+		encodeBit(1);
 		int nZeros = freeBitsInByteCount();
-		writeBits(0, nZeros);
+		encodeBits(0, nZeros);
 	}
 
 
@@ -226,7 +226,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_bypass(int aBit) throws IOException
+	public void encodeCABAC_bypass(int aBit) throws IOException
 	{
 		mLow <<= 1;
 
@@ -244,12 +244,12 @@ public class CabacEncoder265 implements AutoCloseable
 	{
 		if (mBitsLeft < 12)
 		{
-			writeOut();
+			flush();
 		}
 	}
 
 
-	public void writeCABAC_bit(int aBit, CabacContect265 aModel) throws IOException
+	public void encodeCABAC_bit(int aBit, CabacContext265 aModel) throws IOException
 	{
 		int LPS = LPS_table[aModel.state][(mRange >> 6) - 4];
 		mRange -= LPS;
@@ -288,7 +288,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeOut() throws IOException
+	private void flush() throws IOException
 	{
 		int leadByte = mLow >>> (24 - mBitsLeft);
 		mBitsLeft += 8;
@@ -346,13 +346,13 @@ public class CabacEncoder265 implements AutoCloseable
 	{
 		while (aLength >= 8)
 		{
-			writeBits(0, 8);
+			encodeBits(0, 8);
 			aLength -= 8;
 		}
 
 		if (aLength > 0)
 		{
-			writeBits(0, aLength);
+			encodeBits(0, aLength);
 		}
 	}
 
@@ -403,7 +403,7 @@ public class CabacEncoder265 implements AutoCloseable
 				}
 			}
 
-			writeBits(mLow >>> 8, 24 - mBitsLeft);
+			encodeBits(mLow >>> 8, 24 - mBitsLeft);
 
 			mOutputStream.close();
 			mOutputStream = null;
@@ -411,7 +411,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeBits(int aBits, int aLength) throws IOException
+	public void encodeBits(int aBits, int aLength) throws IOException
 	{
 		mVLCBuffer <<= aLength;
 		mVLCBuffer |= aBits;

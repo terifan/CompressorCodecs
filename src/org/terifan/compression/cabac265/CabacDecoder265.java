@@ -31,7 +31,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_bit(CabacContect265 aModel) throws IOException
+	public int decodeCABAC_bit(CabacContext265 aModel) throws IOException
 	{
 		int decodedBit;
 		int LPS = LPS_table[aModel.state][(mDecoderRange >> 6) - 4];
@@ -180,7 +180,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_TU(int aMax, CabacContect265 aModel) throws IOException
+	public int decodeCABAC_TU(int aMax, CabacContext265 aModel) throws IOException
 	{
 		for (int i = 0; i < aMax; i++)
 		{
@@ -191,6 +191,18 @@ public class CabacDecoder265 implements AutoCloseable
 		}
 
 		return aMax;
+	}
+
+
+	public int decodeCABAC_TU(CabacContext265[] aModel) throws IOException
+	{
+		for (int i = 0; ; i++)
+		{
+			if (decodeCABAC_bit(aModel[i]) == 0)
+			{
+				return i;
+			}
+		}
 	}
 
 
@@ -292,7 +304,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_EGk(int aStep, CabacContect265[] aModels) throws IOException
+	public int decodeCABAC_EGk(int aStep, CabacContext265[] aModels) throws IOException
 	{
 		int base = 0;
 		int n = aStep;
@@ -311,6 +323,34 @@ public class CabacDecoder265 implements AutoCloseable
 		}
 
 		int suffix = decodeCABAC_FL_bypass(n);
+
+		return base + suffix;
+	}
+
+
+	public int decodeCABAC_EGk(int aStep, CabacContext265[] aMagnitudeModels, CabacContext265[][] aValueModels) throws IOException
+	{
+		int base = 0;
+		int n = aStep;
+		int i = 0;
+
+		while (decodeCABAC_bit(aMagnitudeModels[i++]) != 0)
+		{
+			base += 1 << n;
+			n++;
+
+			if (n == aStep + MAX_PREFIX)
+			{
+				System.out.println("err");
+				return 0; // TODO: error
+			}
+		}
+
+		int suffix = 0;
+		for (int j = 0; j < n; j++)
+		{
+			suffix += decodeCABAC_bit(aValueModels[i][j]) << (n-1-j);
+		}
 
 		return base + suffix;
 	}
