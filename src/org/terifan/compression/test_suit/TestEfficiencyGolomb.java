@@ -87,35 +87,37 @@ public class TestEfficiencyGolomb
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				CabacEncoder writer = new CabacEncoder(baos);
 				CabacContext[] context = fill(new CabacContext[aBits]);
-				for (int i = 0; i < aValues.length; i++)
+				try (CabacEncoder writer = new CabacEncoder(baos))
 				{
-					writer.encodeExpGolomb(aValues[i], 1, context);
+					for (int i = 0; i < aValues.length; i++)
+					{
+						writer.encodeExpGolomb(aValues[i], 1, context);
+					}
+					writer.encodeFinal(1);
 				}
-				writer.encodeFinal(1);
-				writer.close();
 				buffer = baos.toByteArray();
 			}
 
 			{
-				CabacDecoder reader = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer)));
 				CabacContext[] context = fill(new CabacContext[aBits]);
 				t = System.nanoTime();
-				for (int i = 0; i < aValues.length; i++)
+				try (CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer))))
 				{
-					long b = reader.decodeExpGolomb(1, context);
-					assert b == aValues[i] : b + " == " + aValues[i];
+					for (int i = 0; i < aValues.length; i++)
+					{
+						long b = decoder.decodeExpGolomb(1, context);
+						assert b == aValues[i] : b + " == " + aValues[i];
+					}
 				}
 				t = System.nanoTime() - t;
 			}
 
-			System.out.println("CABAC264 - Size: " + buffer.length + ", Time: " + t / 1000000);
+			System.out.println("CABAC264 - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				CabacModel[] models = fill(new CabacModel[aBits]);
-
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
@@ -132,99 +134,105 @@ public class TestEfficiencyGolomb
 
 			{
 				CabacModel[] models = fill(new CabacModel[aBits]);
-
+				t = System.nanoTime();
 				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer)))
 				{
-					t = System.nanoTime();
 					for (int i = 0; i < aValues.length; i++)
 					{
 						int b = decoder.decodeCABAC_EGk(0, models);
 						assert b == aValues[i] : b + " == " + aValues[i];
 					}
-					t = System.nanoTime() - t;
 				}
+				t = System.nanoTime() - t;
 			}
 
-			System.out.println("CABAC265 - Size: " + buffer.length + ", Time: " + t / 1000000);
+			System.out.println("CABAC265 - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ArithmeticEncoder encoder = new ArithmeticEncoder(baos);
 				ArithmeticContext[] context = fill(new ArithmeticContext[aBits]);
-				for (int i = 0; i < aValues.length; i++)
+				try (ArithmeticEncoder encoder = new ArithmeticEncoder(baos))
 				{
-					encoder.encodeExpGolomb(aValues[i], 1, context);
+					for (int i = 0; i < aValues.length; i++)
+					{
+						encoder.encodeExpGolomb(aValues[i], 1, context);
+					}
 				}
-				encoder.close();
 				buffer = baos.toByteArray();
 			}
 
 			{
-				ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(buffer));
 				ArithmeticContext[] context = fill(new ArithmeticContext[aBits]);
 				t = System.nanoTime();
-				for (int i = 0; i < aValues.length; i++)
+				try (ArithmeticDecoder decoder = new ArithmeticDecoder(new ByteArrayInputStream(buffer)))
 				{
-					long b = decoder.decodeExpGolomb(1, context);
-					assert b == aValues[i] : b + " == " + aValues[i];
+					for (int i = 0; i < aValues.length; i++)
+					{
+						long b = decoder.decodeExpGolomb(1, context);
+						assert b == aValues[i] : b + " == " + aValues[i];
+					}
 				}
 				t = System.nanoTime() - t;
 			}
 
-			System.out.println("BitAri   - Size: " + buffer.length + ", Time: " + t / 1000000);
+			System.out.println("BitAri   - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				BitOutputStream bos = new BitOutputStream(baos);
-				DiracEncoder encoder = new DiracEncoder(bos, aBits + 2);
-				for (int i = 0; i < aValues.length; i++)
+				try (DiracEncoder encoder = new DiracEncoder(new BitOutputStream(baos), aBits + 2))
 				{
-					encoder.encodeUInt(aValues[i], 0, aBits);
+					for (int i = 0; i < aValues.length; i++)
+					{
+						encoder.encodeUInt(aValues[i], 0, aBits);
+					}
 				}
-				encoder.close();
-				bos.close();
 				buffer = baos.toByteArray();
 			}
 
 			{
-				DiracDecoder decoder = new DiracDecoder(new BitInputStream(new ByteArrayInputStream(buffer)), aBits + 2);
 				t = System.nanoTime();
-				for (int i = 0; i < aValues.length; i++)
+				try (DiracDecoder decoder = new DiracDecoder(new BitInputStream(new ByteArrayInputStream(buffer)), aBits + 2))
 				{
-					long b = decoder.decodeUInt(0, aBits);
-					assert b == aValues[i] : b + " == " + aValues[i];
+					for (int i = 0; i < aValues.length; i++)
+					{
+						long b = decoder.decodeUInt(0, aBits);
+						assert b == aValues[i] : b + " == " + aValues[i];
+					}
 				}
 				t = System.nanoTime() - t;
 			}
 
-			System.out.println("Dirac    - Size: " + buffer.length + ", Time: " + t / 1000000);
+			System.out.println("Dirac    - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				VP8Encoder encoder = new VP8Encoder(baos);
-				for (int i = 0; i < aValues.length; i++)
+				try (VP8Encoder encoder = new VP8Encoder(baos))
 				{
-					encoder.writeExpGolomb(aValues[i], 0);
+					for (int i = 0; i < aValues.length; i++)
+					{
+						encoder.writeExpGolomb(aValues[i], 0);
+					}
 				}
-				encoder.close();
 				buffer = baos.toByteArray();
 			}
 
 			{
-				VP8Decoder decoder = new VP8Decoder(new ByteArrayInputStream(buffer));
 				t = System.nanoTime();
-				for (int i = 0; i < aValues.length; i++)
+				try (VP8Decoder decoder = new VP8Decoder(new ByteArrayInputStream(buffer)))
 				{
-					long b = decoder.readExpGolomb(0);
-					assert b == aValues[i] : b + " == " + aValues[i];
+					for (int i = 0; i < aValues.length; i++)
+					{
+						long b = decoder.readExpGolomb(0);
+						assert b == aValues[i] : b + " == " + aValues[i];
+					}
 				}
 				t = System.nanoTime() - t;
 			}
 
-			System.out.println("VP8      - Size: " + buffer.length + ", Time: " + t / 1000000);
+			System.out.println("VP8      - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 		}
 		catch (Throwable e)
 		{
