@@ -347,9 +347,9 @@ public class CabacDecoder265 implements AutoCloseable
 		}
 
 		int suffix = 0;
-		for (int j = 0; j < n; j++)
+		for (int j = 0, k = n; j < n; j++)
 		{
-			suffix += decodeCABAC_bit(aValueModels[i][j]) << (n-1-j);
+			suffix += decodeCABAC_bit(aValueModels[i][j]) << --k;
 		}
 
 		return base + suffix;
