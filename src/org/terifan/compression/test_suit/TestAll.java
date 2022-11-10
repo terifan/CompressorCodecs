@@ -11,11 +11,12 @@ import org.terifan.compression.bitari.ArithmeticContext;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bwt.BWT;
-import org.terifan.compression.cabac264.CabacContext;
-import org.terifan.compression.cabac264.CabacDecoder;
-import org.terifan.compression.cabac264.CabacEncoder;
+import org.terifan.compression.cabac264.CabacContext264;
+import org.terifan.compression.cabac264.CabacDecoder264;
+import org.terifan.compression.cabac264.CabacEncoder264;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
+import org.terifan.compression.cabac265.CabacContect265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -120,9 +121,9 @@ public class TestAll
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		try (CabacEncoder encoder = new CabacEncoder(baos))
+		try (CabacEncoder264 encoder = new CabacEncoder264(baos))
 		{
-			CabacContext context = new CabacContext(0);
+			CabacContext264[] context = {new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0)};
 
 			for (int i = 0; i < aInput.length; i++)
 			{
@@ -134,9 +135,9 @@ public class TestAll
 
 		int[] output = new int[aInput.length];
 
-		try (CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(baos.toByteArray()))))
+		try (CabacDecoder264 decoder = new CabacDecoder264(new PushbackInputStream(new ByteArrayInputStream(baos.toByteArray()))))
 		{
-			CabacContext context = new CabacContext(0);
+			CabacContext264[] context = {new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0),new CabacContext264(0)};
 
 			for (int i = 0; i < aInput.length; i++)
 			{
@@ -154,23 +155,28 @@ public class TestAll
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 		{
-			for (int i = 0; i < aInput.length; i++)
-			{
-				encoder.writeCABAC_EGk_bypass(aInput[i], 0);
-			}
+			CabacContect265[] models = {new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()};
 
-			encoder.encodeFinal(1);
+			try (CabacEncoder265 encoder = new CabacEncoder265(baos))
+			{
+				for (int i = 0; i < aInput.length; i++)
+				{
+					encoder.writeCABAC_EGk(aInput[i], 0, models);
+				}
+
+				encoder.encodeFinal(1);
+			}
 		}
 
 		int[] output = new int[aInput.length];
 
+		CabacContect265[] models = {new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()};
 		try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(baos.toByteArray())))
 		{
 			for (int i = 0; i < aInput.length; i++)
 			{
-				output[i] = (int)decoder.decodeCABAC_EGk_bypass(0);
+				output[i] = (int)decoder.decodeCABAC_EGk(0, models);
 			}
 		}
 

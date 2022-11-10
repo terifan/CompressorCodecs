@@ -8,12 +8,12 @@ import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
-import org.terifan.compression.cabac264.CabacContext;
-import org.terifan.compression.cabac264.CabacDecoder;
-import org.terifan.compression.cabac264.CabacEncoder;
+import org.terifan.compression.cabac264.CabacContext264;
+import org.terifan.compression.cabac264.CabacDecoder264;
+import org.terifan.compression.cabac264.CabacEncoder264;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
-import org.terifan.compression.cabac265.CabacModel;
+import org.terifan.compression.cabac265.CabacContect265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -64,8 +64,8 @@ public class TestPerformance
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			CabacEncoder writer = new CabacEncoder(baos);
-			CabacContext context = new CabacContext(0);
+			CabacEncoder264 writer = new CabacEncoder264(baos);
+			CabacContext264 context = new CabacContext264(0);
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
@@ -78,8 +78,8 @@ public class TestPerformance
 		}
 
 		{
-			CabacDecoder reader = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-			CabacContext context = new CabacContext(0);
+			CabacDecoder264 reader = new CabacDecoder264(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
+			CabacContext264 context = new CabacContext264(0);
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
@@ -95,7 +95,7 @@ public class TestPerformance
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			CabacEncoder265 writer = new CabacEncoder265(baos);
-			CabacModel model = new CabacModel();
+			CabacContect265 model = new CabacContect265();
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
@@ -109,7 +109,7 @@ public class TestPerformance
 
 		{
 			CabacDecoder265 reader = new CabacDecoder265(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-			CabacModel model = new CabacModel();
+			CabacContect265 model = new CabacContect265();
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
@@ -128,7 +128,7 @@ public class TestPerformance
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				encoder.writeBit(bits[i], prob);
+				encoder.encodeBit(bits[i], prob);
 			}
 			t1 = System.nanoTime() - t1;
 			encoder.close();
@@ -140,7 +140,7 @@ public class TestPerformance
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				int b = reader.readBit(prob);
+				int b = reader.decodeBit(prob);
 				assert b == bits[i];
 			}
 			t2 = System.nanoTime() - t2;

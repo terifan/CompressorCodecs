@@ -1,13 +1,13 @@
 package org.terifan.compression.cabac264;
 
 
-public class CabacContext
+public class CabacContext264
 {
 	int MPS;
 	int state;
 
 
-	public CabacContext(int pstate)
+	public CabacContext264(int pstate)
 	{
 		if (pstate >= 64)
 		{

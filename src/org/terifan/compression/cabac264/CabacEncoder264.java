@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import static org.terifan.compression.cabac264.CabacConstants.*;
 
 
-public class CabacEncoder implements AutoCloseable
+public class CabacEncoder264 implements AutoCloseable
 {
 	private final static int BITS_TO_LOAD = 16;
 	private final static int MAX_BITS = 26;             //(B_BITS + BITS_TO_LOAD)
@@ -25,7 +25,7 @@ public class CabacEncoder implements AutoCloseable
 	private int mChunksOutstanding;
 
 
-	public CabacEncoder(OutputStream aOutputStream)
+	public CabacEncoder264(OutputStream aOutputStream)
 	{
 		mLow = 0;
 		mChunksOutstanding = 0;
@@ -38,7 +38,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeBit(int aBit, CabacContext aContext) throws IOException
+	public void encodeBit(int aBit, CabacContext264 aContext) throws IOException
 	{
 		int low = mLow;
 		int bl = mBitsToGo;
@@ -146,7 +146,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeUnary(int aSymbol, CabacContext aContext) throws IOException
+	public void encodeUnary(int aSymbol, CabacContext264 aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 
@@ -159,7 +159,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeUnary(int aSymbol, CabacContext aContext0, CabacContext aContext1) throws IOException
+	public void encodeUnary(int aSymbol, CabacContext264 aContext0, CabacContext264 aContext1) throws IOException
 	{
 		if (aSymbol == 0)
 		{
@@ -200,7 +200,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeExpGolomb(long aSymbol, int aStep, CabacContext aContext) throws IOException
+	public void encodeExpGolomb(long aSymbol, int aStep, CabacContext264 aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 
@@ -221,7 +221,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeExpGolomb(int aSymbol, int aStep, CabacContext[] aContext) throws IOException
+	public void encodeExpGolomb(int aSymbol, int aStep, CabacContext264[] aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 
@@ -243,7 +243,7 @@ public class CabacEncoder implements AutoCloseable
 	}
 
 
-	public void encodeUnaryGolomb(long aSymbol, int aStep, CabacContext aContext) throws IOException
+	public void encodeUnaryGolomb(long aSymbol, int aStep, CabacContext264 aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 

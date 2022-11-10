@@ -300,7 +300,7 @@ interface CabacConstants
 	};
 
 
-	static int Clip3(int aLow, int aHigh, int aValue)
+	static int clip3(int aLow, int aHigh, int aValue)
 	{
 		return ((aValue) < (aLow) ? (aLow) : (aValue) > (aHigh) ? (aHigh) : (aValue));
 	}

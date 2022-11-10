@@ -26,8 +26,8 @@ public class Test
 
 				{
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					CabacEncoder encoder = new CabacEncoder(baos);
-					CabacContext context = new CabacContext(0);
+					CabacEncoder264 encoder = new CabacEncoder264(baos);
+					CabacContext264 context = new CabacContext264(0);
 					for (int i = 0; i < values.length; i++)
 					{
 						encoder.encodeExpGolomb(values[i], 0, context);
@@ -42,8 +42,8 @@ public class Test
 				long t;
 
 				{
-					CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-					CabacContext context = new CabacContext(0);
+					CabacDecoder264 decoder = new CabacDecoder264(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
+					CabacContext264 context = new CabacContext264(0);
 					t = System.nanoTime();
 					for (int i = 0; i < values.length; i++)
 					{
@@ -91,8 +91,8 @@ public class Test
 
 				{
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					CabacEncoder encoder = new CabacEncoder(baos);
-					CabacContext context = new CabacContext(0);
+					CabacEncoder264 encoder = new CabacEncoder264(baos);
+					CabacContext264 context = new CabacContext264(0);
 					for (int i = 0; i < bits.length; i++)
 					{
 //						System.out.print(bits[i]);
@@ -108,8 +108,8 @@ public class Test
 				long t;
 
 				{
-					CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-					CabacContext context = new CabacContext(0);
+					CabacDecoder264 decoder = new CabacDecoder264(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
+					CabacContext264 context = new CabacContext264(0);
 					t = System.nanoTime();
 					for (int i = 0; i < bits.length; i++)
 					{

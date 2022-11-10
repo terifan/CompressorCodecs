@@ -14,8 +14,8 @@ public class Test
 			byte[] data;
 
 			{
-				CabacModel[] models = {
-					new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel()
+				CabacContect265[] models = {
+					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
 				};
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -36,8 +36,8 @@ public class Test
 			hexDump(data);
 
 			{
-				CabacModel[] models = {
-					new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel(),new CabacModel()
+				CabacContect265[] models = {
+					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
 				};
 
 				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data)))

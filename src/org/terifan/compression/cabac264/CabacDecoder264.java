@@ -5,7 +5,7 @@ import java.io.PushbackInputStream;
 import static org.terifan.compression.cabac264.CabacConstants.*;
 
 
-public class CabacDecoder implements AutoCloseable
+public class CabacDecoder264 implements AutoCloseable
 {
 	private final static int HALF = 0x01FE;    //(1 << (B_BITS-1)) - 2
 	private final static int QUARTER = 0x0100; //(1 << (B_BITS-2))
@@ -17,7 +17,7 @@ public class CabacDecoder implements AutoCloseable
 	private int mOutOfBoundsCount;
 
 
-	public CabacDecoder(PushbackInputStream aInputStream) throws IOException
+	public CabacDecoder264(PushbackInputStream aInputStream) throws IOException
 	{
 		mInputStream = aInputStream;
 
@@ -49,7 +49,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public int decodeBit(CabacContext aContext) throws IOException
+	public int decodeBit(CabacContext264 aContext) throws IOException
 	{
 		int bit = aContext.MPS;
 		int rLPS = rLPS_table_64x4[aContext.state][(mRange >> 6) & 0x03];
@@ -144,7 +144,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public long decodeExpGolomb(int aStep, CabacContext aContext) throws IOException
+	public long decodeExpGolomb(int aStep, CabacContext264 aContext) throws IOException
 	{
 		long result = 0;
 
@@ -167,7 +167,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public int decodeExpGolomb(int aStep, CabacContext[] aContext) throws IOException
+	public int decodeExpGolomb(int aStep, CabacContext264[] aContext) throws IOException
 	{
 		int result = 0;
 		int i = 0;
@@ -191,7 +191,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public int decodeUnary(CabacContext ctx) throws IOException
+	public int decodeUnary(CabacContext264 ctx) throws IOException
 	{
 		int symbol = 0;
 		while (decodeBit(ctx) == 0)
@@ -203,7 +203,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public int decodeUnary(CabacContext ctx0, CabacContext ctx1) throws IOException
+	public int decodeUnary(CabacContext264 ctx0, CabacContext264 ctx1) throws IOException
 	{
 		if (decodeBit(ctx0) == 0)
 		{
@@ -223,7 +223,7 @@ public class CabacDecoder implements AutoCloseable
 	}
 
 
-	public long decodeUnaryGolomb(int aStep, CabacContext ctx) throws IOException
+	public long decodeUnaryGolomb(int aStep, CabacContext264 ctx) throws IOException
 	{
 		assert aStep > 0 && aStep <= 64;
 

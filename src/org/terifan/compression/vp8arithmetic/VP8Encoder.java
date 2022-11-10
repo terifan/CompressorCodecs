@@ -29,7 +29,7 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public int writeBit(int aBit, int aProb) throws IOException
+	public int encodeBit(int aBit, int aProb) throws IOException
 	{
 		int split = (mRange * aProb) >> 8;
 		if (aBit != 0)
@@ -58,7 +58,7 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public int writeBitEqProb(int aBit) throws IOException
+	public int encodeBitEqProb(int aBit) throws IOException
 	{
 		int split = mRange >> 1;
 		if (aBit != 0)
@@ -84,11 +84,11 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void writeValue(int aValue, int aNumBits) throws IOException
+	public void encodeValue(int aValue, int aNumBits) throws IOException
 	{
 		for (long mask = 1L << (aNumBits - 1); mask != 0; mask >>= 1)
 		{
-			writeBitEqProb((int)(aValue & mask));
+			encodeBitEqProb((int)(aValue & mask));
 		}
 	}
 
@@ -96,7 +96,7 @@ public class VP8Encoder implements AutoCloseable
 	@Override
 	public void close() throws IOException
 	{
-		writeValue(0, 9 - mNbBits);
+		encodeValue(0, 9 - mNbBits);
 		mNbBits = 0;   // pad with zeroes
 		flush();
 
@@ -149,39 +149,39 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void writeExpGolomb(int aSymbol, int aStep) throws IOException
+	public void encodeExpGolomb(int aSymbol, int aStep) throws IOException
 	{
 		int Q = 240;
 
-		writeBitEqProb(aSymbol & 1);
+		encodeBitEqProb(aSymbol & 1);
 		aSymbol >>>= 1;
 
 		while (aSymbol >= (1L << aStep))
 		{
-			writeBit(0, Q);
+			encodeBit(0, Q);
 
 			aSymbol -= 1L << aStep;
 			aStep++;
 		}
 
-		writeBit(1, Q);
+		encodeBit(1, Q);
 
 		while (aStep-- > 0)
 		{
-			writeBitEqProb((int)(aSymbol >>> aStep) & 1);
+			encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
 		}
 	}
 
 
-	public void writeUnary(int aSymbol) throws IOException
+	public void encodeUnary(int aSymbol) throws IOException
 	{
 		assert aSymbol >= 0;
 
 		int l = aSymbol;
 		while (l-- > 0)
 		{
-			writeBit(0, 240);
+			encodeBit(0, 240);
 		}
-		writeBit(1, 240);
+		encodeBit(1, 240);
 	}
 }

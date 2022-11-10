@@ -7,12 +7,12 @@ import java.util.Random;
 import org.terifan.compression.bitari.ArithmeticDecoder;
 import org.terifan.compression.bitari.ArithmeticEncoder;
 import org.terifan.compression.bitari.ArithmeticContext;
-import org.terifan.compression.cabac264.CabacContext;
-import org.terifan.compression.cabac264.CabacDecoder;
-import org.terifan.compression.cabac264.CabacEncoder;
+import org.terifan.compression.cabac264.CabacContext264;
+import org.terifan.compression.cabac264.CabacDecoder264;
+import org.terifan.compression.cabac264.CabacEncoder264;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
-import org.terifan.compression.cabac265.CabacModel;
+import org.terifan.compression.cabac265.CabacContect265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -87,8 +87,8 @@ public class TestEfficiencyGolomb
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				CabacContext[] context = fill(new CabacContext[aBits]);
-				try (CabacEncoder writer = new CabacEncoder(baos))
+				CabacContext264[] context = fill(new CabacContext264[aBits]);
+				try (CabacEncoder264 writer = new CabacEncoder264(baos))
 				{
 					for (int i = 0; i < aValues.length; i++)
 					{
@@ -100,9 +100,9 @@ public class TestEfficiencyGolomb
 			}
 
 			{
-				CabacContext[] context = fill(new CabacContext[aBits]);
+				CabacContext264[] context = fill(new CabacContext264[aBits]);
 				t = System.nanoTime();
-				try (CabacDecoder decoder = new CabacDecoder(new PushbackInputStream(new ByteArrayInputStream(buffer))))
+				try (CabacDecoder264 decoder = new CabacDecoder264(new PushbackInputStream(new ByteArrayInputStream(buffer))))
 				{
 					for (int i = 0; i < aValues.length; i++)
 					{
@@ -117,7 +117,7 @@ public class TestEfficiencyGolomb
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
-				CabacModel[] models = fill(new CabacModel[aBits]);
+				CabacContect265[] models = fill(new CabacContect265[aBits]);
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
@@ -133,7 +133,7 @@ public class TestEfficiencyGolomb
 			}
 
 			{
-				CabacModel[] models = fill(new CabacModel[aBits]);
+				CabacContect265[] models = fill(new CabacContect265[aBits]);
 				t = System.nanoTime();
 				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(buffer)))
 				{
@@ -213,7 +213,7 @@ public class TestEfficiencyGolomb
 				{
 					for (int i = 0; i < aValues.length; i++)
 					{
-						encoder.writeExpGolomb(aValues[i], 0);
+						encoder.encodeExpGolomb(aValues[i], 0);
 					}
 				}
 				buffer = baos.toByteArray();
@@ -225,7 +225,7 @@ public class TestEfficiencyGolomb
 				{
 					for (int i = 0; i < aValues.length; i++)
 					{
-						long b = decoder.readExpGolomb(0);
+						long b = decoder.decodeExpGolomb(0);
 						assert b == aValues[i] : b + " == " + aValues[i];
 					}
 				}
@@ -241,11 +241,11 @@ public class TestEfficiencyGolomb
 	}
 
 
-	private static CabacContext[] fill(CabacContext[] aCabacContext)
+	private static CabacContext264[] fill(CabacContext264[] aCabacContext)
 	{
 		for (int i = 0; i < aCabacContext.length; i++)
 		{
-			aCabacContext[i] = new CabacContext(0);
+			aCabacContext[i] = new CabacContext264(0);
 		}
 		return aCabacContext;
 	}
@@ -261,11 +261,11 @@ public class TestEfficiencyGolomb
 	}
 
 
-	private static CabacModel[] fill(CabacModel[] aCabacContext)
+	private static CabacContect265[] fill(CabacContect265[] aCabacContext)
 	{
 		for (int i = 0; i < aCabacContext.length; i++)
 		{
-			aCabacContext[i] = new CabacModel();
+			aCabacContext[i] = new CabacContect265();
 		}
 		return aCabacContext;
 	}

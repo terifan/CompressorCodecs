@@ -54,7 +54,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_TU(int aValue, CabacModel[] aModels) throws IOException
+	public void writeCABAC_TU(int aValue, CabacContect265[] aModels) throws IOException
 	{
 		for (int i = 0; i < aValue; i++)
 		{
@@ -75,7 +75,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public float RDBits_for_CABAC_bin(int aBit, CabacModel aModel)
+	public float RDBits_for_CABAC_bin(int aBit, CabacContect265 aModel)
 	{
 		int idx = aModel.state << 1;
 
@@ -109,7 +109,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacModel[] aModels) throws IOException
+	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aModels) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -132,7 +132,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacModel[] aMagnitude, CabacModel[][] aValueModels) throws IOException
+	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aMagnitude, CabacContect265[][] aValueModels) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -249,7 +249,7 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_bit(int aBit, CabacModel aModel) throws IOException
+	public void writeCABAC_bit(int aBit, CabacContect265 aModel) throws IOException
 	{
 		int LPS = LPS_table[aModel.state][(mRange >> 6) - 4];
 		mRange -= LPS;

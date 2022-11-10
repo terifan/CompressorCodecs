@@ -31,7 +31,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_bit(CabacModel aModel) throws IOException
+	public int decodeCABAC_bit(CabacContect265 aModel) throws IOException
 	{
 		int decodedBit;
 		int LPS = LPS_table[aModel.state][(mDecoderRange >> 6) - 4];
@@ -180,7 +180,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_TU(int aMax, CabacModel aModel) throws IOException
+	public int decodeCABAC_TU(int aMax, CabacContect265 aModel) throws IOException
 	{
 		for (int i = 0; i < aMax; i++)
 		{
@@ -292,7 +292,7 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_EGk(int aStep, CabacModel[] aModels) throws IOException
+	public int decodeCABAC_EGk(int aStep, CabacContect265[] aModels) throws IOException
 	{
 		int base = 0;
 		int n = aStep;

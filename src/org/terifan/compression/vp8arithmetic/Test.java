@@ -19,7 +19,7 @@ public class Test
 //					writer.encodeBit(0, 250);
 //				}
 
-				writer.writeExpGolomb(1563, 1);
+				writer.encodeExpGolomb(1563, 1);
 			}
 
 			System.out.println("*** " + baos.size());
@@ -30,7 +30,7 @@ public class Test
 //				reader.decodeBit(250);
 //			}
 
-			System.out.println(reader.readExpGolomb(1));
+			System.out.println(reader.decodeExpGolomb(1));
 		}
 		catch (Throwable e)
 		{
@@ -46,27 +46,27 @@ public class Test
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (VP8Encoder writer = new VP8Encoder(baos))
 			{
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
-				writer.writeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
+				writer.encodeBit(0, 250);
 			}
 
 			System.out.println("*** " + baos.size());
 
 			VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray()));
-			System.out.println(reader.readValue(32) == Integer.MAX_VALUE);
-			System.out.println(reader.readValue(32) == Integer.MIN_VALUE);
-			System.out.println(reader.readBit(0));
-			System.out.println(reader.readBit(127));
-			System.out.println(reader.readBit(255));
-			System.out.println(reader.readBit(0));
-			System.out.println(reader.readBit(127));
-			System.out.println(reader.readBit(255));
+			System.out.println(reader.decodeValue(32) == Integer.MAX_VALUE);
+			System.out.println(reader.decodeValue(32) == Integer.MIN_VALUE);
+			System.out.println(reader.decodeBit(0));
+			System.out.println(reader.decodeBit(127));
+			System.out.println(reader.decodeBit(255));
+			System.out.println(reader.decodeBit(0));
+			System.out.println(reader.decodeBit(127));
+			System.out.println(reader.decodeBit(255));
 		}
 		catch (Throwable e)
 		{
@@ -82,27 +82,27 @@ public class Test
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (VP8Encoder writer = new VP8Encoder(baos))
 			{
-				writer.writeValue(Integer.MAX_VALUE, 32);
-				writer.writeValue(Integer.MIN_VALUE, 32);
-				writer.writeBit(0, 0);
-				writer.writeBit(0, 127);
-				writer.writeBit(0, 255);
-				writer.writeBit(1, 0);
-				writer.writeBit(1, 127);
-				writer.writeBit(1, 255);
+				writer.encodeValue(Integer.MAX_VALUE, 32);
+				writer.encodeValue(Integer.MIN_VALUE, 32);
+				writer.encodeBit(0, 0);
+				writer.encodeBit(0, 127);
+				writer.encodeBit(0, 255);
+				writer.encodeBit(1, 0);
+				writer.encodeBit(1, 127);
+				writer.encodeBit(1, 255);
 			}
 
 			System.out.println("*** " + baos.size());
 
 			VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray()));
-			System.out.println(reader.readValue(32) == Integer.MAX_VALUE);
-			System.out.println(reader.readValue(32) == Integer.MIN_VALUE);
-			System.out.println(reader.readBit(0));
-			System.out.println(reader.readBit(127));
-			System.out.println(reader.readBit(255));
-			System.out.println(reader.readBit(0));
-			System.out.println(reader.readBit(127));
-			System.out.println(reader.readBit(255));
+			System.out.println(reader.decodeValue(32) == Integer.MAX_VALUE);
+			System.out.println(reader.decodeValue(32) == Integer.MIN_VALUE);
+			System.out.println(reader.decodeBit(0));
+			System.out.println(reader.decodeBit(127));
+			System.out.println(reader.decodeBit(255));
+			System.out.println(reader.decodeBit(0));
+			System.out.println(reader.decodeBit(127));
+			System.out.println(reader.decodeBit(255));
 		}
 		catch (Throwable e)
 		{
@@ -162,7 +162,7 @@ public class Test
 								{
 									bit = rnd.nextInt(2);
 								}
-								writer.writeBit(bit, probas[i]);
+								writer.encodeBit(bit, probas[i]);
 							}
 						}
 						buffer = baos.toByteArray();
@@ -184,7 +184,7 @@ public class Test
 								bit = rnd.nextInt(2);
 							}
 
-							if (reader.readBit(probas[i]) != bit)
+							if (reader.decodeBit(probas[i]) != bit)
 							{
 								System.out.println("Error at  " + i);
 								return;
