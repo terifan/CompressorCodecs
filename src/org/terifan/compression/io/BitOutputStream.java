@@ -2,6 +2,7 @@ package org.terifan.compression.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import org.terifan.compression.cabac265.CabacContect265;
 
 
 /**
@@ -114,5 +115,30 @@ public class BitOutputStream extends OutputStream
 	public int getBitCount()
 	{
 		return 8-mBitsToGo;
+	}
+
+
+	public void writeGolomb(int aValue, int aStep) throws IOException
+	{
+		assert aValue >= 0;
+
+		while (aValue >= (1 << aStep))
+		{
+			System.out.print(1);
+			writeBit(1);
+			aValue -= 1 << aStep;
+			aStep++;
+		}
+
+		System.out.print(0);
+		writeBit(0);
+
+		while (aStep > 0)
+		{
+			System.out.print('x');
+			aStep--;
+			writeBit((aValue >>> aStep) & 1);
+		}
+		System.out.println();
 	}
 }
