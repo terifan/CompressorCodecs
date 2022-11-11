@@ -98,23 +98,27 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void encodeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
+	public void encodeCABAC_EGk_bypass(int aValue, int aMinLen, int aMaxLen) throws IOException
 	{
 		assert aValue >= 0;
 
-		while (aValue >= (1 << aStep))
+		int i = 0;
+
+		for (; aValue >= (1 << aMinLen); i++, aMinLen++)
 		{
-			encodeCABAC_bypass(1);
-			aValue -= 1 << aStep;
-			aStep++;
+			encodeCABAC_bypass(0);
+			aValue -= 1 << aMinLen;
 		}
 
-		encodeCABAC_bypass(0);
-
-		while (aStep > 0)
+		if (i < aMaxLen)
 		{
-			aStep--;
-			encodeCABAC_bypass((aValue >>> aStep) & 1);
+			encodeCABAC_bypass(1);
+		}
+
+		while (aMinLen > 0)
+		{
+			aMinLen--;
+			encodeCABAC_bypass((aValue >>> aMinLen) & 1);
 		}
 	}
 
@@ -127,11 +131,10 @@ public class CabacEncoder265 implements AutoCloseable
 
 		int i = 0;
 
-		while (aValue >= (1 << aMinLen))
+		for (; aValue >= (1 << aMinLen); i++, aMinLen++)
 		{
-			encodeCABAC_bit(0, aCtxMagnitude[i++]);
+			encodeCABAC_bit(0, aCtxMagnitude[i]);
 			aValue -= 1 << aMinLen;
-			aMinLen++;
 		}
 
 		if (i < aMaxLen)
@@ -155,11 +158,10 @@ public class CabacEncoder265 implements AutoCloseable
 
 		int i = 0;
 
-		while (aValue >= (1 << aMinLen))
+		for (; aValue >= (1 << aMinLen); i++, aMinLen++)
 		{
-			encodeCABAC_bit(0, aCtxMagnitude[i++]);
+			encodeCABAC_bit(0, aCtxMagnitude[i]);
 			aValue -= 1 << aMinLen;
-			aMinLen++;
 		}
 
 		if (i < aMaxLen)

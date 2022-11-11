@@ -283,21 +283,15 @@ public class CabacDecoder265 implements AutoCloseable
 	}
 
 
-	public int decodeCABAC_EGk_bypass(int aStep) throws IOException
+	public int decodeCABAC_EGk_bypass(int aMinLen, int aMaxLen) throws IOException
 	{
 		int base = 0;
-		int n = aStep;
+		int n = aMinLen;
+		int i = 0;
 
-		while (decodeCABAC_bypass() != 0)
+		for (; i < aMaxLen && decodeCABAC_bypass() == 0; n++, i++)
 		{
 			base += 1 << n;
-			n++;
-
-			if (n == aStep + MAX_PREFIX)
-			{
-				System.out.println("err");
-				return 0; // TODO: error
-			}
 		}
 
 		int suffix = decodeCABAC_FL_bypass(n);
@@ -315,16 +309,9 @@ public class CabacDecoder265 implements AutoCloseable
 		int n = aMinLen;
 		int i = 0;
 
-		while (i < aCtxMagnitude.length && decodeCABAC_bit(aCtxMagnitude[i++]) == 0)
+		for (; i < aMaxLen && decodeCABAC_bit(aCtxMagnitude[i]) == 0; n++, i++)
 		{
 			base += 1 << n;
-			n++;
-
-			if (n == aMinLen + MAX_PREFIX)
-			{
-				System.out.println("err");
-				return 0; // TODO: error
-			}
 		}
 
 		int suffix = decodeCABAC_FL_bypass(n);
@@ -342,16 +329,9 @@ public class CabacDecoder265 implements AutoCloseable
 		int n = aMinLen;
 		int i = 0;
 
-		while (i < aCtxMagnitude.length && decodeCABAC_bit(aCtxMagnitude[i++]) == 0)
+		for (; i < aMaxLen && decodeCABAC_bit(aCtxMagnitude[i]) == 0; i++, n++)
 		{
 			base += 1 << n;
-			n++;
-
-			if (n == aMinLen + MAX_PREFIX)
-			{
-				System.out.println("err");
-				return 0; // TODO: error
-			}
 		}
 
 		int suffix = 0;
