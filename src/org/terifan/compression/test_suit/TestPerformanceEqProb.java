@@ -70,7 +70,7 @@ public class TestPerformanceEqProb
 				{
 					for (int i = 0; i < bits.length; i++)
 					{
-						encoder.writeCABAC_bypass(bits[i]);
+						encoder.encodeCABAC_bypass(bits[i]);
 					}
 					encoder.encodeFinal(1);
 				}

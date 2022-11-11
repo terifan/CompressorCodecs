@@ -2,6 +2,7 @@ package org.terifan.compression.cabac265;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Random;
 import static org.terifan.compression.util.Log.hexDump;
 
 
@@ -14,19 +15,21 @@ public class Test
 			byte[] data;
 
 			{
-				CabacContect265[] models = {
-					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
-				};
+				CabacContext265[] ctxMagnitude = CabacContext265.create(10);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-				try (CabacEncoder265 encoder = new CabacEncoder265(baos))
+				try ( CabacEncoder265 encoder = new CabacEncoder265(baos))
 				{
-					encoder.writeCABAC_EGk(8985, 2, models);
-					encoder.writeCABAC_EGk(777, 2, models);
-					encoder.writeCABAC_EGk(152, 2, models);
-					encoder.writeCABAC_EGk(18, 2, models);
-					encoder.writeCABAC_EGk(682, 2, models);
+					Random rnd = new Random(2);
+					for (int i = 0; i < 100; i++)
+					{
+						int v = rnd.nextInt(1 << (1 + rnd.nextInt(6)));
+						encoder.encodeCABAC_EGk(v, 0, 6, ctxMagnitude);
+
+						int w = rnd.nextInt(10);
+						encoder.encodeCABAC_TU(w, 10, ctxMagnitude);
+					}
 					encoder.encodeFinal(1);
 				}
 
@@ -36,17 +39,25 @@ public class Test
 			hexDump(data);
 
 			{
-				CabacContect265[] models = {
-					new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265(),new CabacContect265()
-				};
+				CabacContext265[] ctxMagnitude = CabacContext265.create(10);
 
-				try (CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data)))
+				try ( CabacDecoder265 decoder = new CabacDecoder265(new ByteArrayInputStream(data)))
 				{
-					System.out.println(decoder.decodeCABAC_EGk(2, models));
-					System.out.println(decoder.decodeCABAC_EGk(2, models));
-					System.out.println(decoder.decodeCABAC_EGk(2, models));
-					System.out.println(decoder.decodeCABAC_EGk(2, models));
-					System.out.println(decoder.decodeCABAC_EGk(2, models));
+					Random rnd = new Random(2);
+					for (int i = 0; i < 100; i++)
+					{
+						int v = rnd.nextInt(1 << (1 + rnd.nextInt(6)));
+						if (v != decoder.decodeCABAC_EGk(0, 6, ctxMagnitude))
+						{
+							throw new IllegalStateException();
+						}
+
+						int w = rnd.nextInt(10);
+						if (w != decoder.decodeCABAC_TU(10, ctxMagnitude))
+						{
+							throw new IllegalStateException();
+						}
+					}
 				}
 			}
 		}

@@ -2,7 +2,6 @@ package org.terifan.compression.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.terifan.compression.cabac265.CabacContect265;
 
 
 /**
@@ -134,10 +133,10 @@ public class BitInputStream extends InputStream
 	}
 
 
-	public int readGolomb(int aStep) throws IOException
+	public int readGolomb(int aMinLen) throws IOException
 	{
 		int base = 0;
-		int n = aStep;
+		int n = aMinLen;
 
 		while (readBit() != 0)
 		{

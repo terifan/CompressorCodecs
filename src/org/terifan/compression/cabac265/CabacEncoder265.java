@@ -5,6 +5,9 @@ import java.io.OutputStream;
 import static org.terifan.compression.cabac265.CabacConstants.*;
 
 
+// EG = elia-gamma
+// TU = unary
+
 public class CabacEncoder265 implements AutoCloseable
 {
 	private OutputStream mOutputStream;
@@ -34,48 +37,55 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeBit(int aBit) throws IOException
+	public void encodeBit(int aBit) throws IOException
 	{
-		writeBits(aBit, 1);
+		encodeBits(aBit, 1);
 	}
 
 
-	public void writeCABAC_TU_bypass(int aValue, int aMax) throws IOException
+	public void encodeCABAC_TU_bypass(int aValue, int aMaxLen) throws IOException
 	{
+		assert aValue <= aMaxLen;
+
 		for (int i = 0; i < aValue; i++)
 		{
-			writeCABAC_bypass(1);
+			encodeCABAC_bypass(1);
 		}
 
-		if (aValue < aMax)
+		if (aValue < aMaxLen)
 		{
-			writeCABAC_bypass(0);
+			encodeCABAC_bypass(0);
 		}
 	}
 
 
-	public void writeCABAC_TU(int aValue, CabacContect265[] aModels) throws IOException
+	public void encodeCABAC_TU(int aValue, int aMaxLen, CabacContext265[] aModels) throws IOException
 	{
+		assert aValue <= aMaxLen;
+
 		for (int i = 0; i < aValue; i++)
 		{
-			writeCABAC_bit(0, aModels[i]);
+			encodeCABAC_bit(1, aModels[i]);
 		}
 
-		writeCABAC_bit(1, aModels[aValue]);
+		if (aValue < aMaxLen)
+		{
+			encodeCABAC_bit(0, aModels[aValue]);
+		}
 	}
 
 
-	public void writeCABAC_FL_bypass(int aValue, int aLength) throws IOException
+	public void encodeCABAC_FL_bypass(int aValue, int aLength) throws IOException
 	{
 		while (aLength > 0)
 		{
 			aLength--;
-			writeCABAC_bypass(aValue & (1 << aLength));
+			encodeCABAC_bypass(aValue & (1 << aLength));
 		}
 	}
 
 
-	public float RDBits_for_CABAC_bin(int aBit, CabacContect265 aModel)
+	public float RDBits_for_CABAC_bin(int aBit, CabacContext265 aModel)
 	{
 		int idx = aModel.state << 1;
 
@@ -88,78 +98,84 @@ public class CabacEncoder265 implements AutoCloseable
 	}
 
 
-	public void writeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
+	public void encodeCABAC_EGk_bypass(int aValue, int aStep) throws IOException
 	{
 		assert aValue >= 0;
 
 		while (aValue >= (1 << aStep))
 		{
-			writeCABAC_bypass(1);
+			encodeCABAC_bypass(1);
 			aValue -= 1 << aStep;
 			aStep++;
 		}
 
-		writeCABAC_bypass(0);
+		encodeCABAC_bypass(0);
 
 		while (aStep > 0)
 		{
 			aStep--;
-			writeCABAC_bypass((aValue >>> aStep) & 1);
+			encodeCABAC_bypass((aValue >>> aStep) & 1);
 		}
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aModels) throws IOException
+	public void encodeCABAC_EGk(int aValue, int aMinLen, int aMaxLen, CabacContext265[] aCtxMagnitude) throws IOException
 	{
 		assert aValue >= 0;
+		assert aMinLen >= 0 && aMinLen < aMaxLen;
+		assert aMaxLen <= aCtxMagnitude.length;
 
 		int i = 0;
 
-		while (aValue >= (1 << aStep))
+		while (aValue >= (1 << aMinLen))
 		{
-System.out.print(0);
-			writeCABAC_bit(0, aModels[i++]);
-			aValue -= 1 << aStep;
-			aStep++;
+			encodeCABAC_bit(0, aCtxMagnitude[i++]);
+			aValue -= 1 << aMinLen;
+			aMinLen++;
 		}
 
-		writeCABAC_bit(1, aModels[i]);
-System.out.print(1);
-
-		while (aStep > 0)
+		if (i < aMaxLen)
 		{
-System.out.print('x');
-			aStep--;
-			writeCABAC_bypass((aValue >>> aStep) & 1);
+			encodeCABAC_bit(1, aCtxMagnitude[i]);
 		}
-System.out.println();
+
+		while (aMinLen > 0)
+		{
+			aMinLen--;
+			encodeCABAC_bypass((aValue >>> aMinLen) & 1);
+		}
 	}
 
 
-	public void writeCABAC_EGk(int aValue, int aStep, CabacContect265[] aMagnitude, CabacContect265[][] aValueModels) throws IOException
+	public void encodeCABAC_EGk(int aValue, int aMinLen, int aMaxLen, CabacContext265[] aCtxMagnitude, CabacContext265[][] aCtxValues) throws IOException
 	{
 		assert aValue >= 0;
+		assert aMinLen >= 0 && aMinLen < aMaxLen;
+		assert aMaxLen <= aCtxMagnitude.length;
 
 		int i = 0;
 
-		while (aValue >= (1 << aStep))
+		while (aValue >= (1 << aMinLen))
 		{
-			writeCABAC_bit(0, aMagnitude[i++]);
-			aValue -= 1 << aStep;
-			aStep++;
+			encodeCABAC_bit(0, aCtxMagnitude[i++]);
+			aValue -= 1 << aMinLen;
+			aMinLen++;
 		}
 
-		writeCABAC_bit(1, aMagnitude[i]);
-
-		for (int j = 0; aStep > 0; j++)
+		if (i < aMaxLen)
 		{
-			aStep--;
-			writeCABAC_bit((aValue >>> aStep) & 1, aValueModels[i][j]);
+			encodeCABAC_bit(1, aCtxMagnitude[i]);
+		}
+
+		for (int j = 0; aMinLen > 0; j++)
+		{
+			aMinLen--;
+			encodeCABAC_bit((aValue >>> aMinLen) & 1, aCtxValues[i][j]);
 		}
 	}
 
 
-	public void writeUVLC(int aValue) throws IOException
+	public void encodeUVLC(int aValue) throws IOException
 	{
 		assert aValue >= 0;
 
@@ -174,33 +190,33 @@ System.out.println();
 			nLeadingZeros++;
 		}
 
-		writeBits((1 << nLeadingZeros) | (aValue - base), 2 * nLeadingZeros + 1);
+		encodeBits((1 << nLeadingZeros) | (aValue - base), 2 * nLeadingZeros + 1);
 	}
 
 
-	public void writeSVLC(int aValue) throws IOException
+	public void encodeSVLC(int aValue) throws IOException
 	{
 		if (aValue == 0)
 		{
-			writeBits(1, 1);
+			encodeBits(1, 1);
 		}
 		else if (aValue > 0)
 		{
-			writeUVLC(2 * aValue - 1);
+			encodeUVLC(2 * aValue - 1);
 		}
 		else
 		{
-			writeUVLC(-2 * aValue);
+			encodeUVLC(-2 * aValue);
 		}
 	}
 
 
-	public void addTrailingBits() throws IOException
-	{
-		writeBit(1);
-		int nZeros = freeBitsInByteCount();
-		writeBits(0, nZeros);
-	}
+//	public void addTrailingBits() throws IOException
+//	{
+//		encodeBit(1);
+//		int nZeros = freeBitsInByteCount();
+//		encodeBits(0, nZeros);
+//	}
 
 
 	public void encodeFinal(int aBit) throws IOException
@@ -230,7 +246,7 @@ System.out.println();
 	}
 
 
-	public void writeCABAC_bypass(int aBit) throws IOException
+	public void encodeCABAC_bypass(int aBit) throws IOException
 	{
 		mLow <<= 1;
 
@@ -248,12 +264,12 @@ System.out.println();
 	{
 		if (mBitsLeft < 12)
 		{
-			writeOut();
+			flush();
 		}
 	}
 
 
-	public void writeCABAC_bit(int aBit, CabacContect265 aModel) throws IOException
+	public void encodeCABAC_bit(int aBit, CabacContext265 aModel) throws IOException
 	{
 		int LPS = LPS_table[aModel.state][(mRange >> 6) - 4];
 		mRange -= LPS;
@@ -292,7 +308,7 @@ System.out.println();
 	}
 
 
-	public void writeOut() throws IOException
+	private void flush() throws IOException
 	{
 		int leadByte = mLow >>> (24 - mBitsLeft);
 		mBitsLeft += 8;
@@ -350,24 +366,24 @@ System.out.println();
 	{
 		while (aLength >= 8)
 		{
-			writeBits(0, 8);
+			encodeBits(0, 8);
 			aLength -= 8;
 		}
 
 		if (aLength > 0)
 		{
-			writeBits(0, aLength);
+			encodeBits(0, aLength);
 		}
 	}
 
 
 	public int freeBitsInByteCount()
 	{
-		if ((mVLCBufferLen % 8) == 0)
+		if ((mVLCBufferLen & 7) == 0)
 		{
 			return 0;
 		}
-		return 8 - (mVLCBufferLen % 8);
+		return 8 - (mVLCBufferLen & 7);
 	}
 
 
@@ -407,7 +423,7 @@ System.out.println();
 				}
 			}
 
-			writeBits(mLow >>> 8, 24 - mBitsLeft);
+			encodeBits(mLow >>> 8, 24 - mBitsLeft);
 
 			mOutputStream.close();
 			mOutputStream = null;
@@ -415,7 +431,7 @@ System.out.println();
 	}
 
 
-	public void writeBits(int aBits, int aLength) throws IOException
+	public void encodeBits(int aBits, int aLength) throws IOException
 	{
 		mVLCBuffer <<= aLength;
 		mVLCBuffer |= aBits;

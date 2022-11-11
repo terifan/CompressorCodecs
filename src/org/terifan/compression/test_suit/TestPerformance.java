@@ -13,7 +13,7 @@ import org.terifan.compression.cabac264.CabacDecoder264;
 import org.terifan.compression.cabac264.CabacEncoder264;
 import org.terifan.compression.cabac265.CabacDecoder265;
 import org.terifan.compression.cabac265.CabacEncoder265;
-import org.terifan.compression.cabac265.CabacContect265;
+import org.terifan.compression.cabac265.CabacContext265;
 import org.terifan.compression.dirac.DiracDecoder;
 import org.terifan.compression.dirac.DiracEncoder;
 import org.terifan.compression.io.BitInputStream;
@@ -95,11 +95,11 @@ public class TestPerformance
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			CabacEncoder265 writer = new CabacEncoder265(baos);
-			CabacContect265 model = new CabacContect265();
+			CabacContext265 model = new CabacContext265();
 			t1 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
-				writer.writeCABAC_bit(bits[i], model);
+				writer.encodeCABAC_bit(bits[i], model);
 			}
 			writer.encodeFinal(1);
 			writer.close();
@@ -109,7 +109,7 @@ public class TestPerformance
 
 		{
 			CabacDecoder265 reader = new CabacDecoder265(new PushbackInputStream(new ByteArrayInputStream(buffer), 2));
-			CabacContect265 model = new CabacContect265();
+			CabacContext265 model = new CabacContext265();
 			t2 = System.nanoTime();
 			for (int i = 0; i < bits.length; i++)
 			{
