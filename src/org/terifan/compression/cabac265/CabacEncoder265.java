@@ -157,7 +157,6 @@ public class CabacEncoder265 implements AutoCloseable
 		assert aMaxLen <= aCtxMagnitude.length;
 
 		int i = 0;
-
 		for (; aValue >= (1 << aMinLen); i++, aMinLen++)
 		{
 			encodeCABAC_bit(0, aCtxMagnitude[i]);
