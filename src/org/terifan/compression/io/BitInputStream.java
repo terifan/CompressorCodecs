@@ -138,7 +138,7 @@ public class BitInputStream extends InputStream
 		int base = 0;
 		int n = aMinLen;
 
-		while (readBit() != 0)
+		while (readBit() == 0)
 		{
 			base += 1 << n;
 			n++;

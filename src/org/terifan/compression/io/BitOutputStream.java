@@ -126,14 +126,14 @@ public class BitOutputStream extends OutputStream
 
 		while (aValue >= (1 << aMinLen))
 		{
-			System.out.print(1);
-			writeBit(1);
+			System.out.print(0);
+			writeBit(0);
 			aValue -= 1 << aMinLen;
 			aMinLen++;
 		}
 
-		System.out.print(0);
-		writeBit(0);
+		System.out.print(1);
+		writeBit(1);
 
 		while (aMinLen > 0)
 		{
