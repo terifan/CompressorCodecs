@@ -79,4 +79,11 @@ public class SymbolStats
 		mCounts[aSymbol] = aCount;
 		mCumulative += aCount;
 	}
+
+
+	@Override
+	public String toString()
+	{
+		return Arrays.toString(mCounts);
+	}
 }

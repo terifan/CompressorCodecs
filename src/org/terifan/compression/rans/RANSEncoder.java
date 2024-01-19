@@ -90,4 +90,22 @@ public class RANSEncoder
 			mOutput[j] = tmp;
 		}
 	}
+
+
+	public void write(byte[] aData)
+	{
+		for (int i = 0; i < aData.length; i++)
+		{
+			write(0xff & aData[i]);
+		}
+	}
+
+
+	public void write(int[] aData)
+	{
+		for (int i = 0; i < aData.length; i++)
+		{
+			write(aData[i]);
+		}
+	}
 }
