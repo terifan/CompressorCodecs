@@ -7,7 +7,20 @@ import java.util.Random;
 
 public class Test
 {
-	public static void main(String... args)
+	public static void main(String ... args)
+	{
+		try
+		{
+			test4();
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+
+	public static void test1()
 	{
 		try
 		{
@@ -39,7 +52,7 @@ public class Test
 	}
 
 
-	public static void xxmain(String... args)
+	public static void test2()
 	{
 		try
 		{
@@ -75,7 +88,7 @@ public class Test
 	}
 
 
-	public static void xmain(String... args)
+	public static void test3()
 	{
 		try
 		{
@@ -110,7 +123,7 @@ public class Test
 		}
 	}
 
-	public static void xxxmain(String ... args)
+	public static void test4()
 	{
 		try
 		{
@@ -193,6 +206,8 @@ public class Test
 					}
 				}
 			}
+
+			System.out.println("Success");
 		}
 		catch (Throwable e)
 		{

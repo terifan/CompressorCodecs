@@ -149,22 +149,27 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
+	final static int[] ExpGolombSteps =
+	{
+		250, 240, 230, 220, 200, 180, 160, 130, 100, 80, 60, 50, 40, 30, 20, 10, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128
+	};
+
+
 	public void encodeExpGolomb(int aSymbol, int aStep) throws IOException
 	{
-		int Q = 240;
-
 		encodeBitEqProb(aSymbol & 1);
 		aSymbol >>>= 1;
+		int i = 0;
 
 		while (aSymbol >= (1L << aStep))
 		{
-			encodeBit(0, Q);
+			encodeBit(0, ExpGolombSteps[i++]);
 
 			aSymbol -= 1L << aStep;
 			aStep++;
 		}
 
-		encodeBit(1, Q);
+		encodeBit(1, ExpGolombSteps[i]);
 
 		while (aStep-- > 0)
 		{

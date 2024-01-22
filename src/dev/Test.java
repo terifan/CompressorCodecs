@@ -1,14 +1,61 @@
 package dev;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 import org.terifan.compression.rans.RANSEncoder;
 import org.terifan.compression.rans.SymbolStats;
+import org.terifan.compression.vp8arithmetic.VP8Decoder;
+import org.terifan.compression.vp8arithmetic.VP8Encoder;
 
 
 public class Test
 {
 	public static void main(String ... args)
+	{
+		try
+		{
+			char[][][] lookup = {
+				{
+					"ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray(),
+					"abcdefghijklmnopqrstuvwxyz".toCharArray()
+				},
+				{
+					" !\"#$%&'()*,-.0123456789;=?@[]^_`{|}~".toCharArray()
+				}
+			};
+
+			SymbolStats ds = new SymbolStats(10);
+			String[] stats = "50,40,20,40,30,20,10,20,30,20".split(",");
+			for (int i = 0; i < stats.length; i++)
+			{
+				int j = Integer.parseInt(stats[i].trim());
+				ds.set(i, j * j);
+			}
+
+			RANSEncoder encoder = new RANSEncoder(ds);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			encoder.write(4);
+			byte[] data = encoder.finish();
+
+			System.out.println(data.length);
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+
+	public static void xxmain(String ... args)
 	{
 		try
 		{

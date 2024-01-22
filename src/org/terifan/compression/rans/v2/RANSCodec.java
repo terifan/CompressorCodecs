@@ -27,7 +27,8 @@ public class RANSCodec
 			this.state = aState;
 		}
 	}
-			RANSCodec.RansState r = new RANSCodec.RansState();
+
+	RansState mRansState = new RansState();
 
 	// ---- rANS encoding/decoding with alias table
 
@@ -41,13 +42,13 @@ public class RANSCodec
 
 		// x = C(s,x)
 		// NOTE: alias_remap here could be replaced with e.g. a binary search.
-		r.state = ((x.state / freq) << scale_bits) + syms.alias_remap[(x.state % freq) + syms.cum_freqs[s]];
+		mRansState.state = ((x.state / freq) << scale_bits) + syms.alias_remap[(x.state % freq) + syms.cum_freqs[s]];
 	}
 
 
 	int RansDecGetAlias(SymbolStats syms)
 	{
-		RansState x = r;
+		RansState x = mRansState;
 
 		int scale_bits = syms.prob_bits;
 
@@ -62,22 +63,22 @@ public class RANSCodec
 		}
 
 		// s, x = D(x)
-		r.state = syms.slot_freqs[bucket2] * (x.state >> scale_bits) + xm - syms.slot_adjust[bucket2];
+		mRansState.state = syms.slot_freqs[bucket2] * (x.state >> scale_bits) + xm - syms.slot_adjust[bucket2];
 		return syms.sym_id[bucket2];
 	}
 
 
 	void RansEncInit()
 	{
-		r.state = RANS_BYTE_L;
+		mRansState.state = RANS_BYTE_L;
 	}
 
 
 	private RansState RansEncRenorm(OutputStream pptr, int freq, int scale_bits) throws IOException
 	{
 		int x_max = ((RANS_BYTE_L >> scale_bits) << 8) * freq;
-		RansState x = r;
-		if (r.state >= x_max)
+		RansState x = mRansState;
+		if (mRansState.state >= x_max)
 		{
 			x = new RansState(x.state);
 			do
@@ -100,20 +101,20 @@ public class RANSCodec
 	// ptr starts pointing at the end of the output buffer and keeps decrementing.
 	void RansEncPut(OutputStream pptr, int start, int freq, int scale_bits) throws IOException
 	{
-		int x = r.state;
+		int x = mRansState.state;
 
 		// renormalize
 		RansEncRenorm(pptr, freq, scale_bits);
 
 		// x = C(s,x)
-		r.state = ((x / freq) << scale_bits) + (x % freq) + start;
+		mRansState.state = ((x / freq) << scale_bits) + (x % freq) + start;
 	}
 
 
 	// Flushes the rANS encoder.
 	void RansEncFlush(OutputStream pptr) throws IOException
 	{
-		int x = r.state;
+		int x = mRansState.state;
 
 		pptr.write(x >> 24);
 		pptr.write(x >> 16);
@@ -133,14 +134,14 @@ public class RANSCodec
 		x |= pptr.read() << 16;
 		x |= pptr.read() << 24;
 
-		r.state = x;
+		mRansState.state = x;
 	}
 
 
 	// Returns the current cumulative frequency (map it to a symbol yourself!)
 	int RansDecGet(int scale_bits)
 	{
-		return r.state & ((1 << scale_bits) - 1);
+		return mRansState.state & ((1 << scale_bits) - 1);
 	}
 
 
@@ -152,7 +153,7 @@ public class RANSCodec
 		int mask = (1 << scale_bits) - 1;
 
 		// s, x = D(x)
-		int x = r.state;
+		int x = mRansState.state;
 		x = freq * (x >> scale_bits) + (x & mask) - start;
 
 		// renormalize
@@ -161,13 +162,16 @@ public class RANSCodec
 			do
 			{
 				int c = pptr.read();
-				if (c == -1) throw new EOFException();
+				if (c == -1)
+				{
+					throw new EOFException();
+				}
 				x = (x << 8) | c;
 			}
 			while (x < RANS_BYTE_L);
 		}
 
-		r.state = x;
+		mRansState.state = x;
 	}
 
 	// --------------------------------------------------------------------------
@@ -273,7 +277,7 @@ public class RANSCodec
 		assert sym.x_max != 0; // can't encode symbol with freq=0
 
 		// renormalize
-		int x = r.state;
+		int x = mRansState.state;
 		int x_max = sym.x_max;
 		if (x >= x_max)
 		{
@@ -290,7 +294,7 @@ public class RANSCodec
 		// available. If you're on a 64-bit platform with cheap multiplies
 		// (e.g. x64), just bake the +32 into rcp_shift.
 		int q = (int)(((long)x * sym.rcp_freq) >> 32) >> sym.rcp_shift;
-		r.state = x + sym.bias + q * sym.cmpl_freq;
+		mRansState.state = x + sym.bias + q * sym.cmpl_freq;
 	}
 
 
@@ -309,8 +313,8 @@ public class RANSCodec
 		int mask = (1 << scale_bits) - 1;
 
 		// s, x = D(x)
-		int x = r.state;
-		r.state = freq * (x >> scale_bits) + (x & mask) - start;
+		int x = mRansState.state;
+		mRansState.state = freq * (x >> scale_bits) + (x & mask) - start;
 	}
 
 
@@ -325,7 +329,7 @@ public class RANSCodec
 	void RansDecRenorm(InputStream pptr) throws IOException
 	{
 		// renormalize
-		int x = r.state;
+		int x = mRansState.state;
 		if (x < RANS_BYTE_L)
 		{
 			do
@@ -335,6 +339,6 @@ public class RANSCodec
 			while (x < RANS_BYTE_L);
 		}
 
-		r.state = x;
+		mRansState.state = x;
 	}
 }
