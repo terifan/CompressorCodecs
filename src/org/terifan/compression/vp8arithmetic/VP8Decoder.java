@@ -3,7 +3,8 @@ package org.terifan.compression.vp8arithmetic;
 import java.io.IOException;
 import java.io.InputStream;
 import static org.terifan.compression.vp8arithmetic.Shared.*;
-import static org.terifan.compression.vp8arithmetic.VP8Encoder.ExpGolombSteps;
+import static org.terifan.compression.vp8arithmetic.VP8Encoder.UNARY_PROB;
+import static org.terifan.compression.vp8arithmetic.VP8Encoder.EXP_GOLOMB_PROB;
 
 
 public class VP8Decoder implements AutoCloseable
@@ -77,12 +78,9 @@ public class VP8Decoder implements AutoCloseable
 
 	public long decodeExpGolomb(int aStep) throws IOException
 	{
-		int x = decodeBitEqProb();
-
 		long result = 0;
-		int i = 0;
 
-		while (decodeBit(ExpGolombSteps[i++]) == 0)
+		for (int i = 0; decodeBit(EXP_GOLOMB_PROB[i]) == 0; i++)
 		{
 			result += 1L << aStep;
 			aStep++;
@@ -91,13 +89,13 @@ public class VP8Decoder implements AutoCloseable
 		long binarySymbol = 0;
 		while (aStep-- > 0)
 		{
-			if (decodeBitEqProb()== 1)
+			if (decodeBitEqProb() == 1)
 			{
 				binarySymbol |= 1L << aStep;
 			}
 		}
 
-		return ((result + binarySymbol) << 1) + x;
+		return result + binarySymbol;
 	}
 
 
@@ -105,7 +103,7 @@ public class VP8Decoder implements AutoCloseable
 	{
 		int symbol = 0;
 
-		while (decodeBit(240) == 0)
+		while (decodeBit(UNARY_PROB) == 0)
 		{
 			symbol++;
 		}

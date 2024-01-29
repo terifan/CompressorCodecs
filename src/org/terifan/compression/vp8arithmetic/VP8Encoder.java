@@ -3,11 +3,19 @@ package org.terifan.compression.vp8arithmetic;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import static org.terifan.compression.vp8arithmetic.Shared.*;
+import static org.terifan.compression.vp8arithmetic.Shared.KNORM;
+import static org.terifan.compression.vp8arithmetic.Shared.KNEWRANGE;
 
 
 public class VP8Encoder implements AutoCloseable
 {
+	final static int UNARY_PROB = 250;
+
+	final static int[] EXP_GOLOMB_PROB =
+	{
+		220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220
+	};
+
 	private int mRange;      // range-1
 	private int mValue;
 	private int mRun;        // number of outstanding bits
@@ -43,7 +51,8 @@ public class VP8Encoder implements AutoCloseable
 		}
 
 		if (mRange < 127)
-		{   // emit 'shift' bits out and renormalize
+		{
+			// emit 'shift' bits out and renormalize
 			int shift = KNORM[mRange];
 			mRange = KNEWRANGE[mRange];
 			mValue <<= shift;
@@ -149,27 +158,19 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	final static int[] ExpGolombSteps =
+	public void encodeExpGolomb(long aSymbol, int aStep) throws IOException
 	{
-		250, 240, 230, 220, 200, 180, 160, 130, 100, 80, 60, 50, 40, 30, 20, 10, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128
-	};
-
-
-	public void encodeExpGolomb(int aSymbol, int aStep) throws IOException
-	{
-		encodeBitEqProb(aSymbol & 1);
-		aSymbol >>>= 1;
 		int i = 0;
 
 		while (aSymbol >= (1L << aStep))
 		{
-			encodeBit(0, ExpGolombSteps[i++]);
+			encodeBit(0, EXP_GOLOMB_PROB[i++]);
 
 			aSymbol -= 1L << aStep;
 			aStep++;
 		}
 
-		encodeBit(1, ExpGolombSteps[i]);
+		encodeBit(1, EXP_GOLOMB_PROB[i]);
 
 		while (aStep-- > 0)
 		{
@@ -185,8 +186,8 @@ public class VP8Encoder implements AutoCloseable
 		int l = aSymbol;
 		while (l-- > 0)
 		{
-			encodeBit(0, 240);
+			encodeBit(0, UNARY_PROB);
 		}
-		encodeBit(1, 240);
+		encodeBit(1, UNARY_PROB);
 	}
 }
