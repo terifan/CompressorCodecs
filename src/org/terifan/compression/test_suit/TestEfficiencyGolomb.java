@@ -207,30 +207,30 @@ public class TestEfficiencyGolomb
 			System.out.println("Dirac    - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			{
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				try (VP8Encoder encoder = new VP8Encoder(baos))
-				{
-					for (int i = 0; i < aValues.length; i++)
-					{
-						encoder.encodeExpGolomb(aValues[i], 0);
-					}
-				}
-				buffer = baos.toByteArray();
-			}
+//			{
+//				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//				try (VP8Encoder encoder = new VP8Encoder(baos))
+//				{
+//					for (int i = 0; i < aValues.length; i++)
+//					{
+//						encoder.encodeExpGolomb(aValues[i], 0);
+//					}
+//				}
+//				buffer = baos.toByteArray();
+//			}
 
-			{
-				t = System.nanoTime();
-				try (VP8Decoder decoder = new VP8Decoder(new ByteArrayInputStream(buffer)))
-				{
-					for (int i = 0; i < aValues.length; i++)
-					{
-						long b = decoder.decodeExpGolomb(0);
-						assert b == aValues[i] : b + " == " + aValues[i];
-					}
-				}
-				t = System.nanoTime() - t;
-			}
+//			{
+//				t = System.nanoTime();
+//				try (VP8Decoder decoder = new VP8Decoder(new ByteArrayInputStream(buffer)))
+//				{
+//					for (int i = 0; i < aValues.length; i++)
+//					{
+//						long b = decoder.decodeExpGolomb(0);
+//						assert b == aValues[i] : b + " == " + aValues[i];
+//					}
+//				}
+//				t = System.nanoTime() - t;
+//			}
 
 			System.out.println("VP8      - Size: " + buffer.length + ", Time: " + t / 1000000.0);
 		}

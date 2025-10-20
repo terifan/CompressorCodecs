@@ -2,9 +2,8 @@ package org.terifan.compression.vp8arithmetic;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.terifan.compression.vp8arithmetic.Shared.*;
-import static org.terifan.compression.vp8arithmetic.VP8Encoder.UNARY_PROB;
-import static org.terifan.compression.vp8arithmetic.VP8Encoder.EXP_GOLOMB_PROB;
+import static org.terifan.compression.vp8arithmetic.Shared.KNEWRANGE;
+import static org.terifan.compression.vp8arithmetic.Shared.KNORM;
 
 
 public class VP8Decoder implements AutoCloseable
@@ -20,6 +19,12 @@ public class VP8Decoder implements AutoCloseable
 		mRange = 255 - 1;
 		mInputStream = aInputStream;
 		mMissing = 8;
+	}
+
+
+	public int decodeBit(VP8Context aContext) throws IOException
+	{
+		return decodeBit(aContext.advance(0, 0));
 	}
 
 
@@ -76,15 +81,17 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public long decodeExpGolomb(int aStep) throws IOException
+	public long decodeExpGolomb(int aStep, VP8Context aContext) throws IOException
 	{
 		long result = 0;
+		int i = 0;
 
-		for (int i = 0; decodeBit(EXP_GOLOMB_PROB[i]) == 0; i++)
+		while (decodeBit(aContext.advance(0, i++)) == 0)
 		{
 			result += 1L << aStep;
 			aStep++;
 		}
+		aContext.advance(1, i);
 
 		long binarySymbol = 0;
 		while (aStep-- > 0)
@@ -99,14 +106,15 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public int decodeUnary() throws IOException
+	public int decodeUnary(VP8Context aContext) throws IOException
 	{
 		int symbol = 0;
 
-		while (decodeBit(UNARY_PROB) == 0)
+		while (decodeBit(aContext.advance(0, symbol)) == 0)
 		{
 			symbol++;
 		}
+		aContext.advance(1, symbol);
 
 		return symbol;
 	}

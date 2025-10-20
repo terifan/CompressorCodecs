@@ -9,13 +9,6 @@ import static org.terifan.compression.vp8arithmetic.Shared.KNEWRANGE;
 
 public class VP8Encoder implements AutoCloseable
 {
-	final static int UNARY_PROB = 250;
-
-	final static int[] EXP_GOLOMB_PROB =
-	{
-		220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220
-	};
-
 	private int mRange;      // range-1
 	private int mValue;
 	private int mRun;        // number of outstanding bits
@@ -34,6 +27,12 @@ public class VP8Encoder implements AutoCloseable
 
 		mMaxPos = 1024;
 		mBuffer = new byte[mMaxPos];
+	}
+
+
+	public int encodeBit(int aBit, VP8Context aContext) throws IOException
+	{
+		return encodeBit(aBit, aContext.advance(aBit, 0));
 	}
 
 
@@ -158,19 +157,19 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void encodeExpGolomb(long aSymbol, int aStep) throws IOException
+	public void encodeExpGolomb(long aSymbol, int aStep, VP8Context aContext) throws IOException
 	{
 		int i = 0;
 
 		while (aSymbol >= (1L << aStep))
 		{
-			encodeBit(0, EXP_GOLOMB_PROB[i++]);
+			encodeBit(0, aContext.advance(0, i++));
 
 			aSymbol -= 1L << aStep;
 			aStep++;
 		}
 
-		encodeBit(1, EXP_GOLOMB_PROB[i]);
+		encodeBit(1, aContext.advance(1, i));
 
 		while (aStep-- > 0)
 		{
@@ -179,15 +178,16 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void encodeUnary(int aSymbol) throws IOException
+	public void encodeUnary(int aSymbol, VP8Context aContext) throws IOException
 	{
 		assert aSymbol >= 0;
 
 		int l = aSymbol;
+		int i = 0;
 		while (l-- > 0)
 		{
-			encodeBit(0, UNARY_PROB);
+			encodeBit(0, aContext.advance(0, i++));
 		}
-		encodeBit(1, UNARY_PROB);
+		encodeBit(1, aContext.advance(1, i));
 	}
 }
