@@ -2,16 +2,23 @@ package org.terifan.compression.vp8arithmetic;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Random;
 
 
 public class Test
 {
-	public static void main(String ... args)
+	public static void main(String... args)
 	{
 		try
 		{
-			test1();
+			testEncodeExpGolomb();
+			System.out.println("-".repeat(150));
+			testEncodeUnary();
+			System.out.println("-".repeat(150));
+			testEncodeBit();
+			System.out.println("-".repeat(150));
+			testEncodeVLC();
 		}
 		catch (Throwable e)
 		{
@@ -20,40 +27,55 @@ public class Test
 	}
 
 
-	public static void test1()
+	public static void testEncodeExpGolomb()
 	{
 		try
 		{
+			Random rnd = new Random();
+
+			long[] in = new long[10];
+
+			int[] order = new int[in.length];
+			long[] out = new long[in.length];
+			for (int i = 0; i < in.length; i++)
+			{
+				in[i] = rnd.nextLong(1L << rnd.nextInt(1 << rnd.nextInt(6)));
+				order[i] = rnd.nextInt(4 << rnd.nextInt(4));
+			}
+
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (VP8Encoder writer = new VP8Encoder(baos))
 			{
 				VP8Context context = new VP8Context();
-				writer.encodeExpGolomb(321651, 3, context);
-				writer.encodeExpGolomb(321632168741L, 7, context);
-				writer.encodeExpGolomb(8764654649L, 4, context);
-				writer.encodeExpGolomb(546161, 2, context);
-				writer.encodeExpGolomb(32, 0, context);
+				for (int i = 0; i < in.length; i++)
+				{
+					writer.encodeExpGolomb(in[i], order[i], context);
+				}
 
 				System.out.println(context);
 			}
 
-			System.out.println("*** " + baos.size());
+			int ln = 0;
+			for (long v : in)
+			{
+				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
+			}
+			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
 
-			VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray()));
+			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					out[i] = reader.decodeExpGolomb(order[i], context);
+				}
+				System.out.println(context);
+			}
 
-			VP8Context context = new VP8Context();
-			long val1 = reader.decodeExpGolomb(3, context);
-			long val2 = reader.decodeExpGolomb(7, context);
-			long val3 = reader.decodeExpGolomb(4, context);
-			long val4 = reader.decodeExpGolomb(2, context);
-			long val5 = reader.decodeExpGolomb(0, context);
-			System.out.println(context);
-
-			System.out.println(val1);
-			System.out.println(val2);
-			System.out.println(val3);
-			System.out.println(val4);
-			System.out.println(val5);
+			for (int i = 0; i < in.length; i++)
+			{
+				System.out.printf("%5s %19d %-19d %d%n", out[i] == in[i], in[i], out[i], order[i]);
+			}
 		}
 		catch (Throwable e)
 		{
@@ -62,166 +84,175 @@ public class Test
 	}
 
 
-//	public static void test2()
-//	{
-//		try
-//		{
-//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//			try (VP8Encoder writer = new VP8Encoder(baos))
-//			{
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//				writer.encodeBit(0, 250);
-//			}
-//
-//			System.out.println("*** " + baos.size());
-//
-//			VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray()));
-//			System.out.println(reader.decodeValue(32) == Integer.MAX_VALUE);
-//			System.out.println(reader.decodeValue(32) == Integer.MIN_VALUE);
-//			System.out.println(reader.decodeBit(0));
-//			System.out.println(reader.decodeBit(127));
-//			System.out.println(reader.decodeBit(255));
-//			System.out.println(reader.decodeBit(0));
-//			System.out.println(reader.decodeBit(127));
-//			System.out.println(reader.decodeBit(255));
-//		}
-//		catch (Throwable e)
-//		{
-//			e.printStackTrace(System.out);
-//		}
-//	}
-//
-//
-//	public static void test3()
-//	{
-//		try
-//		{
-//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//			try (VP8Encoder writer = new VP8Encoder(baos))
-//			{
-//				writer.encodeValue(Integer.MAX_VALUE, 32);
-//				writer.encodeValue(Integer.MIN_VALUE, 32);
-//				writer.encodeBit(0, 0);
-//				writer.encodeBit(0, 127);
-//				writer.encodeBit(0, 255);
-//				writer.encodeBit(1, 0);
-//				writer.encodeBit(1, 127);
-//				writer.encodeBit(1, 255);
-//			}
-//
-//			System.out.println("*** " + baos.size());
-//
-//			VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray()));
-//			System.out.println(reader.decodeValue(32) == Integer.MAX_VALUE);
-//			System.out.println(reader.decodeValue(32) == Integer.MIN_VALUE);
-//			System.out.println(reader.decodeBit(0));
-//			System.out.println(reader.decodeBit(127));
-//			System.out.println(reader.decodeBit(255));
-//			System.out.println(reader.decodeBit(0));
-//			System.out.println(reader.decodeBit(127));
-//			System.out.println(reader.decodeBit(255));
-//		}
-//		catch (Throwable e)
-//		{
-//			e.printStackTrace(System.out);
-//		}
-//	}
-//
-//	public static void test4()
-//	{
-//		try
-//		{
-//			int seed = new Random().nextInt(Integer.MAX_VALUE);
-//			System.out.println(seed);
-//
-//			Random rnd = new Random(seed);
-//
-//			for (int testMethod = 0; testMethod <= 7; testMethod++)
-//			{
-//				int bitsToTest = 1000;
-//				int [] probas = new int[bitsToTest];
-//
-//				for (int i = 0; i < bitsToTest; i++)
-//				{
-//					boolean parity = (i & 1) != 0;
-//
-//					probas[i] =
-//						(testMethod == 0) ? 0 :
-//						(testMethod == 1) ? 255 :
-//						(testMethod == 2) ? 128 :
-//						(testMethod == 3) ? rnd.nextInt(256):
-//						(testMethod == 4) ? (parity ? 0 : 255) :
-//						// alternate between low and high proba:
-//						(testMethod == 5) ? (parity ? rnd.nextInt(128) : 255 - rnd.nextInt(128)) :
-//						(testMethod == 6) ?
-//						(parity ? rnd.nextInt(64) : 255 - rnd.nextInt(64)) :
-//						(parity ? rnd.nextInt(32) : 255 - rnd.nextInt(32));
-//				}
-//
-//				for (int bitMethod = 0; bitMethod <= 3; bitMethod++)
-//				{
-//					byte[] buffer;
-//
-//					{
-//						rnd = new Random(seed);
-//
-//						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//						try (VP8Encoder writer = new VP8Encoder(baos))
-//						{
-//							int bit = (bitMethod == 0) ? 0 : (bitMethod == 1) ? 1 : 0;
-//							for (int i = 0; i < bitsToTest; i++)
-//							{
-//								if (bitMethod == 2)
-//								{
-//									bit = (i & 1);
-//								}
-//								else if (bitMethod == 3)
-//								{
-//									bit = rnd.nextInt(2);
-//								}
-//								writer.encodeBit(bit, probas[i]);
-//							}
-//						}
-//						buffer = baos.toByteArray();
-//					}
-//
-//					{
-//						rnd = new Random(seed);
-//
-//						VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(buffer));
-//						for (int i = 0; i < bitsToTest; i++)
-//						{
-//							int bit = (bitMethod == 0) ? 0 : (bitMethod == 1) ? 1 : 0;
-//							if (bitMethod == 2)
-//							{
-//								bit = (i & 1);
-//							}
-//							else if (bitMethod == 3)
-//							{
-//								bit = rnd.nextInt(2);
-//							}
-//
-//							if (reader.decodeBit(probas[i]) != bit)
-//							{
-//								System.out.println("Error at  " + i);
-//								return;
-//							}
-//						}
-//					}
-//				}
-//			}
-//
-//			System.out.println("Success");
-//		}
-//		catch (Throwable e)
-//		{
-//			e.printStackTrace(System.out);
-//		}
-//	}
+	public static void testEncodeUnary()
+	{
+		try
+		{
+			Random rnd = new Random();
+
+			int[] in = new int[10];
+
+			int[] out = new int[in.length];
+			for (int i = 0; i < in.length; i++)
+			{
+				in[i] = rnd.nextInt(1 << rnd.nextInt(4));
+			}
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (VP8Encoder writer = new VP8Encoder(baos))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					writer.encodeUnary(in[i], context);
+				}
+
+				System.out.println(context);
+			}
+
+			int ln = 0;
+			for (long v : in)
+			{
+				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
+			}
+			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
+
+			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					out[i] = reader.decodeUnary(context);
+				}
+				System.out.println(context);
+			}
+
+			for (int i = 0; i < in.length; i++)
+			{
+				System.out.printf("%5s %19d %d%n", out[i] == in[i], in[i], out[i]);
+			}
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+
+	public static void testEncodeBit()
+	{
+		try
+		{
+			Random rnd = new Random();
+
+			int[] in = new int[8 * 15];
+
+			int[] out = new int[in.length];
+			for (int i = 0; i < in.length; i++)
+			{
+				in[i] = rnd.nextInt(100) < 95 ? 0 : 1;
+			}
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (VP8Encoder writer = new VP8Encoder(baos))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					writer.encodeBit(in[i], 0, context);
+				}
+
+				System.out.println(context);
+			}
+
+			System.out.println("*** input:" + (in.length / 8) + " => output:" + baos.size());
+
+			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					out[i] = reader.decodeBit(0, context);
+				}
+				System.out.println(context);
+			}
+
+			System.out.println(Arrays.equals(in, out));
+
+			for (int i = 0; i < in.length; i++)
+			{
+				System.out.printf("%d", in[i]);
+			}
+			System.out.println();
+			for (int i = 0; i < in.length; i++)
+			{
+				System.out.printf("%s", out[i] == in[i] ? "." : "#");
+			}
+			System.out.println();
+			for (int i = 0; i < in.length; i++)
+			{
+				System.out.printf("%d", out[i]);
+			}
+			System.out.println();
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+
+	public static void testEncodeVLC()
+	{
+		try
+		{
+			Random rnd = new Random();
+
+			long[] in = new long[10000];
+
+			long[] out = new long[in.length];
+			for (int i = 0; i < in.length; i++)
+			{
+				in[i] = rnd.nextLong(4L << rnd.nextInt(12));
+			}
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (VP8Encoder writer = new VP8Encoder(baos))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					writer.encodeVLC(in[i], 3, context);
+				}
+
+				System.out.println(context);
+			}
+
+			int ln = 0;
+			for (long v : in)
+			{
+				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
+			}
+			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
+
+			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
+			{
+				VP8Context context = new VP8Context();
+				for (int i = 0; i < in.length; i++)
+				{
+					out[i] = reader.decodeVLC(3, context);
+				}
+				System.out.println(context);
+			}
+
+			for (int i = 0; i < in.length; i++)
+			{
+//				System.out.printf("%5s %19d %d%n", out[i] == in[i], in[i], out[i]);
+			}
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
 }

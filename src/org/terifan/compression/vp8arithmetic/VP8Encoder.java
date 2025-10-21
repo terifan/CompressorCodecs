@@ -30,9 +30,9 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public int encodeBit(int aBit, VP8Context aContext) throws IOException
+	public int encodeBit(int aBit, int aIndex, VP8Context aContext) throws IOException
 	{
-		return encodeBit(aBit, aContext.advance(aBit, 0));
+		return encodeBit(aBit, aContext.next(aBit, aIndex));
 	}
 
 
@@ -157,37 +157,54 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	public void encodeExpGolomb(long aSymbol, int aStep, VP8Context aContext) throws IOException
+	public void encodeExpGolomb(long aSymbol, int aOrderK, VP8Context aContext) throws IOException
 	{
 		int i = 0;
 
-		while (aSymbol >= (1L << aStep))
+		while (aSymbol >= (1L << aOrderK))
 		{
-			encodeBit(0, aContext.advance(0, i++));
+			encodeBit(0, i++, aContext);
 
-			aSymbol -= 1L << aStep;
-			aStep++;
+			aSymbol -= 1L << aOrderK;
+			aOrderK++;
 		}
 
-		encodeBit(1, aContext.advance(1, i));
+		encodeBit(1, i, aContext);
 
-		while (aStep-- > 0)
+		while (aOrderK-- > 0)
 		{
-			encodeBitEqProb((int)(aSymbol >>> aStep) & 1);
+			encodeBitEqProb((int)(aSymbol >>> aOrderK) & 1);
+		}
+	}
+
+
+	public void encodeVLC(long aSymbol, int aStep, VP8Context aContext) throws IOException
+	{
+		for (int i = 0;;)
+		{
+			encodeValue((int)aSymbol, aStep);
+			aSymbol >>>= aStep;
+			if (aSymbol == 0)
+			{
+				encodeBit(1, i, aContext);
+				return;
+			}
+
+			encodeBit(0, i++, aContext);
 		}
 	}
 
 
 	public void encodeUnary(int aSymbol, VP8Context aContext) throws IOException
 	{
-		assert aSymbol >= 0;
+		assert aSymbol >= 0 && aSymbol < 64;
 
 		int l = aSymbol;
 		int i = 0;
 		while (l-- > 0)
 		{
-			encodeBit(0, aContext.advance(0, i++));
+			encodeBit(0, i++, aContext);
 		}
-		encodeBit(1, aContext.advance(1, i));
+		encodeBit(1, i, aContext);
 	}
 }

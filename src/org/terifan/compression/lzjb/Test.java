@@ -2,52 +2,85 @@ package org.terifan.compression.lzjb;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
 import org.terifan.compression.util.Log;
+import org.terifan.compression.vp8arithmetic.VP8Context;
+import org.terifan.compression.vp8arithmetic.VP8Decoder;
+import org.terifan.compression.vp8arithmetic.VP8Encoder;
+import org.terifan.io.Streams;
 
 
 public class Test
 {
+//	public static void main(String ... args)
+//	{
+//		try
+//		{
+//			ByteArrayOutputStream aOutputStream = new ByteArrayOutputStream();
+//			{
+//		VP8Encoder mWriter = new VP8Encoder(aOutputStream);
+//		VP8Context mContext0;
+//			mContext0 = new VP8Context();
+//		mWriter.encodeBit(0, 0, mContext0);
+//		mWriter.close();
+//			}
+//
+//		VP8Decoder mReader = new VP8Decoder(new ByteArrayInputStream(aOutputStream.toByteArray()));
+//	VP8Context mContext0;
+//		mContext0 = new VP8Context();
+//		if (mReader.decodeBit(0, mContext0) == 0) System.out.println("#");
+//}
+//		catch (Throwable e)
+//		{
+//			e.printStackTrace(System.out);
+//		}
+//	}
+
 	public static void main(String... args)
 	{
 		try
 		{
 			int n = 1;
-			int sz0 = 190431;
+			int sz0 = 653139;
 			int sz1 = 1;
 
 			Random rnd = new Random(1);
 			byte[][] sourceA = new byte[n][];
-			byte[][] sourceB = new byte[n][];
+//			byte[][] sourceB = new byte[n][];
 			int srcLen = 0;
 
-			byte[] data = Files.readAllBytes(Paths.get("C:\\Users\\patrik\\Documents\\romeo_juliet.html"));
+			byte[] data = Files.readAllBytes(Paths.get("j:\\Documents\\Books\\Lolita.html"));
 			for (int i = 0; i < n; i++)
 			{
 				int len = sz0 + rnd.nextInt(sz1);
 				sourceA[i] = Arrays.copyOfRange(data, srcLen, srcLen + len);
-				sourceB[i] = new byte[rnd.nextInt(sz1)];
-				rnd.nextBytes(sourceB[i]);
+//				sourceB[i] = new byte[rnd.nextInt(sz1)];
+//				rnd.nextBytes(sourceB[i]);
 				srcLen += len;
 			}
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			LZJBCompressor dos = new LZJBCompressor(baos);
+			try (LZJBCompressor dos = new LZJBCompressor(baos))
+			{
 			for (int i = 0; i < n; i++)
 			{
 				dos.compress(sourceA[i]);
 //				baos.write(sourceB[i]);
 			}
+			}
+
+			System.out.println();
 
 			byte[] compressedData = baos.toByteArray();
 
 			System.out.println(baos.size() + " / " + srcLen);
 
 //			Log.hexDump(compressedData, 24);
-
 			ByteArrayInputStream bais = new ByteArrayInputStream(compressedData);
 			LZJBDecompressor in = new LZJBDecompressor(bais);
 			for (int i = 0; i < n; i++)
@@ -60,7 +93,6 @@ public class Test
 //System.out.println("-".repeat(100));
 //System.out.println(new String(inputA));
 //System.out.println("-".repeat(100));
-
 				System.out.println(Arrays.equals(inputA, sourceA[i]));
 //				System.out.println(Arrays.equals(inputB, sourceB[i]));
 			}

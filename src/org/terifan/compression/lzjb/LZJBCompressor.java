@@ -26,7 +26,6 @@ public class LZJBCompressor implements AutoCloseable
 	public LZJBCompressor(OutputStream aOutputStream)
 	{
 		mWindow = new byte[1024 * 1024];
-		Arrays.fill(mWindow, (byte)' ');
 
 		mContext0 = new VP8Context();
 		mContext1 = new VP8Context();
@@ -125,20 +124,22 @@ public class LZJBCompressor implements AutoCloseable
 
 	private void writeLiterals(byte[] aLiterals, int aLiteralCount) throws IOException
 	{
-		mWriter.encodeBit(0, mContext0);
+//		System.out.print(","+aLiteralCount +",");
+		mWriter.encodeBit(0, 0, mContext0);
 		mWriter.encodeUnary(aLiteralCount - 1, mContext1);
-		for (byte b : aLiterals)
+		for (int i = 0; i < aLiteralCount; i++)
 		{
-			mWriter.encodeValue(0xff & b, 8);
+			mWriter.encodeValue(0xff & aLiterals[i], 8);
 		}
 	}
 
 
 	private void writeReference(int aDist, int aLength) throws IOException
 	{
-		mWriter.encodeBit(1, mContext0);
+//		System.out.print("["+aDist+" "+(aLength - MATCH_MIN) +"]");
+		mWriter.encodeBit(1, 0, mContext0);
 		mWriter.encodeExpGolomb(aLength - MATCH_MIN, 0, mContext2);
-		mWriter.encodeExpGolomb(aDist, 7, mContext3);
+		mWriter.encodeExpGolomb(aDist, 0, mContext3);
 	}
 
 

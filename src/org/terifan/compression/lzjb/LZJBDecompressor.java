@@ -22,7 +22,6 @@ public class LZJBDecompressor
 	public LZJBDecompressor(InputStream aInputStream)
 	{
 		mWindow = new byte[1024 * 1024];
-		Arrays.fill(mWindow, (byte)' ');
 
 		mContext0 = new VP8Context();
 		mContext1 = new VP8Context();
@@ -43,11 +42,12 @@ public class LZJBDecompressor
 	{
 		while (aOutputLength > 0)
 		{
-			if (mReader.decodeBit(mContext0) == 0)
+			if (mReader.decodeBit(0, mContext0) == 0)
 			{
 				int count = mReader.decodeUnary(mContext1) + 1;
+//				System.out.print(","+count+",");
 
-				for (int i = 0; i <= count; i++)
+				for (int i = 0; i < count; i++)
 				{
 					byte c = (byte)mReader.decodeValue(8);
 					aOutput[aOutputOffset++] = c;
@@ -58,8 +58,8 @@ public class LZJBDecompressor
 			else
 			{
 				int len = (int)mReader.decodeExpGolomb(0, mContext2) + MATCH_MIN;
-				int dist = (int)mReader.decodeExpGolomb(7, mContext3);
-
+				int dist = (int)mReader.decodeExpGolomb(0, mContext3);
+//				System.out.print("["+dist+" "+len+"]");
 				int offset = mWindowOffset - dist - len;
 				System.arraycopy(mWindow, offset, aOutput, aOutputOffset, len);
 				System.arraycopy(mWindow, offset, mWindow, mWindowOffset, len);

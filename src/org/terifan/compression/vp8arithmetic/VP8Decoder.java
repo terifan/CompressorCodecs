@@ -22,9 +22,11 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public int decodeBit(VP8Context aContext) throws IOException
+	public int decodeBit(int aIndex, VP8Context aContext) throws IOException
 	{
-		return decodeBit(aContext.advance(0, 0));
+		int b = decodeBit(aContext.prob(aIndex));
+		aContext.advance(b, aIndex);
+		return b;
 	}
 
 
@@ -81,24 +83,23 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
-	public long decodeExpGolomb(int aStep, VP8Context aContext) throws IOException
+	public long decodeExpGolomb(int aOrderK, VP8Context aContext) throws IOException
 	{
 		long result = 0;
 		int i = 0;
 
-		while (decodeBit(aContext.advance(0, i++)) == 0)
+		while (decodeBit(i++, aContext) == 0)
 		{
-			result += 1L << aStep;
-			aStep++;
+			result += 1L << aOrderK;
+			aOrderK++;
 		}
-		aContext.advance(1, i);
 
 		long binarySymbol = 0;
-		while (aStep-- > 0)
+		while (aOrderK-- > 0)
 		{
 			if (decodeBitEqProb() == 1)
 			{
-				binarySymbol |= 1L << aStep;
+				binarySymbol |= 1L << aOrderK;
 			}
 		}
 
@@ -106,15 +107,29 @@ public class VP8Decoder implements AutoCloseable
 	}
 
 
+	public long decodeVLC(int aStep, VP8Context aContext) throws IOException
+	{
+		long value = 0;
+		int i = 0;
+		for (int step = 0;; step += aStep)
+		{
+			value += decodeValue(aStep) << step;
+			if (decodeBit(i++, aContext) == 1)
+			{
+				return value;
+			}
+		}
+	}
+
+
 	public int decodeUnary(VP8Context aContext) throws IOException
 	{
 		int symbol = 0;
 
-		while (decodeBit(aContext.advance(0, symbol)) == 0)
+		while (decodeBit(symbol, aContext) == 0)
 		{
 			symbol++;
 		}
-		aContext.advance(1, symbol);
 
 		return symbol;
 	}
