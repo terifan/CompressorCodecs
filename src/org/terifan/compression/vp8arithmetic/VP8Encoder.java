@@ -180,6 +180,8 @@ public class VP8Encoder implements AutoCloseable
 
 	public void encodeVLC(long aSymbol, int aStep, VP8Context aContext) throws IOException
 	{
+		assert aStep > 0;
+
 		for (int i = 0;;)
 		{
 			encodeValue((int)aSymbol, aStep);
@@ -197,7 +199,7 @@ public class VP8Encoder implements AutoCloseable
 
 	public void encodeUnary(int aSymbol, VP8Context aContext) throws IOException
 	{
-		assert aSymbol >= 0 && aSymbol < 64;
+		assert aSymbol >= 0 && aSymbol < 64 : aSymbol;
 
 		int l = aSymbol;
 		int i = 0;

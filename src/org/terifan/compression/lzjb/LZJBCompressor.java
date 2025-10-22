@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.terifan.compression.vp8arithmetic.VP8Context;
 import org.terifan.compression.vp8arithmetic.VP8Encoder;
 
-// 78305
 
 public class LZJBCompressor implements AutoCloseable
 {
@@ -21,6 +20,9 @@ public class LZJBCompressor implements AutoCloseable
 	private VP8Context mContext1;
 	private VP8Context mContext2;
 	private VP8Context mContext3;
+	private VP8Context mContext4;
+	private SymbolFrequency[] mSymbolFrequencys;
+	private int mPreviousSym;
 
 
 	public LZJBCompressor(OutputStream aOutputStream)
@@ -31,6 +33,21 @@ public class LZJBCompressor implements AutoCloseable
 		mContext1 = new VP8Context();
 		mContext2 = new VP8Context();
 		mContext3 = new VP8Context();
+		mContext4 = new VP8Context();
+
+		mSymbolFrequencys = new SymbolFrequency[256];
+		for (int i = 0; i < 256; i++)
+		{
+			mSymbolFrequencys[i] = new SymbolFrequency(256, 1000000);
+		}
+
+		for (int i = 32; i < 128; i++)
+		{
+			for (int j = 32; j < 128; j++)
+			{
+				mSymbolFrequencys[i].update(j);
+			}
+		}
 
 		mWriter = new VP8Encoder(aOutputStream);
 	}
@@ -45,7 +62,7 @@ public class LZJBCompressor implements AutoCloseable
 
 	public void compress(byte[] aInput) throws IOException
 	{
-		byte[] literals = new byte[MATCH_MIN];
+		byte[] literals = new byte[1024];
 		int literalCount = 0;
 
 		Match result = new Match();
@@ -53,26 +70,29 @@ public class LZJBCompressor implements AutoCloseable
 		{
 			findBestMatch(aInput, offset, result);
 
-			if (literalCount == MATCH_MIN || literalCount > 0 && result.length >= MATCH_MIN)
-			{
-				writeLiterals(literals, literalCount);
-				literalCount = 0;
-			}
-
 			if (result.length < MATCH_MIN)
 			{
-				byte b = aInput[offset++];
+				byte b = aInput[offset];
 				mWindow[mWindowOffset++] = b;
 				literals[literalCount++] = b;
+				offset++;
 			}
 			else
 			{
-				result.length = Math.min(result.length, 255);
+				writeLiterals(literals, literalCount);
+				literalCount = 0;
 
 				System.arraycopy(aInput, offset, mWindow, mWindowOffset, result.length);
 				mWindowOffset += result.length;
 
 				writeReference(result.dist, result.length);
+
+				for (int i = 0; i < result.length; i++)
+				{
+					int sym = aInput[offset + i];
+					mSymbolFrequencys[mPreviousSym].update(sym);
+					mPreviousSym = sym;
+				}
 
 				offset += result.length;
 			}
@@ -82,10 +102,6 @@ public class LZJBCompressor implements AutoCloseable
 		{
 			writeLiterals(literals, literalCount);
 		}
-
-//		System.out.println("*".repeat(100));
-//		Log.hexDump(Arrays.copyOfRange(mWindow, 0, mWindowOffset),24);
-//		System.out.println("*".repeat(100));
 	}
 
 
@@ -124,20 +140,33 @@ public class LZJBCompressor implements AutoCloseable
 
 	private void writeLiterals(byte[] aLiterals, int aLiteralCount) throws IOException
 	{
-//		System.out.print(","+aLiteralCount +",");
-		mWriter.encodeBit(0, 0, mContext0);
-		mWriter.encodeUnary(aLiteralCount - 1, mContext1);
+//		mWriter.encodeBit(aLiteralCount == 0 ? 0 : 1, 0, mContext0);
+//		if (aLiteralCount > 0)
+//		{
+//			mWriter.encodeExpGolomb(aLiteralCount, 0, mContext1);
+//		}
+
+		int S = 8;
+		mWriter.encodeUnary(Math.min(aLiteralCount, S), mContext0);
+		if (aLiteralCount >= S)
+		{
+			mWriter.encodeExpGolomb(aLiteralCount - S, 0, mContext1);
+		}
+
 		for (int i = 0; i < aLiteralCount; i++)
 		{
-			mWriter.encodeValue(0xff & aLiterals[i], 8);
+			int sym = 0xff & aLiterals[i];
+
+			mWriter.encodeExpGolomb(mSymbolFrequencys[mPreviousSym].lookup(sym), 3, mContext4);
+
+			mSymbolFrequencys[mPreviousSym].update(sym);
+			mPreviousSym = sym;
 		}
 	}
 
 
 	private void writeReference(int aDist, int aLength) throws IOException
 	{
-//		System.out.print("["+aDist+" "+(aLength - MATCH_MIN) +"]");
-		mWriter.encodeBit(1, 0, mContext0);
 		mWriter.encodeExpGolomb(aLength - MATCH_MIN, 0, mContext2);
 		mWriter.encodeExpGolomb(aDist, 0, mContext3);
 	}

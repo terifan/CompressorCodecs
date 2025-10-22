@@ -44,10 +44,9 @@ public class LZJBDecompressor
 		{
 			if (mReader.decodeBit(0, mContext0) == 0)
 			{
-				int count = mReader.decodeUnary(mContext1) + 1;
-//				System.out.print(","+count+",");
+				int len = (int)mReader.decodeExpGolomb(0, mContext1) + 1;
 
-				for (int i = 0; i < count; i++)
+				for (int i = 0; i < len; i++)
 				{
 					byte c = (byte)mReader.decodeValue(8);
 					aOutput[aOutputOffset++] = c;
@@ -59,7 +58,7 @@ public class LZJBDecompressor
 			{
 				int len = (int)mReader.decodeExpGolomb(0, mContext2) + MATCH_MIN;
 				int dist = (int)mReader.decodeExpGolomb(0, mContext3);
-//				System.out.print("["+dist+" "+len+"]");
+
 				int offset = mWindowOffset - dist - len;
 				System.arraycopy(mWindow, offset, aOutput, aOutputOffset, len);
 				System.arraycopy(mWindow, offset, mWindow, mWindowOffset, len);
