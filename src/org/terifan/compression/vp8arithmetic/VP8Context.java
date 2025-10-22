@@ -54,7 +54,7 @@ public class VP8Context
 			{
 				s += "|";
 			}
-			s += "%.2f".formatted(mCount[i]/(double)mTotal[i]).replace(',', '.');
+			s += "%.2f".formatted(mCount[i] / (double)mTotal[i]).replace(',', '.');
 //			s += mCount[i];
 		}
 		return s.trim();

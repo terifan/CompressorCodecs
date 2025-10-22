@@ -13,6 +13,7 @@ import org.terifan.compression.vp8arithmetic.VP8Context;
 import org.terifan.compression.vp8arithmetic.VP8Decoder;
 import org.terifan.compression.vp8arithmetic.VP8Encoder;
 import org.terifan.io.Streams;
+import org.terifan.util.Console;
 
 
 public class Test
@@ -45,16 +46,19 @@ public class Test
 	{
 		try
 		{
-			int n = 1;
-			int sz0 = 653139;
-			int sz1 = 1;
-
 			Random rnd = new Random(1);
-			byte[][] sourceA = new byte[n][];
-//			byte[][] sourceB = new byte[n][];
+
+			byte[] data = Files.readAllBytes(Paths.get("C:\\Users\\patrik\\Documents\\Books\\Romeo & Juliet.html"));
+//			byte[] data = Files.readAllBytes(Paths.get("j:\\Documents\\Books\\Lolita.html"));
+
+			int n = 1;
+			int sz0 = data.length;
+			int sz1 = 1;
 			int srcLen = 0;
 
-			byte[] data = Files.readAllBytes(Paths.get("j:\\Documents\\Books\\Lolita.html"));
+			byte[][] sourceA = new byte[n][];
+//			byte[][] sourceB = new byte[n][];
+
 			for (int i = 0; i < n; i++)
 			{
 				int len = sz0 + rnd.nextInt(sz1);
@@ -67,18 +71,16 @@ public class Test
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (LZJBCompressor dos = new LZJBCompressor(baos))
 			{
-			for (int i = 0; i < n; i++)
-			{
-				dos.compress(sourceA[i]);
+				for (int i = 0; i < n; i++)
+				{
+					dos.compress(sourceA[i]);
 //				baos.write(sourceB[i]);
+				}
 			}
-			}
-
-			System.out.println();
 
 			byte[] compressedData = baos.toByteArray();
 
-			System.out.println(baos.size() + " / " + srcLen);
+			Console.println("{input:}{} => {output:}{}", srcLen, baos.size());
 
 //			Log.hexDump(compressedData, 24);
 			ByteArrayInputStream bais = new ByteArrayInputStream(compressedData);

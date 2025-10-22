@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Random;
+import org.terifan.util.Console;
 
 
 public class Test
@@ -52,7 +53,7 @@ public class Test
 					writer.encodeExpGolomb(in[i], order[i], context);
 				}
 
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			int ln = 0;
@@ -60,7 +61,7 @@ public class Test
 			{
 				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
 			}
-			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
+			Console.println("{input:}{} => {output:}{}", ln / 8, baos.size());
 
 			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
 			{
@@ -69,12 +70,12 @@ public class Test
 				{
 					out[i] = reader.decodeExpGolomb(order[i], context);
 				}
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			for (int i = 0; i < in.length; i++)
 			{
-				System.out.printf("%5s %19d %-19d %d%n", out[i] == in[i], in[i], out[i], order[i]);
+				Console.println("{equals:}{%-5s} {in:}{%-19d} {out:}{%-19d} {order:}{%d}", out[i] == in[i], in[i], out[i], order[i]);
 			}
 		}
 		catch (Throwable e)
@@ -107,7 +108,7 @@ public class Test
 					writer.encodeUnary(in[i], context);
 				}
 
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			int ln = 0;
@@ -115,7 +116,7 @@ public class Test
 			{
 				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
 			}
-			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
+			Console.println("{input:}{} => {output:}{}", ln / 8, baos.size());
 
 			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
 			{
@@ -124,12 +125,12 @@ public class Test
 				{
 					out[i] = reader.decodeUnary(context);
 				}
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			for (int i = 0; i < in.length; i++)
 			{
-				System.out.printf("%5s %19d %d%n", out[i] == in[i], in[i], out[i]);
+				Console.println("{equals:}{%-5s} {in:}{%-19d} {out:}{%d}", out[i] == in[i], in[i], out[i]);
 			}
 		}
 		catch (Throwable e)
@@ -162,10 +163,10 @@ public class Test
 					writer.encodeBit(in[i], 0, context);
 				}
 
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
-			System.out.println("*** input:" + (in.length / 8) + " => output:" + baos.size());
+			Console.println("{input:}{} => {output:}{}", in.length / 8, baos.size());
 
 			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
 			{
@@ -174,10 +175,10 @@ public class Test
 				{
 					out[i] = reader.decodeBit(0, context);
 				}
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
-			System.out.println(Arrays.equals(in, out));
+			Console.println("{equals:}{}", Arrays.equals(in, out));
 
 			for (int i = 0; i < in.length; i++)
 			{
@@ -208,7 +209,7 @@ public class Test
 		{
 			Random rnd = new Random();
 
-			long[] in = new long[10000];
+			long[] in = new long[10];
 
 			long[] out = new long[in.length];
 			for (int i = 0; i < in.length; i++)
@@ -225,7 +226,7 @@ public class Test
 					writer.encodeVLC(in[i], 3, context);
 				}
 
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			int ln = 0;
@@ -233,7 +234,7 @@ public class Test
 			{
 				ln += Math.ceil(v == 0 ? 1 : Math.log(v) / Math.log(2) / 7) * 8;
 			}
-			System.out.println("*** input:" + ln / 8 + " => output:" + baos.size());
+			Console.println("{input:}{} => {output:}{}", ln / 8, baos.size());
 
 			try (VP8Decoder reader = new VP8Decoder(new ByteArrayInputStream(baos.toByteArray())))
 			{
@@ -242,12 +243,12 @@ public class Test
 				{
 					out[i] = reader.decodeVLC(3, context);
 				}
-				System.out.println(context);
+				Console.println("{}", context);
 			}
 
 			for (int i = 0; i < in.length; i++)
 			{
-//				System.out.printf("%5s %19d %d%n", out[i] == in[i], in[i], out[i]);
+				Console.println("{equals:}{%-5s} {in:}{%-19d} {out:}{%d}", out[i] == in[i], in[i], out[i]);
 			}
 		}
 		catch (Throwable e)
