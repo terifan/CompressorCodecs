@@ -16,9 +16,23 @@ public class VP8Decoder implements AutoCloseable
 
 	public VP8Decoder(InputStream aInputStream)
 	{
-		mRange = 255 - 1;
 		mInputStream = aInputStream;
+		restart();
+	}
+
+
+	public void restart()
+	{
+		mRange = 255 - 1;
 		mMissing = 8;
+	}
+
+
+	@Override
+	public void close() throws IOException
+	{
+		mInputStream.close();
+		mInputStream = null;
 	}
 
 
@@ -38,7 +52,8 @@ public class VP8Decoder implements AutoCloseable
 
 		if (mMissing > 0)
 		{
-			mValue |= (0xFF & mInputStream.read()) << mMissing;
+			int z = mInputStream.read();
+			mValue |= (0xFF & z) << mMissing;
 			mMissing -= 8;
 		}
 
@@ -132,12 +147,5 @@ public class VP8Decoder implements AutoCloseable
 		}
 
 		return symbol;
-	}
-
-
-	@Override
-	public void close() throws IOException
-	{
-		mInputStream.close();
 	}
 }

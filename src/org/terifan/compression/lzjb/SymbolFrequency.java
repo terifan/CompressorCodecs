@@ -27,7 +27,13 @@ public class SymbolFrequency
 	}
 
 
-	public int lookup(int aOrder)
+	public int encode(int aOrder)
+	{
+		return mSymToOrder[aOrder];
+	}
+
+
+	public int decode(int aOrder)
 	{
 		return mOrderToSym[aOrder];
 	}
@@ -86,41 +92,51 @@ public class SymbolFrequency
 	}
 
 
-//	public static void main(String... args)
-//	{
-//		try
-//		{
-////			Random rnd = new Random(1);
-////			SymbolFrequency freq = new SymbolFrequency(16, 10000);
-////			for (int i = 0; i < 1000; i++)
-////			{
-////				freq.add(rnd.nextInt(16));
-////			}
-////			System.out.println(freq);
-////
+	public static void main(String... args)
+	{
+		try
+		{
+//			Random rnd = new Random(1);
+//			SymbolFrequency freq = new SymbolFrequency(16, 10000);
+//			for (int i = 0; i < 1000; i++)
+//			{
+//				freq.add(rnd.nextInt(16));
+//			}
+//			System.out.println(freq);
 //
-//			SymbolFrequency freq = new SymbolFrequency(4, 10000);
-//			System.out.println(freq);
-//			freq.add(2);
-//			System.out.println(freq);
-//			freq.add(2);
-//			System.out.println(freq);
-//			freq.add(3);
-//			System.out.println(freq);
-//			freq.add(3);
-//			System.out.println(freq);
-//			freq.add(3);
-//			System.out.println(freq);
-//			freq.add(0);
-//			System.out.println(freq);
-//			freq.add(0);
-//			System.out.println(freq);
-//			freq.add(0);
-//			System.out.println(freq);
-//		}
-//		catch (Throwable e)
-//		{
-//			e.printStackTrace(System.out);
-//		}
-//	}
+
+			SymbolFrequency freq = new SymbolFrequency(4, 10000);
+			System.out.println(freq);
+			freq.update(2);
+			System.out.println(freq);
+			freq.update(2);
+			System.out.println(freq);
+			freq.update(3);
+			System.out.println(freq);
+			freq.update(3);
+			System.out.println(freq);
+			freq.update(3);
+			System.out.println(freq);
+			freq.update(0);
+			System.out.println(freq);
+			freq.update(0);
+			System.out.println(freq);
+			freq.update(0);
+			System.out.println(freq);
+
+			System.out.println(freq.encode(0));
+			System.out.println(freq.encode(1));
+			System.out.println(freq.encode(2));
+			System.out.println(freq.encode(3));
+
+			System.out.println(freq.encode(freq.decode(0)));
+			System.out.println(freq.encode(freq.decode(1)));
+			System.out.println(freq.encode(freq.decode(2)));
+			System.out.println(freq.encode(freq.decode(3)));
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
 }

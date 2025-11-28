@@ -5,12 +5,13 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import org.terifan.compression.vp8arithmetic.VP8Context;
 import org.terifan.compression.vp8arithmetic.VP8Encoder;
+import org.terifan.util.Console;
 
 
 public class LZJBCompressor implements AutoCloseable
 {
 	final static int MATCH_MIN = 4;
-	final static int WINDOW_SIZE = 65536;
+//	final static int WINDOW_SIZE = 65536;
 
 	private byte[] mWindow;
 	private int mWindowOffset;
@@ -56,7 +57,6 @@ public class LZJBCompressor implements AutoCloseable
 	@Override
 	public void close() throws Exception
 	{
-		mWriter.close();
 	}
 
 
@@ -72,6 +72,11 @@ public class LZJBCompressor implements AutoCloseable
 
 			if (result.length < MATCH_MIN)
 			{
+				if (literalCount == literals.length)
+				{
+					literals = Arrays.copyOfRange(literals, 0, literalCount * 3 / 2);
+				}
+
 				byte b = aInput[offset];
 				mWindow[mWindowOffset++] = b;
 				literals[literalCount++] = b;
@@ -79,8 +84,16 @@ public class LZJBCompressor implements AutoCloseable
 			}
 			else
 			{
+				Console.println("{lit:}{}", literalCount);
+
+				if (offset == 0)
+				{
+				}
+
 				writeLiterals(literals, literalCount);
 				literalCount = 0;
+
+				Console.println("{ref:}{} +{}", result.dist, result.length);
 
 				System.arraycopy(aInput, offset, mWindow, mWindowOffset, result.length);
 				mWindowOffset += result.length;
@@ -100,15 +113,19 @@ public class LZJBCompressor implements AutoCloseable
 
 		if (literalCount > 0)
 		{
+			Console.println("{lit:}{}", literalCount);
+
 			writeLiterals(literals, literalCount);
 		}
+
+		mWriter.restart();
 	}
 
 
 	private void findBestMatch(byte[] aInput, int aInputOffset, Match aResult)
 	{
 		int wsr = mWindowOffset;
-		int wsl = Math.max(0, mWindowOffset - WINDOW_SIZE);
+		int wsl = 0;//Math.max(0, mWindowOffset - WINDOW_SIZE);
 		int is = aInput.length;
 		aResult.length = 0;
 		aResult.dist = 0;
@@ -138,26 +155,26 @@ public class LZJBCompressor implements AutoCloseable
 	}
 
 
-	private void writeLiterals(byte[] aLiterals, int aLiteralCount) throws IOException
+	private void writeLiterals(byte[] aLiterals, int aLength) throws IOException
 	{
-//		mWriter.encodeBit(aLiteralCount == 0 ? 0 : 1, 0, mContext0);
-//		if (aLiteralCount > 0)
+//		mWriter.encodeBit(aLength == 0 ? 0 : 1, 0, mContext0);
+//		if (aLength > 0)
 //		{
 //			mWriter.encodeExpGolomb(aLiteralCount, 0, mContext1);
 //		}
 
 		int S = 8;
-		mWriter.encodeUnary(Math.min(aLiteralCount, S), mContext0);
-		if (aLiteralCount >= S)
+		mWriter.encodeUnary(Math.min(aLength, S), mContext0);
+		if (aLength >= S)
 		{
-			mWriter.encodeExpGolomb(aLiteralCount - S, 0, mContext1);
+			mWriter.encodeExpGolomb(aLength - S, 0, mContext1);
 		}
 
-		for (int i = 0; i < aLiteralCount; i++)
+		for (int i = 0; i < aLength; i++)
 		{
 			int sym = 0xff & aLiterals[i];
 
-			mWriter.encodeExpGolomb(mSymbolFrequencys[mPreviousSym].lookup(sym), 3, mContext4);
+			mWriter.encodeExpGolomb(mSymbolFrequencys[mPreviousSym].encode(sym), 3, mContext4);
 
 			mSymbolFrequencys[mPreviousSym].update(sym);
 			mPreviousSym = sym;

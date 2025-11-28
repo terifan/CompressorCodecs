@@ -58,7 +58,7 @@ public class VP8Encoder implements AutoCloseable
 			mNbBits += shift;
 			if (mNbBits > 0)
 			{
-				flush();
+				flushImpl();
 			}
 		}
 
@@ -85,7 +85,7 @@ public class VP8Encoder implements AutoCloseable
 			mNbBits += 1;
 			if (mNbBits > 0)
 			{
-				flush();
+				flushImpl();
 			}
 		}
 		return aBit;
@@ -101,12 +101,11 @@ public class VP8Encoder implements AutoCloseable
 	}
 
 
-	@Override
-	public void close() throws IOException
+	public void restart() throws IOException
 	{
 		encodeValue(0, 9 - mNbBits);
 		mNbBits = 0;   // pad with zeroes
-		flush();
+		flushImpl();
 
 		if (mPos > 1 && mBuffer[mPos - 1] == 0)
 		{
@@ -114,10 +113,25 @@ public class VP8Encoder implements AutoCloseable
 		}
 
 		mOutputStream.write(Arrays.copyOfRange(mBuffer, 0, mPos));
+
+		mRange = 255 - 1;
+		mNbBits = -8;
+		mMaxPos = 1024;
+		Arrays.fill(mBuffer, (byte)0);
 	}
 
 
-	private void flush() throws IOException
+	@Override
+	public void close() throws IOException
+	{
+		restart();
+
+		mOutputStream.close();
+		mOutputStream = null;
+	}
+
+
+	private void flushImpl() throws IOException
 	{
 		int s = 8 + mNbBits;
 		int bits = mValue >> s;
